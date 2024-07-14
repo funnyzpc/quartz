@@ -1,7 +1,0 @@
-2024-07-09 13:32:54.370 [QUARTZ-SPRINGBOOT_QuartzSchedulerThread] ERROR-Caller+0	 at org.quartz.core.QuartzSchedulerThread.run(QuartzSchedulerThread.java:422)
- - Runtime error occurred in main trigger firing loop.
-java.lang.IllegalStateException: JobStore is shutdown - aborting retry
-	at org.quartz.impl.jdbcjobstore.JobStoreSupport.retryExecuteInNonManagedTXLock(JobStoreSupport.java:3595)
-	at org.quartz.impl.jdbcjobstore.JobStoreSupport.releaseAcquiredTrigger(JobStoreSupport.java:2802)
-	at org.quartz.core.QuartzSchedulerThread.releaseIfScheduleChangedSignificantly(QuartzSchedulerThread.java:456)
-	at org.quartz.core.QuartzSchedulerThread.run(QuartzSchedulerThread.java:325)
