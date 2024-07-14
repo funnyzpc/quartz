@@ -1,0 +1,25 @@
+2024-07-08 18:05:08.401 [QuartzScheduler_QUARTZ-SPRINGBOOT-SCD2022121400041720420917407_MisfireHandler] ERROR-Caller+0	 at org.quartz.impl.jdbcjobstore.JobStoreSupport$MisfireHandler.manage(JobStoreSupport.java:3766)
+ - MisfireHandler: Error handling misfires: Couldn't retrieve calendar: 错误: 关系 "qrtz_calendars" 不存在
+  位置：15
+org.quartz.JobPersistenceException: Couldn't retrieve calendar: 错误: 关系 "qrtz_calendars" 不存在
+  位置：15
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.retrieveCalendar(JobStoreSupport.java:1696)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.doUpdateOfMisfiredTrigger(JobStoreSupport.java:971)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.recoverMisfiredJobs(JobStoreSupport.java:943)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.doRecoverMisfires(JobStoreSupport.java:3090)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport$MisfireHandler.manage(JobStoreSupport.java:3761)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport$MisfireHandler.run(JobStoreSupport.java:3777)
+Caused by: org.postgresql.util.PSQLException: 错误: 关系 "qrtz_calendars" 不存在
+  位置：15
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2676)
+	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2366)
+	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:356)
+	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:496)
+	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:413)
+	at org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:190)
+	at org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:134)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at org.quartz.impl.jdbcjobstore.StdJDBCDelegate.selectCalendar(StdJDBCDelegate.java:2295)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.retrieveCalendar(JobStoreSupport.java:1686)
+	... 5 common frames omitted

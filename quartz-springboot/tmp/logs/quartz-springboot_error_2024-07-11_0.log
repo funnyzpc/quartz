@@ -1,0 +1,36 @@
+2024-07-11 14:51:50.222 [QUARTZ-SPRINGBOOT_QuartzSchedulerThread] ERROR-Caller+0	 at org.quartz.impl.jdbcjobstore.JobStoreSupport.acquireNextTrigger(JobStoreSupport.java:2740)
+ - Error retrieving job, setting trigger state to ERROR.
+org.quartz.JobPersistenceException: Couldn't retrieve job: ResultSet 中找不到栏位名称 IS_DURABLE。
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.retrieveJob(JobStoreSupport.java:1314)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.acquireNextTrigger(JobStoreSupport.java:2737)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport$28.execute(JobStoreSupport.java:2678)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport$28.execute(JobStoreSupport.java:2675)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.executeInNonManagedTXLock(JobStoreSupport.java:3628)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.acquireNextTriggers(JobStoreSupport.java:2674)
+	at org.quartz.core.QuartzSchedulerThread.run(QuartzSchedulerThread.java:282)
+Caused by: org.postgresql.util.PSQLException: ResultSet 中找不到栏位名称 IS_DURABLE。
+	at org.postgresql.jdbc.PgResultSet.findColumn(PgResultSet.java:2958)
+	at org.postgresql.jdbc.PgResultSet.getBoolean(PgResultSet.java:2821)
+	at com.zaxxer.hikari.pool.HikariProxyResultSet.getBoolean(HikariProxyResultSet.java)
+	at org.quartz.impl.jdbcjobstore.StdJDBCDelegate.getBoolean(StdJDBCDelegate.java:3214)
+	at org.quartz.impl.jdbcjobstore.StdJDBCDelegate.selectJobDetail(StdJDBCDelegate.java:833)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.retrieveJob(JobStoreSupport.java:1308)
+	... 6 common frames omitted
+2024-07-11 14:51:50.226 [QUARTZ-SPRINGBOOT_QuartzSchedulerThread] ERROR-Caller+0	 at org.quartz.impl.jdbcjobstore.JobStoreSupport.acquireNextTrigger(JobStoreSupport.java:2740)
+ - Error retrieving job, setting trigger state to ERROR.
+org.quartz.JobPersistenceException: Couldn't retrieve job: ResultSet 中找不到栏位名称 IS_DURABLE。
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.retrieveJob(JobStoreSupport.java:1314)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.acquireNextTrigger(JobStoreSupport.java:2737)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport$28.execute(JobStoreSupport.java:2678)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport$28.execute(JobStoreSupport.java:2675)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.executeInNonManagedTXLock(JobStoreSupport.java:3628)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.acquireNextTriggers(JobStoreSupport.java:2674)
+	at org.quartz.core.QuartzSchedulerThread.run(QuartzSchedulerThread.java:282)
+Caused by: org.postgresql.util.PSQLException: ResultSet 中找不到栏位名称 IS_DURABLE。
+	at org.postgresql.jdbc.PgResultSet.findColumn(PgResultSet.java:2958)
+	at org.postgresql.jdbc.PgResultSet.getBoolean(PgResultSet.java:2821)
+	at com.zaxxer.hikari.pool.HikariProxyResultSet.getBoolean(HikariProxyResultSet.java)
+	at org.quartz.impl.jdbcjobstore.StdJDBCDelegate.getBoolean(StdJDBCDelegate.java:3214)
+	at org.quartz.impl.jdbcjobstore.StdJDBCDelegate.selectJobDetail(StdJDBCDelegate.java:833)
+	at org.quartz.impl.jdbcjobstore.JobStoreSupport.retrieveJob(JobStoreSupport.java:1308)
+	... 6 common frames omitted
