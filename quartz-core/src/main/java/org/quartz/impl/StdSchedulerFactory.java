@@ -662,13 +662,14 @@ public class StdSchedulerFactory implements SchedulerFactory {
         // If Proxying to remote scheduler, short-circuit here...
         // ~~~~~~~~~~~~~~~~~~
         if (rmiProxy) {
-            if (autoId) {
-                schedInstId = DEFAULT_INSTANCE_ID;
-            }
-            String uid = (rmiBindName == null) ? QuartzSchedulerResources.getUniqueIdentifier(schedName, schedInstId) : rmiBindName;
-            RemoteScheduler remoteScheduler = new RemoteScheduler(uid, rmiHost, rmiPort);
-            schedRep.bind(remoteScheduler);
-            return remoteScheduler;
+//            if (autoId) {
+//                schedInstId = DEFAULT_INSTANCE_ID;
+//            }
+//            String uid = (rmiBindName == null) ? QuartzSchedulerResources.getUniqueIdentifier(schedName, schedInstId) : rmiBindName;
+//            RemoteScheduler remoteScheduler = new RemoteScheduler(uid, rmiHost, rmiPort);
+//            schedRep.bind(remoteScheduler);
+//            return remoteScheduler;
+            throw new RuntimeException("RemoteScheduler is already remove!");
         }
 
         // Create class load helper
@@ -881,8 +882,7 @@ public class StdSchedulerFactory implements SchedulerFactory {
                             props.put(PROP_DATASOURCE_JNDI_CREDENTIALS,dsJndiCredentials);
                         }
                     }
-                    JNDIConnectionProvider cp = new JNDIConnectionProvider(dsJndi,
-                            props, dsAlwaysLookup);
+                    JNDIConnectionProvider cp = new JNDIConnectionProvider(dsJndi,props, dsAlwaysLookup);
                     dbMgr = DBConnectionManager.getInstance();
                     dbMgr.addConnectionProvider(dsNames[i], cp);
                 } else {
@@ -1092,7 +1092,6 @@ public class StdSchedulerFactory implements SchedulerFactory {
                 } catch(Exception e) {
                     throw new RuntimeException("Problem obtaining node id from TerracottaJobStore.", e);
                 }
-
                 if(null == cfg.getStringProperty(PROP_SCHED_JMX_EXPORT)) {
                     jmxExport = true;
                 }
@@ -1104,7 +1103,6 @@ public class StdSchedulerFactory implements SchedulerFactory {
                 if(threadsInheritInitalizersClassLoader){
                     jjs.setThreadsInheritInitializersClassLoadContext(threadsInheritInitalizersClassLoader);
                 }
-
                 jjs.setThreadExecutor(threadExecutor);
             }
     
@@ -1236,8 +1234,9 @@ public class StdSchedulerFactory implements SchedulerFactory {
 
     private void shutdownFromInstantiateException(ThreadPool tp, QuartzScheduler qs, boolean tpInited, boolean qsInited) {
         try {
-            if(qsInited)
+            if(qsInited){
                 qs.shutdown(false);
+            }
             else if(tpInited)
                 tp.shutdown(false);
         } catch (Exception e) {
@@ -1308,7 +1307,6 @@ public class StdSchedulerFactory implements SchedulerFactory {
     private java.lang.reflect.Method getSetMethod(String name,PropertyDescriptor[] props) {
         for (int i = 0; i < props.length; i++) {
             java.lang.reflect.Method wMeth = props[i].getWriteMethod();
-
             if (wMeth != null && wMeth.getName().equals(name)) {
                 return wMeth;
             }

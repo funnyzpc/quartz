@@ -175,74 +175,73 @@ public class DirectSchedulerFactory implements SchedulerFactory {
     }
 
 
-    /**
-     * Creates a proxy to a remote scheduler. This scheduler can be retrieved
-     * via {@link DirectSchedulerFactory#getScheduler()}
-     *
-     * @param rmiHost
-     *          The hostname for remote scheduler
-     * @param rmiPort
-     *          Port for the remote scheduler. The default RMI port is 1099.
-     * @throws SchedulerException
-     *           if the remote scheduler could not be reached.
-     */
-    public void createRemoteScheduler(String rmiHost, int rmiPort) throws SchedulerException {
-        createRemoteScheduler(DEFAULT_SCHEDULER_NAME, DEFAULT_INSTANCE_ID, rmiHost, rmiPort);
-    }
+//    /**
+//     * Creates a proxy to a remote scheduler. This scheduler can be retrieved
+//     * via {@link DirectSchedulerFactory#getScheduler()}
+//     *
+//     * @param rmiHost
+//     *          The hostname for remote scheduler
+//     * @param rmiPort
+//     *          Port for the remote scheduler. The default RMI port is 1099.
+//     * @throws SchedulerException
+//     *           if the remote scheduler could not be reached.
+//     */
+//    public void createRemoteScheduler(String rmiHost, int rmiPort) throws SchedulerException {
+//        createRemoteScheduler(DEFAULT_SCHEDULER_NAME, DEFAULT_INSTANCE_ID, rmiHost, rmiPort);
+//    }
 
-    /**
-     * Same as
-     * {@link DirectSchedulerFactory#createRemoteScheduler(String rmiHost, int rmiPort)},
-     * with the addition of specifying the scheduler name and instance ID. This
-     * scheduler can only be retrieved via
-     * {@link DirectSchedulerFactory#getScheduler(String)}
-     *
-     * @param schedulerName
-     *          The name for the scheduler.
-     * @param schedulerInstanceId
-     *          The instance ID for the scheduler.
-     * @param rmiHost
-     *          The hostname for remote scheduler
-     * @param rmiPort
-     *          Port for the remote scheduler. The default RMI port is 1099.
-     * @throws SchedulerException
-     *           if the remote scheduler could not be reached.
-     */
-    public void createRemoteScheduler(String schedulerName,String schedulerInstanceId, String rmiHost, int rmiPort) throws SchedulerException {
-        createRemoteScheduler(schedulerName,schedulerInstanceId, null, rmiHost, rmiPort);
-    }
+//    /**
+//     * Same as
+//     * {@link DirectSchedulerFactory#createRemoteScheduler(String rmiHost, int rmiPort)},
+//     * with the addition of specifying the scheduler name and instance ID. This
+//     * scheduler can only be retrieved via
+//     * {@link DirectSchedulerFactory#getScheduler(String)}
+//     *
+//     * @param schedulerName
+//     *          The name for the scheduler.
+//     * @param schedulerInstanceId
+//     *          The instance ID for the scheduler.
+//     * @param rmiHost
+//     *          The hostname for remote scheduler
+//     * @param rmiPort
+//     *          Port for the remote scheduler. The default RMI port is 1099.
+//     * @throws SchedulerException
+//     *           if the remote scheduler could not be reached.
+//     */
+//    public void createRemoteScheduler(String schedulerName,String schedulerInstanceId, String rmiHost, int rmiPort) throws SchedulerException {
+//        createRemoteScheduler(schedulerName,schedulerInstanceId, null, rmiHost, rmiPort);
+//    }
 
-    /**
-     * Same as
-     * {@link DirectSchedulerFactory#createRemoteScheduler(String rmiHost, int rmiPort)},
-     * with the addition of specifying the scheduler name, instance ID, and rmi
-     * bind name. This scheduler can only be retrieved via
-     * {@link DirectSchedulerFactory#getScheduler(String)}
-     *
-     * @param schedulerName
-     *          The name for the scheduler.
-     * @param schedulerInstanceId
-     *          The instance ID for the scheduler.
-     * @param rmiBindName
-     *          The name of the remote scheduler in the RMI repository.  If null
-     *          defaults to the generated unique identifier.
-     * @param rmiHost
-     *          The hostname for remote scheduler
-     * @param rmiPort
-     *          Port for the remote scheduler. The default RMI port is 1099.
-     * @throws SchedulerException
-     *           if the remote scheduler could not be reached.
-     */
-    public void createRemoteScheduler(String schedulerName, String schedulerInstanceId, String rmiBindName, String rmiHost, int rmiPort) throws SchedulerException {
-        String uid = (rmiBindName != null) ? rmiBindName :
-            QuartzSchedulerResources.getUniqueIdentifier(
-                schedulerName, schedulerInstanceId);
-
-        RemoteScheduler remoteScheduler = new RemoteScheduler(uid, rmiHost, rmiPort);
-        SchedulerRepository schedRep = SchedulerRepository.getInstance();
-        schedRep.bind(remoteScheduler);
-        initialized = true;
-    }
+//    /**
+//     * Same as
+//     * {@link DirectSchedulerFactory#createRemoteScheduler(String rmiHost, int rmiPort)},
+//     * with the addition of specifying the scheduler name, instance ID, and rmi
+//     * bind name. This scheduler can only be retrieved via
+//     * {@link DirectSchedulerFactory#getScheduler(String)}
+//     *
+//     * @param schedulerName
+//     *          The name for the scheduler.
+//     * @param schedulerInstanceId
+//     *          The instance ID for the scheduler.
+//     * @param rmiBindName
+//     *          The name of the remote scheduler in the RMI repository.  If null
+//     *          defaults to the generated unique identifier.
+//     * @param rmiHost
+//     *          The hostname for remote scheduler
+//     * @param rmiPort
+//     *          Port for the remote scheduler. The default RMI port is 1099.
+//     * @throws SchedulerException
+//     *           if the remote scheduler could not be reached.
+//     */
+//    public void createRemoteScheduler(String schedulerName, String schedulerInstanceId, String rmiBindName, String rmiHost, int rmiPort) throws SchedulerException {
+//        String uid = (rmiBindName != null) ? rmiBindName :
+//            QuartzSchedulerResources.getUniqueIdentifier(schedulerName, schedulerInstanceId);
+//
+//        RemoteScheduler remoteScheduler = new RemoteScheduler(uid, rmiHost, rmiPort);
+//        SchedulerRepository schedRep = SchedulerRepository.getInstance();
+//        schedRep.bind(remoteScheduler);
+//        initialized = true;
+//    }
 
     /**
      * Creates a scheduler using the specified thread pool and job store. This
@@ -350,8 +349,7 @@ public class DirectSchedulerFactory implements SchedulerFactory {
             JobStore jobStore, Map<String, SchedulerPlugin> schedulerPluginMap,
             String rmiRegistryHost, int rmiRegistryPort,
             long idleWaitTime, long dbFailureRetryInterval,
-            boolean jmxExport, String jmxObjectName)
-        throws SchedulerException {
+            boolean jmxExport, String jmxObjectName) throws SchedulerException {
         createScheduler(schedulerName, schedulerInstanceId, threadPool,
                 DEFAULT_THREAD_EXECUTOR, jobStore, schedulerPluginMap,
                 rmiRegistryHost, rmiRegistryPort, idleWaitTime,

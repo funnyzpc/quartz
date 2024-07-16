@@ -620,9 +620,9 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
         nextFireTime = getStartTime();
         while (nextFireTime != null && calendar != null && !calendar.isTimeIncluded(nextFireTime.getTime())) {
             nextFireTime = getFireTimeAfter(nextFireTime);
-            if(nextFireTime == null)
+            if(nextFireTime == null){
                 break;
-            
+            }
             //avoid infinite loop
             java.util.Calendar c = java.util.Calendar.getInstance();
             c.setTime(nextFireTime);
@@ -706,8 +706,7 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
         if (complete) {
             return null;
         }
-        if ((timesTriggered > repeatCount)
-                && (repeatCount != REPEAT_INDEFINITELY)) {
+        if ((timesTriggered > repeatCount) && (repeatCount != REPEAT_INDEFINITELY)) {
             return null;
         }
         if (afterTime == null) {

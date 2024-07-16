@@ -83,6 +83,7 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
     private Class<? extends Job> jobClass;
 
     private JobDataMap jobDataMap;
+    private String jobData;
 
 //    private boolean durability = false;
 
@@ -331,6 +332,7 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
     /* (non-Javadoc)
      * @see org.quartz.JobDetailI#getJobDataMap()
      */
+    @Deprecated
     @Override
     public JobDataMap getJobDataMap() {
         if (jobDataMap == null) {
@@ -344,8 +346,18 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
      * Set the <code>JobDataMap</code> to be associated with the <code>Job</code>.
      * </p>
      */
+    @Deprecated
     public JobDetailImpl setJobDataMap(JobDataMap jobDataMap) {
         this.jobDataMap = jobDataMap;
+        return this;
+    }
+
+    public String getJobData() {
+        return jobData;
+    }
+
+    public JobDetailImpl setJobData(String jobData) {
+        this.jobData = jobData;
         return this;
     }
 

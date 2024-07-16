@@ -79,7 +79,6 @@ public class SimpleScheduleBuilder extends ScheduleBuilder<SimpleTrigger> {
      * @return the new SimpleScheduleBuilder
      */
     public static SimpleScheduleBuilder repeatMinutelyForever() {
-
         return simpleSchedule()
             .withIntervalInMinutes(1)
             .repeatForever();
@@ -139,7 +138,6 @@ public class SimpleScheduleBuilder extends ScheduleBuilder<SimpleTrigger> {
      * @return the new SimpleScheduleBuilder
      */
     public static SimpleScheduleBuilder repeatHourlyForever(int hours) {
-
         return simpleSchedule()
             .withIntervalInHours(hours)
             .repeatForever();
@@ -154,9 +152,9 @@ public class SimpleScheduleBuilder extends ScheduleBuilder<SimpleTrigger> {
      * @return the new SimpleScheduleBuilder
      */
     public static SimpleScheduleBuilder repeatMinutelyForTotalCount(int count) {
-        if(count < 1)
+        if(count < 1){
             throw new IllegalArgumentException("Total count of firings must be at least one! Given count: " + count);
-
+        }
         return simpleSchedule()
             .withIntervalInMinutes(1)
             .withRepeatCount(count - 1);
@@ -171,9 +169,9 @@ public class SimpleScheduleBuilder extends ScheduleBuilder<SimpleTrigger> {
      * @return the new SimpleScheduleBuilder
      */
     public static SimpleScheduleBuilder repeatMinutelyForTotalCount(int count, int minutes) {
-        if(count < 1)
+        if(count < 1){
             throw new IllegalArgumentException("Total count of firings must be at least one! Given count: " + count);
-
+        }
         return simpleSchedule()
             .withIntervalInMinutes(minutes)
             .withRepeatCount(count - 1);
@@ -188,9 +186,9 @@ public class SimpleScheduleBuilder extends ScheduleBuilder<SimpleTrigger> {
      * @return the new SimpleScheduleBuilder
      */
     public static SimpleScheduleBuilder repeatSecondlyForTotalCount(int count) {
-        if(count < 1)
+        if(count < 1){
             throw new IllegalArgumentException("Total count of firings must be at least one! Given count: " + count);
-
+        }
         return simpleSchedule()
             .withIntervalInSeconds(1)
             .withRepeatCount(count - 1);
@@ -205,12 +203,10 @@ public class SimpleScheduleBuilder extends ScheduleBuilder<SimpleTrigger> {
      * @return the new SimpleScheduleBuilder
      */
     public static SimpleScheduleBuilder repeatSecondlyForTotalCount(int count, int seconds) {
-        if(count < 1)
+        if(count < 1){
             throw new IllegalArgumentException("Total count of firings must be at least one! Given count: " + count);
-
-        return simpleSchedule()
-            .withIntervalInSeconds(seconds)
-            .withRepeatCount(count - 1);
+        }
+        return simpleSchedule().withIntervalInSeconds(seconds).withRepeatCount(count - 1);
     }
     
     /**
@@ -222,12 +218,10 @@ public class SimpleScheduleBuilder extends ScheduleBuilder<SimpleTrigger> {
      * @return the new SimpleScheduleBuilder
      */
     public static SimpleScheduleBuilder repeatHourlyForTotalCount(int count) {
-        if(count < 1)
+        if(count < 1){
             throw new IllegalArgumentException("Total count of firings must be at least one! Given count: " + count);
-
-        return simpleSchedule()
-            .withIntervalInHours(1)
-            .withRepeatCount(count - 1);
+        }
+        return simpleSchedule().withIntervalInHours(1).withRepeatCount(count - 1);
     }
 
     /**
@@ -239,9 +233,9 @@ public class SimpleScheduleBuilder extends ScheduleBuilder<SimpleTrigger> {
      * @return the new SimpleScheduleBuilder
      */
     public static SimpleScheduleBuilder repeatHourlyForTotalCount(int count, int hours) {
-        if(count < 1)
+        if(count < 1){
             throw new IllegalArgumentException("Total count of firings must be at least one! Given count: " + count);
-
+        }
         return simpleSchedule()
             .withIntervalInHours(hours)
             .withRepeatCount(count - 1);
@@ -256,12 +250,10 @@ public class SimpleScheduleBuilder extends ScheduleBuilder<SimpleTrigger> {
      */
     @Override
     public MutableTrigger build() {
-
         SimpleTriggerImpl st = new SimpleTriggerImpl();
         st.setRepeatInterval(interval);
         st.setRepeatCount(repeatCount);
         st.setMisfireInstruction(misfireInstruction);
-        
         return st;
     }
 

@@ -1140,8 +1140,9 @@ public abstract class JobStoreSupport implements JobStore, Constants {
      */
     @SuppressWarnings("ConstantConditions")
     protected void storeTrigger(Connection conn,OperableTrigger newTrigger, JobDetail job, boolean replaceExisting, String state,boolean forceState, boolean recovering) throws JobPersistenceException {
-        boolean existingTrigger = triggerExists(conn, newTrigger.getKey());
-        if ((existingTrigger) && (!replaceExisting)) { 
+//        boolean existingTrigger = triggerExists(conn, newTrigger.getKey());
+        boolean existingTrigger = jobCfgExists(conn, newTrigger.getKey());
+        if ((existingTrigger) && (!replaceExisting)) {
             throw new ObjectAlreadyExistsException(newTrigger); 
         }
         try {
@@ -1161,7 +1162,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //                }
 //            }
 
-            // 获取 JOB_DETAILS
+            // 检索作业/获取 JOB_DETAILS
             if ( (job = retrieveJob(conn, newTrigger.getKey())) == null) {
                 throw new JobPersistenceException("The job ("+ newTrigger.getKey()+ ") referenced by the trigger does not exist.");
             }
@@ -1169,12 +1170,17 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                 // 獲取執行中的狀態
                 state = checkBlockedState(conn, job.getKey(), state);
             }
-            // 更新或写入 TRIGGERS
-            if (existingTrigger) {
-                getDelegate().updateTrigger(conn, newTrigger, state, job);
-            } else {
-                getDelegate().insertTrigger(conn, newTrigger, state, job);
-            }
+//            // 更新或写入 TRIGGERS
+//            if (existingTrigger) {
+//                System.out.println("invoke updateTrigger...");
+////                getDelegate().updateTrigger(conn, newTrigger, state, job);
+//                getDelegate().updateJobCfg(conn, newTrigger, state, job);
+//            } else {
+//                System.out.println("invoke insertTrigger...");
+//                getDelegate().insertTrigger(conn, newTrigger, state, job);
+//            }
+//            getDelegate().updateTrigger(conn, newTrigger, state, job);
+            getDelegate().updateJobCfg(conn, newTrigger, state, job);
         } catch (Exception e) {
             e.printStackTrace();
             throw new JobPersistenceException("Couldn't store trigger '" + newTrigger.getKey() + "' for '" + newTrigger.getKey() + "' job:" + e.getMessage(), e);
@@ -1187,9 +1193,10 @@ public abstract class JobStoreSupport implements JobStore, Constants {
      * 检查给定的trigger是否存在
      * </p>
      */
-    protected boolean triggerExists(Connection conn,Key key) throws JobPersistenceException {
+    protected boolean jobCfgExists(Connection conn,Key key) throws JobPersistenceException {
         try {
-            return getDelegate().triggerExists(conn,key);
+//            return getDelegate().triggerExists(conn,key);
+            return getDelegate().jobCfgExists(conn,key);
         } catch (SQLException e) {
             throw new JobPersistenceException("Couldn't determine trigger existence (" + key + "): " + e.getMessage(), e);
         }
@@ -1332,7 +1339,8 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     
     protected JobDetail retrieveJob(Connection conn, Key key) throws JobPersistenceException {
         try {
-            return getDelegate().selectJobDetail(conn, key,getClassLoadHelper());
+//            return getDelegate().selectJobDetail(conn, key,getClassLoadHelper());
+            return getDelegate().selectJobCfg(conn, key,getClassLoadHelper());
         } catch (ClassNotFoundException e) {
             throw new JobPersistenceException("Couldn't retrieve job because a required class was not found: " + e.getMessage(), e);
         } catch (IOException e) {
@@ -1467,8 +1475,10 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     
     protected OperableTrigger retrieveTrigger(Connection conn,Key key) throws JobPersistenceException {
         try {
-            return getDelegate().selectTrigger(conn, key);
+//            return getDelegate().selectTrigger(conn, key);
+            return getDelegate().selectJobCfgTrigger(conn, key);
         } catch (Exception e) {
+            log.error("出现异常了:{}",key,e);
             e.printStackTrace();
             throw new JobPersistenceException("Couldn't retrieve trigger: " + e.getMessage(), e);
         }

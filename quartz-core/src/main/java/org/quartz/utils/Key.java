@@ -42,6 +42,7 @@ public class Key<T>  implements Serializable, Comparable<Key<T>> {
      * 这个字段对应所有表中的 TRIGGER_NAME
      */
     private final String name;
+    private final String type;
 //    @Deprecated
 //    private final String group;
     
@@ -78,6 +79,7 @@ public class Key<T>  implements Serializable, Comparable<Key<T>> {
         }
         this.name = name;
         this.sched = null;
+        this.type = null;
     }
 
     public Key(String name,String sched) {
@@ -86,6 +88,15 @@ public class Key<T>  implements Serializable, Comparable<Key<T>> {
         }
         this.name = name;
         this.sched = sched;
+        this.type = null;
+    }
+    public Key(String name,String sched,String triggerType) {
+        if(name == null){
+            throw new IllegalArgumentException("Name cannot be null.");
+        }
+        this.name = name;
+        this.sched = sched;
+        this.type = triggerType;
     }
 
 
@@ -113,6 +124,9 @@ public class Key<T>  implements Serializable, Comparable<Key<T>> {
         return sched;
     }
 
+    public String getType() {
+        return type;
+    }
 //    /**
 //     * <p>
 //     * Get the group portion of the key.
@@ -126,6 +140,15 @@ public class Key<T>  implements Serializable, Comparable<Key<T>> {
 //    }
 
 
+    @Override
+    public String toString() {
+        return "Key{" +
+                "sched='" + sched + '\'' +
+                ", name='" + name + '\'' +
+                ", triggerType='" + type + '\'' +
+                '}';
+    }
+
     /**
      * <p>
      * Return the string representation of the key. The format will be:
@@ -134,13 +157,7 @@ public class Key<T>  implements Serializable, Comparable<Key<T>> {
      *
      * @return the string representation of the key
      */
-    @Override
-    public String toString() {
-        return "Key{" +
-                "sched='" + sched + '\'' +
-                ", name='" + name + '\'' +
-                '}';
-    }
+
 
     @Override
     public int hashCode() {
@@ -172,7 +189,7 @@ public class Key<T>  implements Serializable, Comparable<Key<T>> {
 //        } else if (!name.equals(other.name))
 //            return false;
 //        return true;
-        return (this.sched+this.name).equals(other.sched+other.name);
+        return (this.sched+this.name+this.type).equals(other.sched+other.name+other.type);
     }
 
     @Override
@@ -201,6 +218,9 @@ public class Key<T>  implements Serializable, Comparable<Key<T>> {
 
     public static Key key(String name,String sched) {
         return new Key(name,sched);
+    }
+    public static Key key(String name,String sched,String type) {
+        return new Key(name,sched,type);
     }
 
 }

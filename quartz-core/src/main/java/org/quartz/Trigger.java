@@ -105,6 +105,7 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
      * on the particular <code>Trigger</code> implementation you are using.
      * </p>
      *  为了查看此指令是否符合您的需求，您应该查看您正在使用的特定Trigger实现上的updateAfterMisfire（）方法的文档。
+     *  失火指令智能策略
      */
     public static final int MISFIRE_INSTRUCTION_SMART_POLICY = 0;
     
@@ -113,13 +114,17 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
      * <code>Trigger</code> will never be evaluated for a misfire situation, 
      * and that the scheduler will simply try to fire it as soon as it can, 
      * and then update the Trigger as if it had fired at the proper time. 
-     * 
+     *  指示调度器永远不会对触发器进行失火情况评估，调度器只会尽快尝试触发触发器，然后更新触发器，就像它在适当的时间触发一样。
+     *
      * <p>NOTE: if a trigger uses this instruction, and it has missed 
      * several of its scheduled firings, then several rapid firings may occur 
      * as the trigger attempt to catch back up to where it would have been. 
      * For example, a SimpleTrigger that fires every 15 seconds which has 
      * misfired for 5 minutes will fire 20 times once it gets the chance to 
      * fire.</p>
+     *  注意：如果触发器使用此指令，并且它错过了几次预定的发射，那么当触发器试图恢复到原来的位置时，可能会发生几次快速发射。
+     *  例如，每15秒触发一次的SimpleTrigger，如果失火5分钟，一旦有机会触发，将触发20次。
+     *   理解： 失火指令忽略失火策略,如果为-1则表示此任务不会被触发
      */
     public static final int MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY = -1;
     

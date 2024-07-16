@@ -81,8 +81,11 @@ public class CronTriggerPersistenceDelegate implements TriggerPersistenceDelegat
         ResultSet rs = null;
         try {
             // SELECT * FROM QRTZ_CRON_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-            ps = conn.prepareStatement(Util.rtp(SELECT_CRON_TRIGGER, tablePrefix, schedNameLiteral));
+//            ps = conn.prepareStatement(Util.rtp(SELECT_CRON_TRIGGER, tablePrefix, schedNameLiteral));
+            ps = conn.prepareStatement(Util.rtp(SELECT_CRON_EXECUTE_CFG, tablePrefix, schedNameLiteral));
             ps.setString(1, triggerKey.getName());
+            // todo ... 是否可从Key中取得
+            ps.setString(2,"CRON");
 //            ps.setString(2, triggerKey.getGroup());
             rs = ps.executeQuery();
             if (rs.next()) {
@@ -108,13 +111,16 @@ public class CronTriggerPersistenceDelegate implements TriggerPersistenceDelegat
         PreparedStatement ps = null;
         try {
             // UPDATE QRTZ_CRON_TRIGGERS SET CRON_EXPRESSION = ?, TIME_ZONE_ID = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-            ps = conn.prepareStatement(Util.rtp(UPDATE_CRON_TRIGGER, tablePrefix, schedNameLiteral));
+//            ps = conn.prepareStatement(Util.rtp(UPDATE_CRON_TRIGGER, tablePrefix, schedNameLiteral));
+            ps = conn.prepareStatement(Util.rtp(UPDATE_EXECUTE_CFG, tablePrefix, schedNameLiteral));
             ps.setString(1, cronTrigger.getCronExpression());
             ps.setString(2, cronTrigger.getTimeZone().getID());
             ps.setString(3, trigger.getKey().getName());
+            ps.setString(4, trigger.getKey().getType());
 //            ps.setString(4, trigger.getKey().getGroup());
             return ps.executeUpdate();
         } catch (Exception e){
+            e.printStackTrace();
             throw e;
         }finally {
             Util.closeStatement(ps);

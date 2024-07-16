@@ -1,6 +1,5 @@
 package com.mee.quartz.opt;
 
-import com.mee.quartz.util.JacksonUtil;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.Job;
@@ -11,9 +10,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
-import org.quartz.impl.ExecuteCfgImpl;
-import org.quartz.impl.JobCfgImpl;
-import org.quartz.impl.JobDetailImpl;
 import org.quartz.utils.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

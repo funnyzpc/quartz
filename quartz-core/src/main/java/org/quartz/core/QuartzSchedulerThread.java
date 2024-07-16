@@ -117,9 +117,9 @@ public class QuartzSchedulerThread extends Thread {
 
         this.setPriority(threadPrio);
 
-        // start the underlying thread, but put this object into the 'paused'
+        // start the underlying thread, but put this object into the 'paused' 启动底层线程，但将此对象放入“暂停”状态
         // state
-        // so processing doesn't start yet...
+        // so processing doesn't start yet... 所以处理还没有开始。。。
         paused = true;
         halted = new AtomicBoolean(false);
     }
@@ -149,7 +149,6 @@ public class QuartzSchedulerThread extends Thread {
     void togglePause(boolean pause) {
         synchronized (sigLock) {
             paused = pause;
-
             if (paused) {
                 signalSchedulingChange(0);
             } else {
@@ -279,8 +278,7 @@ public class QuartzSchedulerThread extends Thread {
                     long now = System.currentTimeMillis();
                     clearSignaledSchedulingChange();
                     try {
-                        triggers = qsRsrcs.getJobStore().acquireNextTriggers(
-                                now + idleWaitTime, Math.min(availThreadCount, qsRsrcs.getMaxBatchSize()), qsRsrcs.getBatchTimeWindow());
+                        triggers = qsRsrcs.getJobStore().acquireNextTriggers(now + idleWaitTime, Math.min(availThreadCount, qsRsrcs.getMaxBatchSize()), qsRsrcs.getBatchTimeWindow());
                         acquiresFailed = 0;
 //                        if (log.isDebugEnabled()){
 //                            log.debug("batch acquisition of " + (triggers == null ? 0 : triggers.size()) + " triggers");
@@ -289,15 +287,17 @@ public class QuartzSchedulerThread extends Thread {
                         if (acquiresFailed == 0) {
                             qs.notifySchedulerListenersError("An error occurred while scanning for the next triggers to fire.",jpe);
                         }
-                        if (acquiresFailed < Integer.MAX_VALUE)
+                        if (acquiresFailed < Integer.MAX_VALUE){
                             acquiresFailed++;
+                        }
                         continue;
                     } catch (RuntimeException e) {
                         if (acquiresFailed == 0) {
                             log.error("quartzSchedulerThreadLoop: RuntimeException " +e.getMessage(), e);
                         }
-                        if (acquiresFailed < Integer.MAX_VALUE)
+                        if (acquiresFailed < Integer.MAX_VALUE){
                             acquiresFailed++;
+                        }
                         continue;
                     }
 

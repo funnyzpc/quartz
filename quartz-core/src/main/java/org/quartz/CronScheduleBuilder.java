@@ -281,7 +281,8 @@ public class CronScheduleBuilder extends ScheduleBuilder<CronTrigger> {
     /**
      * If the Trigger misfires, use the
      * {@link Trigger#MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY} instruction.
-     * 
+     *  如果触发器缺火，请使用触发器。MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY指令。
+     *
      * @return the updated CronScheduleBuilder
      * @see Trigger#MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY
      */
@@ -293,7 +294,8 @@ public class CronScheduleBuilder extends ScheduleBuilder<CronTrigger> {
     /**
      * If the Trigger misfires, use the
      * {@link CronTrigger#MISFIRE_INSTRUCTION_DO_NOTHING} instruction.
-     * 
+     *  如果触发器失灵，请使用CronTrigger。MISFIRE_INSTRUCTION_DO_NOTHING指令。
+     *
      * @return the updated CronScheduleBuilder
      * @see CronTrigger#MISFIRE_INSTRUCTION_DO_NOTHING
      */
@@ -305,7 +307,8 @@ public class CronScheduleBuilder extends ScheduleBuilder<CronTrigger> {
     /**
      * If the Trigger misfires, use the
      * {@link CronTrigger#MISFIRE_INSTRUCTION_FIRE_ONCE_NOW} instruction.
-     * 
+     *  如果触发器失灵，请使用CronTrigger。MISFIRE_INSTRUCTION_FIRE_ONCE_NOW指令。
+     *
      * @return the updated CronScheduleBuilder
      * @see CronTrigger#MISFIRE_INSTRUCTION_FIRE_ONCE_NOW
      */

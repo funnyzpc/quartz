@@ -4,11 +4,13 @@ import com.mee.quartz.job.Job02TestService;
 import com.mee.quartz.opt.QrtzCronScheduleServiceImpl;
 import com.mee.quartz.opt.QrtzSimpleScheduleServiceImpl;
 import com.mee.quartz.opt.QrtzTaskService;
+import com.mee.quartz.util.JacksonUtil;
 import org.junit.jupiter.api.Test;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
+import org.quartz.JobCfg;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -16,6 +18,8 @@ import org.quartz.SchedulerException;
 import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
+import org.quartz.impl.ExecuteCfgImpl;
+import org.quartz.impl.JobCfgImpl;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.utils.Key;
 import org.slf4j.Logger;
@@ -26,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
 
 
 /**
@@ -168,7 +173,17 @@ public class JobTeskTest {
 
         scheduler.unscheduleJob(new Key("Job02TestService::01任务"));
         scheduler.deleteJob(new Key("Job02TestService::01任务"));
+    }
 
+    @Test
+    public void test06() throws SchedulerException {
+        HashMap data_map = new HashMap(4,1);
+        data_map.put("_D","NO description");
+        data_map.put("_CT", System.currentTimeMillis());
+        String jsonData = JacksonUtil.toJsonString(data_map);
+        JobCfgImpl jobCfg = new JobCfgImpl("Job02TestService::task01","com.mee.quartz.job.Job02TestService","CRON","NO description",jsonData);
+        ExecuteCfgImpl executeCfg = new ExecuteCfgImpl("Job02TestService::task01","0 0/1 * * * ?");
+        Date date = scheduler.scheduleJobAndExecute(jobCfg, executeCfg);
 
     }
 

@@ -326,8 +326,9 @@ public interface DriverDelegate {
      * @throws IOException
      *           if deserialization causes an error
      */
+    @Deprecated
     JobDetail selectJobDetail(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException;
-
+    JobDetail selectJobCfg(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException;
     /**
      * <p>
      * Select the total number of jobs stored.
@@ -399,6 +400,7 @@ public interface DriverDelegate {
      * @return the number of rows updated
      */
     int updateTrigger(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException;
+    int updateJobCfg(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException;
 
     /**
      * <p>
@@ -411,6 +413,7 @@ public interface DriverDelegate {
      * @return the number of rows updated
      */
     boolean triggerExists(Connection conn,Key triggerKey) throws SQLException;
+    boolean jobCfgExists(Connection conn,Key triggerKey) throws SQLException;
 
     /**
      * <p>
@@ -626,6 +629,7 @@ public interface DriverDelegate {
      * @throws JobPersistenceException 
      */
     OperableTrigger selectTrigger(Connection conn,Key triggerKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException;
+    OperableTrigger selectJobCfgTrigger(Connection conn,Key triggerKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException;
 
     /**
      * <p>

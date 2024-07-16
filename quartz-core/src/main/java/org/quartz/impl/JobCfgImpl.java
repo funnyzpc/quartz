@@ -1,9 +1,13 @@
 package org.quartz.impl;
 
+import org.quartz.Calendar;
+import org.quartz.CronExpression;
 import org.quartz.ExecuteCfg;
 import org.quartz.JobCfg;
+import org.quartz.Trigger;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 合并QRTZ_TRIGGERS & QRTZ_JOB_DETAILS对象 qrtz_job_cfg
@@ -47,7 +51,7 @@ public class JobCfgImpl implements JobCfg, Serializable {
     /**
      * '下一次触发时间（毫秒），默认为-1，意味不会自动触发';
      */
-    private Long nextFireTime;
+    private Date nextFireTime;
     /**
      * '上一次触发时间（毫秒）';
      */
@@ -59,11 +63,11 @@ public class JobCfgImpl implements JobCfg, Serializable {
     /**
      * '开始时间';
      */
-    private Long startTime;
+    private Date startTime;
     /**
      * '结束时间';
      */
-    private Long endTime;
+    private Date endTime;
     /**
      * '日程表名称，表qrtz_calendars的CALENDAR_NAME字段的值';
      */
@@ -71,7 +75,7 @@ public class JobCfgImpl implements JobCfg, Serializable {
     /**
      * '措施或者是补偿执行的策略';
      */
-    private Integer misfireInstr;
+    private Integer misfireInstr= Trigger.MISFIRE_INSTRUCTION_SMART_POLICY;
     /**
      * 'DETAILS:集群中job实现类的全名，quartz就是根据这个路径到classpath找到该job类';
      */
@@ -146,11 +150,11 @@ public class JobCfgImpl implements JobCfg, Serializable {
         this.description=description;
         return this;
     }
-    public Long getNextFireTime() {
+    public Date getNextFireTime() {
         return nextFireTime;
     }
 
-    public JobCfgImpl setNextFireTime(Long nextFireTime) {
+    public JobCfgImpl setNextFireTime(Date nextFireTime) {
         this.nextFireTime=nextFireTime;
         return this;
     }
@@ -170,19 +174,19 @@ public class JobCfgImpl implements JobCfg, Serializable {
         this.priority=priority;
         return this;
     }
-    public Long getStartTime() {
+    public Date getStartTime() {
         return startTime;
     }
 
-    public JobCfgImpl setStartTime(Long startTime) {
+    public JobCfgImpl setStartTime(Date startTime) {
         this.startTime=startTime;
         return this;
     }
-    public Long getEndTime() {
+    public Date getEndTime() {
         return endTime;
     }
 
-    public JobCfgImpl setEndTime(Long endTime) {
+    public JobCfgImpl setEndTime(Date endTime) {
         this.endTime=endTime;
         return this;
     }
@@ -279,13 +283,14 @@ public class JobCfgImpl implements JobCfg, Serializable {
     /**
      * for cron
      */
-    public JobCfgImpl(String triggerName,String jobClassName, String triggerType, String description, String jobData,ExecuteCfg executeCfg) {
+    public JobCfgImpl(String triggerName,String jobClassName, String triggerType, String description, String jobData/*,ExecuteCfg executeCfg*/) {
         this.triggerName = triggerName;
         this.triggerType = triggerType;
         this.description = description;
         this.jobClassName = jobClassName;
         this.jobData = jobData;
-        this.executeCfg = executeCfg;
+        this.startTime=new Date(System.currentTimeMillis());
+//        this.executeCfg = executeCfg;
     }
     // for cron
     public JobCfgImpl(String schedName, String triggerName, String triggerType, String description, String jobClassName, String jobData,ExecuteCfg executeCfg) {
@@ -296,6 +301,7 @@ public class JobCfgImpl implements JobCfg, Serializable {
         this.jobClassName = jobClassName;
         this.jobData = jobData;
         this.executeCfg = executeCfg;
+        this.startTime=new Date(System.currentTimeMillis());
     }
 
     @Override
@@ -312,7 +318,7 @@ public class JobCfgImpl implements JobCfg, Serializable {
         if(null==this.getTriggerName() || "".equals(this.getTriggerName().trim())
             || null==this.getJobClassName() || "".equals(this.getJobClassName().trim())
             || null==this.getTriggerType() || !"CRON".equals(this.getTriggerType())
-            || null==this.getExecuteCfg() ){
+            /*|| null==this.getExecuteCfg()*/ ){
             return false;
         }
         return true;
@@ -325,4 +331,87 @@ public class JobCfgImpl implements JobCfg, Serializable {
         }
         return true;
     }
+
+    // for cron
+    public Date computeFirstFireTime(/*org.quartz.Calendar calendar*/CronExpression cronEx) {
+        this.nextFireTime = getFireTimeAfterForCron(new Date(this.getStartTime().getTime() - 1000L),cronEx);
+//        while (nextFireTime != null && calendar != null && !calendar.isTimeIncluded(this.nextFireTime.getTime())) {
+//            this.nextFireTime = getFireTimeAfter(this.nextFireTime);
+//        }
+        return this.nextFireTime;
+    }
+    // cron
+    private Date getFireTimeAfterForCron(Date afterTime, CronExpression cronEx) {
+        if (afterTime == null) {
+            afterTime = new Date();
+        }
+        if (getStartTime().after(afterTime)) {
+            afterTime = new Date(getStartTime().getTime() - 1000L);
+        }
+        if (getEndTime() != null && (afterTime.compareTo(getEndTime()) >= 0)) {
+            return null;
+        }
+//        Date pot = getTimeAfter(afterTime);
+        Date pot =  (cronEx == null) ? null : cronEx.getTimeAfter(afterTime);
+        if (getEndTime() != null && pot != null && pot.after(getEndTime())) {
+            return null;
+        }
+        return pot;
+    }
+
+//    public Date computeFirstFireTime(Calendar calendar) {
+//        final int YEAR_TO_GIVEUP_SCHEDULING_AT = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) + 100;
+//        this.nextFireTime = getStartTime();
+//        while (nextFireTime != null && calendar != null && !calendar.isTimeIncluded(nextFireTime.getTime())) {
+//            nextFireTime = getFireTimeAfterForSimple(this.nextFireTime);
+//            if(nextFireTime == null){
+//                break;
+//            }
+//            //avoid infinite loop
+//            java.util.Calendar c = java.util.Calendar.getInstance();
+//            c.setTime(nextFireTime);
+//            if (c.get(java.util.Calendar.YEAR) > YEAR_TO_GIVEUP_SCHEDULING_AT) {
+//                return null;
+//            }
+//        }
+//
+//        return nextFireTime;
+//    }
+
+//    public Date getFireTimeAfterForSimple(Date afterTime) {
+//        boolean complete = false;
+//        if (complete) {
+//            return null;
+//        }
+//        if ((timesTriggered > repeatCount) && (repeatCount != REPEAT_INDEFINITELY)) {
+//            return null;
+//        }
+//        if (afterTime == null) {
+//            afterTime = new Date();
+//        }
+//        if (repeatCount == 0 && afterTime.compareTo(getStartTime()) >= 0) {
+//            return null;
+//        }
+//        long startMillis = getStartTime().getTime();
+//        long afterMillis = afterTime.getTime();
+//        long endMillis = (getEndTime() == null) ? Long.MAX_VALUE : getEndTime().getTime();
+//        if (endMillis <= afterMillis) {
+//            return null;
+//        }
+//        if (afterMillis < startMillis) {
+//            return new Date(startMillis);
+//        }
+//        long numberOfTimesExecuted = ((afterMillis - startMillis) / repeatInterval) + 1;
+//
+//        if ((numberOfTimesExecuted > repeatCount) &&
+//                (repeatCount != REPEAT_INDEFINITELY)) {
+//            return null;
+//        }
+//        Date time = new Date(startMillis + (numberOfTimesExecuted * repeatInterval));
+//        if (endMillis <= time.getTime()) {
+//            return null;
+//        }
+//        return time;
+//    }
+
 }
