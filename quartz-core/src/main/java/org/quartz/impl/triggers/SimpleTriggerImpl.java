@@ -46,7 +46,7 @@ import org.quartz.TriggerUtils;
  * @author James House
  * @author contributions by Lieven Govaerts of Ebitec Nv, Belgium.
  */
-public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements SimpleTrigger, CoreTrigger {
+public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements SimpleTrigger/*, CoreTrigger*/ {
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -814,15 +814,15 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
         }
     }
 
-    /**
-     * Used by extensions of SimpleTrigger to imply that there are additional 
-     * properties, specifically so that extensions can choose whether to be 
-     * stored as a serialized blob, or as a flattened SimpleTrigger table. 
-     */
-    @Override
-    public boolean hasAdditionalProperties() {
-        return false;
-    }
+//    /**
+//     * Used by extensions of SimpleTrigger to imply that there are additional
+//     * properties, specifically so that extensions can choose whether to be
+//     * stored as a serialized blob, or as a flattened SimpleTrigger table.
+//     */
+//    @Override
+//    public boolean hasAdditionalProperties() {
+//        return false;
+//    }
 
     /**
      * Get a {@link ScheduleBuilder} that is configured to produce a 

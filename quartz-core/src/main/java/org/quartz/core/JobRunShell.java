@@ -154,29 +154,30 @@ public class JobRunShell extends SchedulerListenerSupport implements Runnable {
                             + ": couldn't begin execution.", se);
                     break;
                 }
-                // notify job & trigger listeners...
-                try {
-                    if (!notifyListenersBeginning(jec)) {
-                        break;
-                    }
-                } catch(VetoedException ve) {
-                    try {
-                        CompletedExecutionInstruction instCode = trigger.executionComplete(jec, null);
-                        qs.notifyJobStoreJobVetoed(trigger, jobDetail, instCode);
-                        // QTZ-205
-                        // Even if trigger got vetoed, we still needs to check to see if it's the trigger's finalized run or not.
-                        if (jec.getTrigger().getNextFireTime() == null) {
-                            qs.notifySchedulerListenersFinalized(jec.getTrigger());
-                        }
 
-                        complete(true);
-                    } catch (SchedulerException se) {
-                        qs.notifySchedulerListenersError("Error during veto of Job ("
-                                + jec.getJobDetail().getKey()
-                                + ": couldn't finalize execution.", se);
-                    }
-                    break;
-                }
+//                // notify job & trigger listeners... 通知job或trigger监听器
+//                try {
+//                    if (!notifyListenersBeginning(jec)) {
+//                        break;
+//                    }
+//                } catch(VetoedException ve) {
+//                    try {
+//                        CompletedExecutionInstruction instCode = trigger.executionComplete(jec, null);
+//                        qs.notifyJobStoreJobVetoed(trigger, jobDetail, instCode);
+//                        // QTZ-205
+//                        // Even if trigger got vetoed, we still needs to check to see if it's the trigger's finalized run or not.
+//                        if (jec.getTrigger().getNextFireTime() == null) {
+//                            qs.notifySchedulerListenersFinalized(jec.getTrigger());
+//                        }
+//
+//                        complete(true);
+//                    } catch (SchedulerException se) {
+//                        qs.notifySchedulerListenersError("Error during veto of Job ("
+//                                + jec.getJobDetail().getKey()
+//                                + ": couldn't finalize execution.", se);
+//                    }
+//                    break;
+//                }
 
                 long startTime = System.currentTimeMillis();
                 long endTime = startTime;
@@ -253,51 +254,47 @@ public class JobRunShell extends SchedulerListenerSupport implements Runnable {
         qs = null;
     }
 
-    private boolean notifyListenersBeginning(JobExecutionContext jobExCtxt) throws VetoedException {
-        boolean vetoed = false;
-        // notify all trigger listeners
-        try {
-            vetoed = qs.notifyTriggerListenersFired(jobExCtxt);
-        } catch (SchedulerException se) {
-            qs.notifySchedulerListenersError(
-                    "Unable to notify TriggerListener(s) while firing trigger "
-                            + "(Trigger and Job will NOT be fired!). trigger= "
-                            + jobExCtxt.getTrigger().getKey() + " job= "
-                            + jobExCtxt.getJobDetail().getKey(), se);
-
-            return false;
-        }
-
-        if(vetoed) {
-            try {
-                qs.notifyJobListenersWasVetoed(jobExCtxt);
-            } catch (SchedulerException se) {
-                qs.notifySchedulerListenersError(
-                        "Unable to notify JobListener(s) of vetoed execution " +
-                        "while firing trigger (Trigger and Job will NOT be " +
-                        "fired!). trigger= "
-                        + jobExCtxt.getTrigger().getKey() + " job= "
-                        + jobExCtxt.getJobDetail().getKey(), se);
-
-            }
-            throw new VetoedException();
-        }
-
-        // notify all job listeners
-        try {
-            qs.notifyJobListenersToBeExecuted(jobExCtxt);
-        } catch (SchedulerException se) {
-            qs.notifySchedulerListenersError(
-                    "Unable to notify JobListener(s) of Job to be executed: "
-                            + "(Job will NOT be executed!). trigger= "
-                            + jobExCtxt.getTrigger().getKey() + " job= "
-                            + jobExCtxt.getJobDetail().getKey(), se);
-
-            return false;
-        }
-
-        return true;
-    }
+//    private boolean notifyListenersBeginning(JobExecutionContext jobExCtxt) throws VetoedException {
+//        boolean vetoed = false; // 否决
+//        // notify all trigger listeners
+//        try {
+//            vetoed = qs.notifyTriggerListenersFired(jobExCtxt);
+//        } catch (SchedulerException se) {
+//            qs.notifySchedulerListenersError(
+//                    "Unable to notify TriggerListener(s) while firing trigger "
+//                            + "(Trigger and Job will NOT be fired!). trigger= "
+//                            + jobExCtxt.getTrigger().getKey() + " job= "
+//                            + jobExCtxt.getJobDetail().getKey(), se);
+//            return false;
+//        }
+//        if(vetoed) {
+//            try {
+//                qs.notifyJobListenersWasVetoed(jobExCtxt);
+//            } catch (SchedulerException se) {
+//                qs.notifySchedulerListenersError(
+//                        "Unable to notify JobListener(s) of vetoed execution " +
+//                        "while firing trigger (Trigger and Job will NOT be " +
+//                        "fired!). trigger= "
+//                        + jobExCtxt.getTrigger().getKey() + " job= "
+//                        + jobExCtxt.getJobDetail().getKey(), se);
+//
+//            }
+//            throw new VetoedException();
+//        }
+//        // notify all job listeners 通知所有作业侦听器
+//        try {
+//            qs.notifyJobListenersToBeExecuted(jobExCtxt);
+//        } catch (SchedulerException se) {
+//            qs.notifySchedulerListenersError(
+//                    "Unable to notify JobListener(s) of Job to be executed: "
+//                            + "(Job will NOT be executed!). trigger= "
+//                            + jobExCtxt.getTrigger().getKey() + " job= "
+//                            + jobExCtxt.getJobDetail().getKey(), se);
+//
+//            return false;
+//        }
+//        return true;
+//    }
 
     private boolean notifyJobListenersComplete(JobExecutionContext jobExCtxt, JobExecutionException jobExEx) {
         try {
@@ -332,11 +329,11 @@ public class JobRunShell extends SchedulerListenerSupport implements Runnable {
         return true;
     }
 
-    static class VetoedException extends Exception {
-        private static final long serialVersionUID = 1539955697495918463L;
-
-        public VetoedException() {
-        }
-    }
+//    static class VetoedException extends Exception {
+//        private static final long serialVersionUID = 1539955697495918463L;
+//
+//        public VetoedException() {
+//        }
+//    }
 
 }

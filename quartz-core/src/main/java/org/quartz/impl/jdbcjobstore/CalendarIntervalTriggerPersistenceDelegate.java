@@ -30,7 +30,7 @@ import org.quartz.spi.OperableTrigger;
 public class CalendarIntervalTriggerPersistenceDelegate extends SimplePropertiesTriggerPersistenceDelegateSupport {
     @Override
     public boolean canHandleTriggerType(OperableTrigger trigger) {
-        return ((trigger instanceof CalendarIntervalTriggerImpl) && !((CalendarIntervalTriggerImpl)trigger).hasAdditionalProperties());
+        return ((trigger instanceof CalendarIntervalTriggerImpl) /*&& !((CalendarIntervalTriggerImpl)trigger).hasAdditionalProperties()*/);
     }
     @Override
     public String getHandledTriggerTypeDiscriminator() {

@@ -2158,9 +2158,9 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             String state = null;
             // SELECT TRIGGER_STATE FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
 //            ps = conn.prepareStatement(rtp(SELECT_TRIGGER_STATE));
-            // todo ... 需要添加 trigger_type字段
             ps = conn.prepareStatement(rtp(SELECT_JOB_STATE));
             ps.setString(1, triggerKey.getName());
+            ps.setString(2, triggerKey.getType());
 //            ps.setString(2, triggerKey.getGroup());
             rs = ps.executeQuery();
             if (rs.next()) {
@@ -2845,23 +2845,24 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             ps = conn.prepareStatement(rtp(INSERT_FIRED_TRIGGER));
             ps.setString(1, trigger.getFireInstanceId());
             ps.setString(2, trigger.getKey().getName());
+            ps.setString(3, trigger.getKey().getType());
 //            ps.setString(3, trigger.getKey().getGroup());
-            ps.setString(3, instanceId);
-            ps.setBigDecimal(4, new BigDecimal(String.valueOf(System.currentTimeMillis())));
-            ps.setBigDecimal(5, new BigDecimal(String.valueOf(trigger.getNextFireTime().getTime())));
-            ps.setString(6, state);
+            ps.setString(4, instanceId);
+            ps.setBigDecimal(5, new BigDecimal(String.valueOf(System.currentTimeMillis())));
+            ps.setBigDecimal(6, new BigDecimal(String.valueOf(trigger.getNextFireTime().getTime())));
+            ps.setString(7, state);
             if (job != null) {
 //                ps.setString(7, trigger.getJobKey().getName());
 //                ps.setString(9, trigger.getJobKey().getGroup());
-                setBoolean(ps, 7, job.isConcurrentExectionDisallowed());
-                setBoolean(ps, 8, job.requestsRecovery());
+                setBoolean(ps, 8, job.isConcurrentExectionDisallowed());
+                setBoolean(ps, 9, job.requestsRecovery());
             } else {
 //                ps.setString(7, null);
 //                ps.setString(8, null); // group
-                setBoolean(ps, 7, false);
                 setBoolean(ps, 8, false);
+                setBoolean(ps, 9, false);
             }
-            ps.setInt(9, trigger.getPriority());
+            ps.setInt(10, trigger.getPriority());
             return ps.executeUpdate();
         } finally {
             closeStatement(ps);
@@ -3350,8 +3351,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         if (blobLocator != null && blobLocator.length() != 0) {
             InputStream binaryInput = blobLocator.getBinaryStream();
             if (null != binaryInput) {
-                if (binaryInput instanceof ByteArrayInputStream
-                    && ((ByteArrayInputStream) binaryInput).available() == 0 ) {
+                if (binaryInput instanceof ByteArrayInputStream && ((ByteArrayInputStream) binaryInput).available() == 0 ) {
                     //do nothing
                 } else {
                     ObjectInputStream in = new ObjectInputStream(binaryInput);

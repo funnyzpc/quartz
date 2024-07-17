@@ -63,20 +63,28 @@ public interface JobListener {
      * </p>
      * 
      * @see #jobExecutionVetoed(JobExecutionContext)
+     * 当JobDetail即将执行时（相关触发器已发生），由调度器调用。
+     * 如果作业的执行被TriggerListener否决，则不会调用此方法。
+     * 另请参见：
+     * 作业执行已被审查（作业执行上下文）
      */
     void jobToBeExecuted(JobExecutionContext context);
 
-    /**
-     * <p>
-     * Called by the <code>{@link Scheduler}</code> when a <code>{@link org.quartz.JobDetail}</code>
-     * was about to be executed (an associated <code>{@link Trigger}</code>
-     * has occurred), but a <code>{@link TriggerListener}</code> vetoed it's 
-     * execution.
-     * </p>
-     * 
-     * @see #jobToBeExecuted(JobExecutionContext)
-     */
-    void jobExecutionVetoed(JobExecutionContext context);
+//    /**
+//     * <p>
+//     * Called by the <code>{@link Scheduler}</code> when a <code>{@link org.quartz.JobDetail}</code>
+//     * was about to be executed (an associated <code>{@link Trigger}</code>
+//     * has occurred), but a <code>{@link TriggerListener}</code> vetoed it's
+//     * execution.
+//     * </p>
+//     *
+//     * @see #jobToBeExecuted(JobExecutionContext)
+//     *
+//     * 当JobDetail即将被执行时（关联的触发器已经发生），由调度器调用，但TriggerListener否决了它的执行。
+//     * 另请参见：
+//     * jobToBeExecute（作业执行上下文）
+//     */
+//    void jobExecutionVetoed(JobExecutionContext context);
 
     
 //    /**

@@ -72,7 +72,7 @@ import org.quartz.DateBuilder.IntervalUnit;
  * @author Zemian Deng <saltnlight5@gmail.com>
  */
 @Deprecated
-public class DailyTimeIntervalTriggerImpl extends AbstractTrigger<DailyTimeIntervalTrigger> implements DailyTimeIntervalTrigger, CoreTrigger {
+public class DailyTimeIntervalTriggerImpl extends AbstractTrigger<DailyTimeIntervalTrigger> implements DailyTimeIntervalTrigger/*, CoreTrigger*/ {
     
     private static final long serialVersionUID = -632667786771388749L;
     
@@ -920,11 +920,11 @@ public class DailyTimeIntervalTriggerImpl extends AbstractTrigger<DailyTimeInter
         return cb;
     }
 
-    @Override
-    /** This trigger has no additional properties besides what's defined in this class. */
-    public boolean hasAdditionalProperties() {
-        return false;
-    }
+//    @Override
+//    /** This trigger has no additional properties besides what's defined in this class.除了此类中定义的属性外，此触发器没有其他属性。 */
+//    public boolean hasAdditionalProperties() {
+//        return false;
+//    }
     @Override
     public int getRepeatCount() {
         return repeatCount;

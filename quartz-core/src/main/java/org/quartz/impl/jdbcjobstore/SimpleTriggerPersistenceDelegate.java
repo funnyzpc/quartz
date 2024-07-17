@@ -45,7 +45,7 @@ public class SimpleTriggerPersistenceDelegate implements TriggerPersistenceDeleg
     }
     @Override
     public boolean canHandleTriggerType(OperableTrigger trigger) {
-        return ((trigger instanceof SimpleTriggerImpl) && !((SimpleTriggerImpl)trigger).hasAdditionalProperties());
+        return ((trigger instanceof SimpleTriggerImpl) /*&& !((SimpleTriggerImpl)trigger).hasAdditionalProperties()*/);
     }
     @Override
     public int deleteExtendedTriggerProperties(Connection conn, Key key) throws SQLException {

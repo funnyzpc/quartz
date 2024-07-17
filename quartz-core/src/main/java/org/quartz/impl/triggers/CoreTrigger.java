@@ -22,8 +22,10 @@ import org.quartz.Trigger;
 /**
  * internal interface preserved for backward compatibility 
  */
+@Deprecated
 public interface CoreTrigger extends Trigger {
 
-    boolean hasAdditionalProperties();
+//    // 具有其他属性
+//    boolean hasAdditionalProperties();
     
 }

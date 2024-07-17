@@ -44,7 +44,7 @@ public class CronTriggerPersistenceDelegate implements TriggerPersistenceDelegat
     }
     @Override
     public boolean canHandleTriggerType(OperableTrigger trigger) {
-        return ((trigger instanceof CronTriggerImpl) && !((CronTriggerImpl)trigger).hasAdditionalProperties());
+        return ((trigger instanceof CronTriggerImpl) /*&& !((CronTriggerImpl)trigger).hasAdditionalProperties()*/);
     }
     @Override
     public int deleteExtendedTriggerProperties(Connection conn, Key key) throws SQLException {

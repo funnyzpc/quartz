@@ -2930,8 +2930,8 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     protected TriggerFiredBundle triggerFired(Connection conn, OperableTrigger trigger) throws JobPersistenceException {
         JobDetail job;
         Calendar cal = null;
-        // Make sure trigger wasn't deleted, paused, or completed...
-        try { // if trigger was deleted, state will be STATE_DELETED
+        // Make sure trigger wasn't deleted, paused, or completed... 确保触发器未被删除、暂停或完成。。。
+        try { // if trigger was deleted, state will be STATE_DELETED 如果触发器被删除，状态将为STATE_DELETED
             String state = getDelegate().selectTriggerState(conn,trigger.getKey());
             if (!state.equals(STATE_ACQUIRED)) {
                 return null;

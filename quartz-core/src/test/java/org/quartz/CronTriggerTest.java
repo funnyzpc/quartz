@@ -147,6 +147,7 @@ public class CronTriggerTest extends SerializationTestSupport {
     }
 
     public void testUndefinedMisfireInstructionInDerivedBuilder() throws ParseException {
+        ThreadLocal threadLocal = new ThreadLocal();
         CronTriggerImpl trigger = new CronTriggerImpl() {
             @Override
             public int getMisfireInstruction() {

@@ -75,8 +75,8 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
 
 //    private String group = Scheduler.DEFAULT_GROUP;
 
-    @Deprecated
-    private String jobName;
+//    @Deprecated
+//    private String jobName;
 
 //    private String jobGroup = Scheduler.DEFAULT_GROUP;
 
@@ -85,7 +85,7 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
 //    private JobDataMap jobDataMap;
 
     @SuppressWarnings("unused")
-    private boolean volatility = false; // still here for serialization backward compatibility
+    private boolean volatility = false; // still here for serialization backward compatibility 仍然是为了序列化向后兼容性
 
     private String calendarName = null;
 

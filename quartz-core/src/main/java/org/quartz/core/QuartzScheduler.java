@@ -116,10 +116,12 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
                     String[] versionComponents = version.split("\\.");
                     VERSION_MAJOR = versionComponents[0];
                     VERSION_MINOR = versionComponents[1];
-                    if(versionComponents.length > 2)
+                    if(versionComponents.length > 2){
                         VERSION_ITERATION = versionComponents[2];
-                    else
+                    }
+                    else{
                         VERSION_ITERATION = "0";
+                    }
                 } else {
                   (LoggerFactory.getLogger(QuartzScheduler.class)).error("Can't parse Quartz version from quartz-build.properties");
                 }
@@ -174,7 +176,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 
     private volatile boolean closed = false;
     private volatile boolean shuttingDown = false;
-    private boolean boundRemotely = false;
+//    private boolean boundRemotely = false;
 
     private QuartzSchedulerMBean jmxBean = null;
     
@@ -221,71 +223,71 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         getLog().info("Quartz Scheduler v." + getVersion() + " created.");
     }
 
-    public void initialize() throws SchedulerException {
-        try {
-            bind();
-        } catch (Exception re) {
-            throw new SchedulerException("Unable to bind scheduler to RMI Registry.", re);
-        }
-        if (resources.getJMXExport()) {
-            try {
-                registerJMX();
-            } catch (Exception e) {
-                throw new SchedulerException("Unable to register scheduler with MBeanServer.", e);
-            }
-        }
-
-        // ManagementRESTServiceConfiguration managementRESTServiceConfiguration
-        // = resources.getManagementRESTServiceConfiguration();
-        //
-        // if (managementRESTServiceConfiguration != null &&
-        // managementRESTServiceConfiguration.isEnabled()) {
-        // try {
-        // /**
-        // * ManagementServer will only be instantiated and started if one
-        // * isn't already running on the configured port for this class
-        // * loader space.
-        // */
-        // synchronized (QuartzScheduler.class) {
-        // if
-        // (!MGMT_SVR_BY_BIND.containsKey(managementRESTServiceConfiguration.getBind()))
-        // {
-        // Class<?> managementServerImplClass =
-        // Class.forName("org.quartz.management.ManagementServerImpl");
-        // Class<?> managementRESTServiceConfigurationClass[] = new Class[] {
-        // managementRESTServiceConfiguration.getClass() };
-        // Constructor<?> managementRESTServiceConfigurationConstructor =
-        // managementServerImplClass
-        // .getConstructor(managementRESTServiceConfigurationClass);
-        // Object arglist[] = new Object[] { managementRESTServiceConfiguration
-        // };
-        // ManagementServer embeddedRESTServer = ((ManagementServer)
-        // managementRESTServiceConfigurationConstructor.newInstance(arglist));
-        // embeddedRESTServer.start();
-        // MGMT_SVR_BY_BIND.put(managementRESTServiceConfiguration.getBind(),
-        // embeddedRESTServer);
-        // }
-        // registeredManagementServerBind =
-        // managementRESTServiceConfiguration.getBind();
-        // ManagementServer embeddedRESTServer =
-        // MGMT_SVR_BY_BIND.get(registeredManagementServerBind);
-        // embeddedRESTServer.register(this);
-        // }
-        // } catch (Exception e) {
-        // throw new
-        // SchedulerException("Unable to start the scheduler management REST service",
-        // e);
-        // }
-        // }
-
-        getLog().info("Scheduler meta-data: " +
-                (new SchedulerMetaData(getSchedulerName(),
-                        getSchedulerInstanceId(), getClass(), boundRemotely, runningSince() != null, 
-                        isInStandbyMode(), isShutdown(), runningSince(), 
-                        numJobsExecuted(), getJobStoreClass(), 
-                        supportsPersistence(), isClustered(), getThreadPoolClass(), 
-                        getThreadPoolSize(), getVersion())).toString());
-    }
+//    public void initialize() throws SchedulerException {
+//        try {
+//            bind();
+//        } catch (Exception re) {
+//            throw new SchedulerException("Unable to bind scheduler to RMI Registry.", re);
+//        }
+//        if (resources.getJMXExport()) {
+//            try {
+//                registerJMX();
+//            } catch (Exception e) {
+//                throw new SchedulerException("Unable to register scheduler with MBeanServer.", e);
+//            }
+//        }
+//
+//        // ManagementRESTServiceConfiguration managementRESTServiceConfiguration
+//        // = resources.getManagementRESTServiceConfiguration();
+//        //
+//        // if (managementRESTServiceConfiguration != null &&
+//        // managementRESTServiceConfiguration.isEnabled()) {
+//        // try {
+//        // /**
+//        // * ManagementServer will only be instantiated and started if one
+//        // * isn't already running on the configured port for this class
+//        // * loader space.
+//        // */
+//        // synchronized (QuartzScheduler.class) {
+//        // if
+//        // (!MGMT_SVR_BY_BIND.containsKey(managementRESTServiceConfiguration.getBind()))
+//        // {
+//        // Class<?> managementServerImplClass =
+//        // Class.forName("org.quartz.management.ManagementServerImpl");
+//        // Class<?> managementRESTServiceConfigurationClass[] = new Class[] {
+//        // managementRESTServiceConfiguration.getClass() };
+//        // Constructor<?> managementRESTServiceConfigurationConstructor =
+//        // managementServerImplClass
+//        // .getConstructor(managementRESTServiceConfigurationClass);
+//        // Object arglist[] = new Object[] { managementRESTServiceConfiguration
+//        // };
+//        // ManagementServer embeddedRESTServer = ((ManagementServer)
+//        // managementRESTServiceConfigurationConstructor.newInstance(arglist));
+//        // embeddedRESTServer.start();
+//        // MGMT_SVR_BY_BIND.put(managementRESTServiceConfiguration.getBind(),
+//        // embeddedRESTServer);
+//        // }
+//        // registeredManagementServerBind =
+//        // managementRESTServiceConfiguration.getBind();
+//        // ManagementServer embeddedRESTServer =
+//        // MGMT_SVR_BY_BIND.get(registeredManagementServerBind);
+//        // embeddedRESTServer.register(this);
+//        // }
+//        // } catch (Exception e) {
+//        // throw new
+//        // SchedulerException("Unable to start the scheduler management REST service",
+//        // e);
+//        // }
+//        // }
+//
+//        getLog().info("Scheduler meta-data: " +
+//                (new SchedulerMetaData(getSchedulerName(),
+//                        getSchedulerInstanceId(), getClass(), boundRemotely, runningSince() != null,
+//                        isInStandbyMode(), isShutdown(), runningSince(),
+//                        numJobsExecuted(), getJobStoreClass(),
+//                        supportsPersistence(), isClustered(), getThreadPoolClass(),
+//                        getThreadPoolSize(), getVersion())).toString());
+//    }
     
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -319,15 +321,15 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         return log;
     }
     
-    /**
-     * Register the scheduler in the local MBeanServer.
-     */
-    private void registerJMX() throws Exception {
-        String jmxObjectName = resources.getJMXObjectName();
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        jmxBean = new QuartzSchedulerMBeanImpl(this);
-        mbs.registerMBean(jmxBean, new ObjectName(jmxObjectName));
-    }
+//    /**
+//     * Register the scheduler in the local MBeanServer.
+//     */
+//    private void registerJMX() throws Exception {
+//        String jmxObjectName = resources.getJMXObjectName();
+//        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+//        jmxBean = new QuartzSchedulerMBeanImpl(this);
+//        mbs.registerMBean(jmxBean, new ObjectName(jmxObjectName));
+//    }
 
     /**
      * Unregister the scheduler from the local MBeanServer.
@@ -340,83 +342,78 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         getLog().info("Scheduler unregistered from name '" + jmxObjectName + "' in the local MBeanServer.");
     }
 
-    /**
-     * <p>
-     * Bind the scheduler to an RMI registry.
-     * </p>
-     */
-    private void bind() throws RemoteException {
-        String host = resources.getRMIRegistryHost();
-        // don't export if we're not configured to do so...
-        if (host == null || host.length() == 0) {
-            return;
-        }
-        RemotableQuartzScheduler exportable = null;
-        if(resources.getRMIServerPort() > 0) {
-            exportable = (RemotableQuartzScheduler) UnicastRemoteObject.exportObject(this, resources.getRMIServerPort());
-        } else {
-            exportable = (RemotableQuartzScheduler) UnicastRemoteObject.exportObject(this);
-        }
-        Registry registry = null;
-        if (resources.getRMICreateRegistryStrategy().equals(
-                QuartzSchedulerResources.CREATE_REGISTRY_AS_NEEDED)) {
-            try {
-                // First try to get an existing one, instead of creating it,
-                // since if
-                // we're in a web-app being 'hot' re-depoloyed, then the JVM
-                // still
-                // has the registry that we created above the first time...
-                registry = LocateRegistry.getRegistry(resources.getRMIRegistryPort());
-                registry.list();
-            } catch (Exception e) {
-                registry = LocateRegistry.createRegistry(resources.getRMIRegistryPort());
-            }
-        } else if (resources.getRMICreateRegistryStrategy().equals(
-                QuartzSchedulerResources.CREATE_REGISTRY_ALWAYS)) {
-            try {
-                registry = LocateRegistry.createRegistry(resources.getRMIRegistryPort());
-            } catch (Exception e) {
-                // Fall back to an existing one, instead of creating it, since
-                // if
-                // we're in a web-app being 'hot' re-depoloyed, then the JVM
-                // still
-                // has the registry that we created above the first time...
-                registry = LocateRegistry.getRegistry(resources.getRMIRegistryPort());
-            }
-        } else {
-            registry = LocateRegistry.getRegistry(resources.getRMIRegistryHost(), resources.getRMIRegistryPort());
-        }
-        String bindName = resources.getRMIBindName();
-        registry.rebind(bindName, exportable);
-        boundRemotely = true;
-        getLog().info("Scheduler bound to RMI registry under name '" + bindName + "'");
-    }
+//    /**
+//     * <p>
+//     * Bind the scheduler to an RMI registry.
+//     * </p>
+//     */
+//    private void bind() throws RemoteException {
+//        String host = resources.getRMIRegistryHost();
+//        // don't export if we're not configured to do so...
+//        if (host == null || host.length() == 0) {
+//            return;
+//        }
+//        RemotableQuartzScheduler exportable = null;
+//        if(resources.getRMIServerPort() > 0) {
+//            exportable = (RemotableQuartzScheduler) UnicastRemoteObject.exportObject(this, resources.getRMIServerPort());
+//        } else {
+//            exportable = (RemotableQuartzScheduler) UnicastRemoteObject.exportObject(this);
+//        }
+//        Registry registry = null;
+//        if (resources.getRMICreateRegistryStrategy().equals(
+//                QuartzSchedulerResources.CREATE_REGISTRY_AS_NEEDED)) {
+//            try {
+//                // First try to get an existing one, instead of creating it,
+//                // since if
+//                // we're in a web-app being 'hot' re-depoloyed, then the JVM
+//                // still
+//                // has the registry that we created above the first time...
+//                registry = LocateRegistry.getRegistry(resources.getRMIRegistryPort());
+//                registry.list();
+//            } catch (Exception e) {
+//                registry = LocateRegistry.createRegistry(resources.getRMIRegistryPort());
+//            }
+//        } else if (resources.getRMICreateRegistryStrategy().equals(
+//                QuartzSchedulerResources.CREATE_REGISTRY_ALWAYS)) {
+//            try {
+//                registry = LocateRegistry.createRegistry(resources.getRMIRegistryPort());
+//            } catch (Exception e) {
+//                // Fall back to an existing one, instead of creating it, since
+//                // if
+//                // we're in a web-app being 'hot' re-depoloyed, then the JVM
+//                // still
+//                // has the registry that we created above the first time...
+//                registry = LocateRegistry.getRegistry(resources.getRMIRegistryPort());
+//            }
+//        } else {
+//            registry = LocateRegistry.getRegistry(resources.getRMIRegistryHost(), resources.getRMIRegistryPort());
+//        }
+//        String bindName = resources.getRMIBindName();
+//        registry.rebind(bindName, exportable);
+//        boundRemotely = true;
+//        getLog().info("Scheduler bound to RMI registry under name '" + bindName + "'");
+//    }
 
-    /**
-     * <p>
-     * Un-bind the scheduler from an RMI registry.
-     * </p>
-     */
-    private void unBind() throws RemoteException {
-        String host = resources.getRMIRegistryHost();
-        // don't un-export if we're not configured to do so...
-        if (host == null || host.length() == 0) {
-            return;
-        }
-
-        Registry registry = LocateRegistry.getRegistry(resources
-                .getRMIRegistryHost(), resources.getRMIRegistryPort());
-
-        String bindName = resources.getRMIBindName();
-        
-        try {
-            registry.unbind(bindName);
-            UnicastRemoteObject.unexportObject(this, true);
-        } catch (java.rmi.NotBoundException nbe) {
-        }
-
-        getLog().info("Scheduler un-bound from name '" + bindName + "' in RMI registry");
-    }
+//    /**
+//     * <p>
+//     * Un-bind the scheduler from an RMI registry.
+//     * </p>
+//     */
+//    private void unBind() throws RemoteException {
+//        String host = resources.getRMIRegistryHost();
+//        // don't un-export if we're not configured to do so...
+//        if (host == null || host.length() == 0) {
+//            return;
+//        }
+//        Registry registry = LocateRegistry.getRegistry(resources.getRMIRegistryHost(), resources.getRMIRegistryPort());
+//        String bindName = resources.getRMIBindName();
+//        try {
+//            registry.unbind(bindName);
+//            UnicastRemoteObject.unexportObject(this, true);
+//        } catch (java.rmi.NotBoundException nbe) {
+//        }
+//        getLog().info("Scheduler un-bound from name '" + bindName + "' in RMI registry");
+//    }
 
     /**
      * <p>
@@ -658,31 +655,32 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
                 (resources.isInterruptJobsOnShutdownWithWait() && waitForJobsToComplete)) {
             List<JobExecutionContext> jobs = getCurrentlyExecutingJobs();
             for(JobExecutionContext job: jobs) {
-                if(job.getJobInstance() instanceof InterruptableJob)
+                if(job.getJobInstance() instanceof InterruptableJob){
                     try {
                         ((InterruptableJob)job.getJobInstance()).interrupt();
                     } catch (Throwable e) {
                         // do nothing, this was just a courtesy effort
                         getLog().warn("Encountered error when interrupting job {} during shutdown: {}", job.getJobDetail().getKey(), e);
                     }
+                }
             }
         }
         
         resources.getThreadPool().shutdown(waitForJobsToComplete);
         closed = true;
-        if (resources.getJMXExport()) {
-            try {
-                unregisterJMX();
-            } catch (Exception e) {
-            }
-        }
+//        if (resources.getJMXExport()) {
+//            try {
+//                unregisterJMX();
+//            } catch (Exception e) {
+//            }
+//        }
 
-        if(boundRemotely) {
-            try {
-                unBind();
-            } catch (RemoteException re) {
-            }
-        }
+//        if(boundRemotely) {
+//            try {
+//                unBind();
+//            } catch (RemoteException re) {
+//            }
+//        }
         
         shutdownPlugins();
         resources.getJobStore().shutdown();
@@ -971,17 +969,19 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         for(Entry<JobDetail, Set<? extends Trigger>> e: triggersAndJobs.entrySet()) {
             JobDetail job = e.getKey();
             if(job == null) // there can be one of these (for adding a bulk set of triggers for pre-existing jobs)
+            {
                 continue;
+            }
             Set<? extends Trigger> triggers = e.getValue();
             if(triggers == null) // this is possible because the job may be durable, and not yet be having triggers
+            {
                 continue;
+            }
             for(Trigger trigger: triggers) {
                 OperableTrigger opt = (OperableTrigger)trigger;
 //                opt.setJobKey(job.getKey());
                 opt.setKey(job.getKey());
-
                 opt.validate();
-
                 Calendar cal = null;
 //                if (trigger.getCalendarName() != null) {
 //                    cal = resources.getJobStore().retrieveCalendar(trigger.getCalendarName());
@@ -995,7 +995,6 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
                 }                
             }
         }
-
         resources.getJobStore().storeJobsAndTriggers(triggersAndJobs, replace);
         notifySchedulerThread(0L);
         for (JobDetail job : triggersAndJobs.keySet()) {
@@ -1677,17 +1676,18 @@ J     *
         }
     }
 
-    /**
-     * <p>
-     * Get the <i>internal</i> <code>{@link TriggerListener}</code> that
-     * has the given name.
-     * </p>
-     */
-    public TriggerListener getInternalTriggerListener(String name) {
-        synchronized (internalTriggerListeners) {
-            return internalTriggerListeners.get(name);
-        }
-    }
+//    /**
+//     * <p>
+//     * Get the <i>internal</i> <code>{@link TriggerListener}</code> that
+//     * has the given name.
+//     * </p>
+//     *  获取具有给定名称的内部TriggerListener。
+//     */
+//    public TriggerListener getInternalTriggerListener(String name) {
+//        synchronized (internalTriggerListeners) {
+//            return internalTriggerListeners.get(name);
+//        }
+//    }
 
     /**
      * <p>
@@ -1749,12 +1749,10 @@ J     *
         return allListeners;
     }
 
-    private List<JobListener> buildJobListenerList()
-        throws SchedulerException {
+    private List<JobListener> buildJobListenerList() throws SchedulerException {
         List<JobListener> allListeners = new LinkedList<JobListener>();
         allListeners.addAll(getListenerManager().getJobListeners());
         allListeners.addAll(getInternalJobListeners());
-
         return allListeners;
     }
 
@@ -1793,10 +1791,9 @@ J     *
 
     public boolean notifyTriggerListenersFired(JobExecutionContext jec) throws SchedulerException {
         boolean vetoedExecution = false;
-        // build a list of all trigger listeners that are to be notified...
+        // build a list of all trigger listeners that are to be notified...  构建一个要通知的所有触发器侦听器的列表。。。
         List<TriggerListener> triggerListeners = buildTriggerListenerList();
-
-        // notify all trigger listeners in the list
+        // notify all trigger listeners in the list  通知列表中的所有触发器侦听器
         for(TriggerListener tl: triggerListeners) {
             try {
                 if(!matchTriggerListener(tl, jec.getTrigger().getKey())){
@@ -1816,13 +1813,14 @@ J     *
     
 
     public void notifyTriggerListenersMisfired(Trigger trigger) throws SchedulerException {
-        // build a list of all trigger listeners that are to be notified...
+        // build a list of all trigger listeners that are to be notified... 构建一个要通知的所有触发器侦听器的列表。。。
         List<TriggerListener> triggerListeners = buildTriggerListenerList();
-        // notify all trigger listeners in the list
+        // notify all trigger listeners in the list 通知列表中的所有触发器侦听器
         for(TriggerListener tl: triggerListeners) {
             try {
-                if(!matchTriggerListener(tl, trigger.getKey()))
+                if(!matchTriggerListener(tl, trigger.getKey())){
                     continue;
+                }
                 tl.triggerMisfired(trigger);
             } catch (Exception e) {
                 SchedulerException se = new SchedulerException("TriggerListener '" + tl.getName() + "' threw exception: " + e.getMessage(), e);
@@ -1853,8 +1851,9 @@ J     *
         // notify all job listeners
         for(JobListener jl: jobListeners) {
             try {
-                if(!matchJobListener(jl, jec.getJobDetail().getKey()))
+                if(!matchJobListener(jl, jec.getJobDetail().getKey())){
                     continue;
+                }
                 jl.jobToBeExecuted(jec);
             } catch (Exception e) {
                 SchedulerException se = new SchedulerException("JobListener '" + jl.getName() + "' threw exception: " + e.getMessage(), e);
@@ -1863,24 +1862,22 @@ J     *
         }
     }
 
-    public void notifyJobListenersWasVetoed(JobExecutionContext jec) throws SchedulerException {
-        // build a list of all job listeners that are to be notified...
-        List<JobListener> jobListeners = buildJobListenerList();
-
-        // notify all job listeners
-        for(JobListener jl: jobListeners) {
-            try {
-                if(!matchJobListener(jl, jec.getJobDetail().getKey()))
-                    continue;
-                jl.jobExecutionVetoed(jec);
-            } catch (Exception e) {
-                SchedulerException se = new SchedulerException(
-                        "JobListener '" + jl.getName() + "' threw exception: "
-                        + e.getMessage(), e);
-                throw se;
-            }
-        }
-    }
+//    public void notifyJobListenersWasVetoed(JobExecutionContext jec) throws SchedulerException {
+//        // build a list of all job listeners that are to be notified... 构建一个要通知的所有作业侦听器的列表。。。
+//        List<JobListener> jobListeners = buildJobListenerList();
+//        // notify all job listeners 通知所有作业侦听器
+//        for(JobListener jl: jobListeners) {
+//            try {
+//                if(!matchJobListener(jl, jec.getJobDetail().getKey())){
+//                    continue;
+//                }
+//                jl.jobExecutionVetoed(jec);
+//            } catch (Exception e) {
+//                SchedulerException se = new SchedulerException("JobListener '" + jl.getName() + "' threw exception: " + e.getMessage(), e);
+//                throw se;
+//            }
+//        }
+//    }
 
     public void notifyJobListenersWasExecuted(JobExecutionContext jec,JobExecutionException je) throws SchedulerException {
         // build a list of all job listeners that are to be notified...
@@ -2324,8 +2321,9 @@ class ExecutingJobsManager implements JobListener {
         }
     }
 
-    @Override
-    public void jobExecutionVetoed(JobExecutionContext context) {
-        
-    }
+//    @Override
+//    public void jobExecutionVetoed(JobExecutionContext context) {
+//
+//    }
+
 }

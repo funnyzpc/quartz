@@ -173,9 +173,12 @@ public interface QuartzSchedulerMBean {
      * to the types:
      *   Integer, Double, Float, String, Boolean, Date, Character, Map<String, Object>.
      * Maps are limited to containing values from the same set of types, less Map itself.
-     * 
-     * @param abstractJobInfo map of attributes defining job
-     * @param replace whether or not to replace a pre-existing job with the same key
+     *  添加由abstractJobInfo描述的持久作业，该作业必须在键“jobDetailClass”下包含完全限定的JobDetail类名。
+     *  该JobDetail类型必须包含无参数构造函数并具有公共访问权限。
+     *  其他属性是反射式应用的，仅限于以下类型：整数、双精度、浮点、字符串、布尔值、日期、字符、映射。Map仅限于包含来自同一组类型的值，较少包含Map本身。
+     *
+     * @param abstractJobInfo map of attributes defining job abstractJobInfo-定义作业替换的属性映射-是否用相同的键替换预先存在的作业
+     * @param replace whether or not to replace a pre-existing job with the same key 是否用相同的密钥替换预先存在的作业
      * @throws Exception
      */
     void addJob(Map<String, Object> abstractJobInfo, boolean replace) throws Exception;

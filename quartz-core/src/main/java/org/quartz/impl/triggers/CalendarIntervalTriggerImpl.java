@@ -65,7 +65,7 @@ import org.quartz.TriggerUtils;
  * @author James House
  */
 @Deprecated
-public class CalendarIntervalTriggerImpl extends AbstractTrigger<CalendarIntervalTrigger> implements CalendarIntervalTrigger, CoreTrigger {
+public class CalendarIntervalTriggerImpl extends AbstractTrigger<CalendarIntervalTrigger> implements CalendarIntervalTrigger/*, CoreTrigger*/ {
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -925,8 +925,8 @@ public class CalendarIntervalTriggerImpl extends AbstractTrigger<CalendarInterva
         }
         return cb;
     }
-    @Override
-    public boolean hasAdditionalProperties() {
-        return false;
-    }
+//    @Override
+//    public boolean hasAdditionalProperties() {
+//        return false;
+//    }
 }

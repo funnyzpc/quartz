@@ -442,10 +442,12 @@ public class QuartzSchedulerThread extends Thread {
             delay = 100;
         }
         // sanity check per getAcquireRetryDelay specification 根据getAcquireMetricDelay规范进行健全性检查
-        if (delay < MIN_DELAY)
+        if (delay < MIN_DELAY){
             delay = MIN_DELAY;
-        if (delay > MAX_DELAY)
+        }
+        if (delay > MAX_DELAY){
             delay = MAX_DELAY;
+        }
         return delay;
     }
 

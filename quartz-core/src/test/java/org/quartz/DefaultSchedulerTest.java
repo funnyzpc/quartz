@@ -33,11 +33,11 @@ public class DefaultSchedulerTest extends TestCase {
         JobDetailImpl jobDetail = new JobDetailImpl();
         jobDetail.setKey("testjob");
         try {
-            scheduler.addJob(jobDetail, false);
+            scheduler.addJob(jobDetail, false,false);
         } catch (SchedulerException e) {
             assertThat(e.getMessage(), containsString("durable"));
         }
 //        jobDetail.setDurability(true);
-        scheduler.addJob(jobDetail, false);
+        scheduler.addJob(jobDetail, false,false);
     }
 }

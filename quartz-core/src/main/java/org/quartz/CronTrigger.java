@@ -167,7 +167,7 @@ import java.util.TimeZone;
  * @author jhouse
  * @author Contributions from Mads Henderson
  */
-public interface CronTrigger extends Trigger {
+public  interface CronTrigger extends Trigger {
 
     public static final long serialVersionUID = -8644953146451592766L;
     
@@ -202,6 +202,6 @@ public interface CronTrigger extends Trigger {
     TimeZone getTimeZone();
 
     String getExpressionSummary();
-
+    @Override
     TriggerBuilder<CronTrigger> getTriggerBuilder();
 }

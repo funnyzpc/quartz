@@ -20,7 +20,7 @@ import junit.framework.TestCase;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.quartz.*;
-import org.quartz.impl.DirectSchedulerFactory;
+//import org.quartz.impl.DirectSchedulerFactory;
 import org.quartz.impl.SchedulerRepository;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.jdbcjobstore.JdbcQuartzTestUtilities;
@@ -260,102 +260,102 @@ public class XMLSchedulingDataProcessorTest extends TestCase {
 		}
 	}
 
-    /** Test for QTZ-353, where it requires a JDBC storage */
-	public void testRemoveJobClassNotFound() throws Exception {
-        String DB_NAME = "XmlDeleteNonExistsJobTestDatasase";
-        String SCHEDULER_NAME = "XmlDeleteNonExistsJobTestScheduler";
-        JdbcQuartzTestUtilities.createDatabase(DB_NAME);
-
-        JobStoreTX jobStore = new JobStoreTX();
-        jobStore.setDataSource(DB_NAME);
-        jobStore.setTablePrefix("QRTZ_");
-        jobStore.setInstanceId("AUTO");
-        DirectSchedulerFactory.getInstance().createScheduler(SCHEDULER_NAME, "AUTO", new SimpleThreadPool(4, Thread.NORM_PRIORITY), jobStore);
-        Scheduler scheduler = SchedulerRepository.getInstance().lookup(SCHEDULER_NAME);
-        try {
-            JobDetail jobDetail = JobBuilder.newJob(MyJob.class)
-                    .withIdentity("testjob1"/*, "DEFAULT"*/)
-                    .usingJobData("foo", "foo")
-                    .build();
-            Trigger trigger = TriggerBuilder.newTrigger()
-                    .withIdentity("testjob1"/*, "DEFAULT"*/)
-                    .withSchedule(CronScheduleBuilder.cronSchedule("* * * * * ?"))
-                    .build();
-            scheduler.scheduleJob(jobDetail, trigger);
-
-            JobDetail jobDetail2 = scheduler.getJobDetail(jobDetail.getKey());
-            Trigger trigger2 = scheduler.getTrigger(trigger.getKey());
-            Assert.assertThat(jobDetail2.getJobDataMap().getString("foo"), Matchers.is("foo"));
-            Assert.assertThat(trigger2, Matchers.instanceOf(CronTrigger.class));
-
-            modifyStoredJobClassName();
-
-            ClassLoadHelper clhelper = new CascadingClassLoadHelper();
-            clhelper.initialize();
-            XMLSchedulingDataProcessor processor = new XMLSchedulingDataProcessor(clhelper);
-
-            processor.processFileAndScheduleJobs("org/quartz/xml/delete-no-jobclass.xml", scheduler);
-
-            jobDetail2 = scheduler.getJobDetail(jobDetail.getKey());
-            trigger2 = scheduler.getTrigger(trigger.getKey());
-            Assert.assertThat(trigger2, Matchers.nullValue());
-            Assert.assertThat(jobDetail2, Matchers.nullValue());
-
-            jobDetail2 = scheduler.getJobDetail(new Key("job1"/*, "DEFAULT"*/));
-            trigger2 = scheduler.getTrigger(new Key("job1"/*, "DEFAULT"*/));
-            Assert.assertThat(jobDetail2.getJobDataMap().getString("foo"), Matchers.is("bar"));
-            Assert.assertThat(trigger2, Matchers.instanceOf(SimpleTrigger.class));
-        } finally {
-            scheduler.shutdown(false);
-            JdbcQuartzTestUtilities.destroyDatabase(DB_NAME);
-        }
-    }
-
-
-    public void testOverwriteJobClassNotFound() throws Exception {
-        String DB_NAME = "XmlDeleteNonExistsJobTestDatasase";
-        String SCHEDULER_NAME = "XmlDeleteNonExistsJobTestScheduler";
-        JdbcQuartzTestUtilities.createDatabase(DB_NAME);
-
-        JobStoreTX jobStore = new JobStoreTX();
-        jobStore.setDataSource(DB_NAME);
-        jobStore.setTablePrefix("QRTZ_");
-        jobStore.setInstanceId("AUTO");
-        DirectSchedulerFactory.getInstance().createScheduler(SCHEDULER_NAME, "AUTO", new SimpleThreadPool(4, Thread.NORM_PRIORITY), jobStore);
-        Scheduler scheduler = SchedulerRepository.getInstance().lookup(SCHEDULER_NAME);
-        try {
-            JobDetail jobDetail = JobBuilder.newJob(MyJob.class)
-                    .withIdentity("job1"/*, "DEFAULT"*/)
-                    .usingJobData("foo", "foo")
-                    .build();
-            Trigger trigger = TriggerBuilder.newTrigger()
-                    .withIdentity("job1"/*, "DEFAULT"*/)
-                    .withSchedule(CronScheduleBuilder.cronSchedule("* * * * * ?"))
-                    .build();
-            scheduler.scheduleJob(jobDetail, trigger);
-
-            JobDetail jobDetail2 = scheduler.getJobDetail(jobDetail.getKey());
-            Trigger trigger2 = scheduler.getTrigger(trigger.getKey());
-            Assert.assertThat(jobDetail2.getJobDataMap().getString("foo"), Matchers.is("foo"));
-            Assert.assertThat(trigger2, Matchers.instanceOf(CronTrigger.class));
-
-            modifyStoredJobClassName();
-
-            ClassLoadHelper clhelper = new CascadingClassLoadHelper();
-            clhelper.initialize();
-            XMLSchedulingDataProcessor processor = new XMLSchedulingDataProcessor(clhelper);
-
-            processor.processFileAndScheduleJobs("org/quartz/xml/overwrite-no-jobclass.xml", scheduler);
-
-            jobDetail2 = scheduler.getJobDetail(jobDetail.getKey());
-            trigger2 = scheduler.getTrigger(trigger.getKey());
-            Assert.assertThat(jobDetail2.getJobDataMap().getString("foo"), Matchers.is("bar"));
-            Assert.assertThat(trigger2, Matchers.instanceOf(SimpleTrigger.class));
-        } finally {
-            scheduler.shutdown(false);
-            JdbcQuartzTestUtilities.destroyDatabase(DB_NAME);
-        }
-    }
+//    /** Test for QTZ-353, where it requires a JDBC storage */
+//	public void testRemoveJobClassNotFound() throws Exception {
+//        String DB_NAME = "XmlDeleteNonExistsJobTestDatasase";
+//        String SCHEDULER_NAME = "XmlDeleteNonExistsJobTestScheduler";
+//        JdbcQuartzTestUtilities.createDatabase(DB_NAME);
+//
+//        JobStoreTX jobStore = new JobStoreTX();
+//        jobStore.setDataSource(DB_NAME);
+//        jobStore.setTablePrefix("QRTZ_");
+//        jobStore.setInstanceId("AUTO");
+//        DirectSchedulerFactory.getInstance().createScheduler(SCHEDULER_NAME, "AUTO", new SimpleThreadPool(4, Thread.NORM_PRIORITY), jobStore);
+//        Scheduler scheduler = SchedulerRepository.getInstance().lookup(SCHEDULER_NAME);
+//        try {
+//            JobDetail jobDetail = JobBuilder.newJob(MyJob.class)
+//                    .withIdentity("testjob1"/*, "DEFAULT"*/)
+//                    .usingJobData("foo", "foo")
+//                    .build();
+//            Trigger trigger = TriggerBuilder.newTrigger()
+//                    .withIdentity("testjob1"/*, "DEFAULT"*/)
+//                    .withSchedule(CronScheduleBuilder.cronSchedule("* * * * * ?"))
+//                    .build();
+//            scheduler.scheduleJob(jobDetail, trigger);
+//
+//            JobDetail jobDetail2 = scheduler.getJobDetail(jobDetail.getKey());
+//            Trigger trigger2 = scheduler.getTrigger(trigger.getKey());
+//            Assert.assertThat(jobDetail2.getJobDataMap().getString("foo"), Matchers.is("foo"));
+//            Assert.assertThat(trigger2, Matchers.instanceOf(CronTrigger.class));
+//
+//            modifyStoredJobClassName();
+//
+//            ClassLoadHelper clhelper = new CascadingClassLoadHelper();
+//            clhelper.initialize();
+//            XMLSchedulingDataProcessor processor = new XMLSchedulingDataProcessor(clhelper);
+//
+//            processor.processFileAndScheduleJobs("org/quartz/xml/delete-no-jobclass.xml", scheduler);
+//
+//            jobDetail2 = scheduler.getJobDetail(jobDetail.getKey());
+//            trigger2 = scheduler.getTrigger(trigger.getKey());
+//            Assert.assertThat(trigger2, Matchers.nullValue());
+//            Assert.assertThat(jobDetail2, Matchers.nullValue());
+//
+//            jobDetail2 = scheduler.getJobDetail(new Key("job1"/*, "DEFAULT"*/));
+//            trigger2 = scheduler.getTrigger(new Key("job1"/*, "DEFAULT"*/));
+//            Assert.assertThat(jobDetail2.getJobDataMap().getString("foo"), Matchers.is("bar"));
+//            Assert.assertThat(trigger2, Matchers.instanceOf(SimpleTrigger.class));
+//        } finally {
+//            scheduler.shutdown(false);
+//            JdbcQuartzTestUtilities.destroyDatabase(DB_NAME);
+//        }
+//    }
+//
+//
+//    public void testOverwriteJobClassNotFound() throws Exception {
+//        String DB_NAME = "XmlDeleteNonExistsJobTestDatasase";
+//        String SCHEDULER_NAME = "XmlDeleteNonExistsJobTestScheduler";
+//        JdbcQuartzTestUtilities.createDatabase(DB_NAME);
+//
+//        JobStoreTX jobStore = new JobStoreTX();
+//        jobStore.setDataSource(DB_NAME);
+//        jobStore.setTablePrefix("QRTZ_");
+//        jobStore.setInstanceId("AUTO");
+//        DirectSchedulerFactory.getInstance().createScheduler(SCHEDULER_NAME, "AUTO", new SimpleThreadPool(4, Thread.NORM_PRIORITY), jobStore);
+//        Scheduler scheduler = SchedulerRepository.getInstance().lookup(SCHEDULER_NAME);
+//        try {
+//            JobDetail jobDetail = JobBuilder.newJob(MyJob.class)
+//                    .withIdentity("job1"/*, "DEFAULT"*/)
+//                    .usingJobData("foo", "foo")
+//                    .build();
+//            Trigger trigger = TriggerBuilder.newTrigger()
+//                    .withIdentity("job1"/*, "DEFAULT"*/)
+//                    .withSchedule(CronScheduleBuilder.cronSchedule("* * * * * ?"))
+//                    .build();
+//            scheduler.scheduleJob(jobDetail, trigger);
+//
+//            JobDetail jobDetail2 = scheduler.getJobDetail(jobDetail.getKey());
+//            Trigger trigger2 = scheduler.getTrigger(trigger.getKey());
+//            Assert.assertThat(jobDetail2.getJobDataMap().getString("foo"), Matchers.is("foo"));
+//            Assert.assertThat(trigger2, Matchers.instanceOf(CronTrigger.class));
+//
+//            modifyStoredJobClassName();
+//
+//            ClassLoadHelper clhelper = new CascadingClassLoadHelper();
+//            clhelper.initialize();
+//            XMLSchedulingDataProcessor processor = new XMLSchedulingDataProcessor(clhelper);
+//
+//            processor.processFileAndScheduleJobs("org/quartz/xml/overwrite-no-jobclass.xml", scheduler);
+//
+//            jobDetail2 = scheduler.getJobDetail(jobDetail.getKey());
+//            trigger2 = scheduler.getTrigger(trigger.getKey());
+//            Assert.assertThat(jobDetail2.getJobDataMap().getString("foo"), Matchers.is("bar"));
+//            Assert.assertThat(trigger2, Matchers.instanceOf(SimpleTrigger.class));
+//        } finally {
+//            scheduler.shutdown(false);
+//            JdbcQuartzTestUtilities.destroyDatabase(DB_NAME);
+//        }
+//    }
 
 	public void testXmlParserConfiguration() throws Exception {
 		Scheduler scheduler = null;

@@ -107,17 +107,11 @@ public abstract class AbstractSchedulerTest {
             .build();
 
         assertFalse("Unexpected existence of job named 'j1'.", sched.checkExists(key("j1")));
-
-        sched.addJob(job, false); 
-
+        sched.addJob(job, false,false);
         assertTrue("Expected existence of job named 'j1' but checkExists return false.", sched.checkExists(key("j1")));
-
         job = sched.getJobDetail(key("j1"));
-
         assertNotNull("Stored job not found!", job);
-        
         sched.deleteJob(key("j1"));
-        
         Trigger trigger = newTrigger()
             .withIdentity("t1")
             .forJob(job)
@@ -128,24 +122,16 @@ public abstract class AbstractSchedulerTest {
              .build();
 
         assertFalse("Unexpected existence of trigger named '11'.", sched.checkExists(key("t1")));
-
         sched.scheduleJob(job, trigger);
-        
         assertTrue("Expected existence of trigger named 't1' but checkExists return false.", sched.checkExists(key("t1")));
-
         job = sched.getJobDetail(key("j1"));
-
         assertNotNull("Stored job not found!", job);
-        
         trigger = sched.getTrigger(key("t1"));
-
         assertNotNull("Stored trigger not found!", trigger);
-
         job = newJob()
             .ofType(TestJob.class)
             .withIdentity("j2"/* , "g1"  */)
             .build();
-    
         trigger = newTrigger()
             .withIdentity("t2"/* , "g1"  */)
             .forJob(job)
@@ -279,7 +265,7 @@ public abstract class AbstractSchedulerTest {
 
             assertFalse("Unexpected existence of job named 'j1'.", sched.checkExists(key("j1")));
 
-            sched.addJob(job, false);
+            sched.addJob(job, false,false);
 
             assertTrue("Unexpected non-existence of job named 'j1'.", sched.checkExists(key("j1")));
 
@@ -289,7 +275,7 @@ public abstract class AbstractSchedulerTest {
                     .build();
 
             try {
-                sched.addJob(nonDurableJob, false);
+                sched.addJob(nonDurableJob, false,false);
                 fail("Storage of non-durable job should not have succeeded.");
             }
             catch(SchedulerException expected) {
@@ -392,7 +378,7 @@ public abstract class AbstractSchedulerTest {
         JobDetail job1 = JobBuilder.newJob(TestJobWithSync.class).withIdentity("job1")
 //                .storeDurably()
                 .build();
-		sched.addJob(job1, false);
+		sched.addJob(job1, false,false);
 		long sTime = System.currentTimeMillis();
 //		sched.triggerJob(job1.getKey());
 	    barrier.await(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
@@ -471,7 +457,7 @@ public abstract class AbstractSchedulerTest {
             scheduler.start();
             scheduler.addJob(newJob().ofType(UncleanShutdownJob.class).withIdentity("job")
 //                    .storeDurably()
-                    .build(), false);
+                    .build(), false,false);
 //            scheduler.scheduleJob(newTrigger().forJob("job").startNow().build());
             scheduler.scheduleJob(newTrigger().withIdentity("job").startNow().build());
             while (scheduler.getCurrentlyExecutingJobs().isEmpty()) {
@@ -480,9 +466,7 @@ public abstract class AbstractSchedulerTest {
         } finally {
             scheduler.shutdown(false);
         }
-        
         barrier.await(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        
         Thread jobThread = (Thread) scheduler.getContext().get(JOB_THREAD);
         jobThread.join(TimeUnit.SECONDS.toMillis(TEST_TIMEOUT_SECONDS));
     }
@@ -514,7 +498,7 @@ public abstract class AbstractSchedulerTest {
             scheduler.start();
             scheduler.addJob(newJob().ofType(TestJobWithSync.class).withIdentity("job")
 //                    .storeDurably()
-                    .build(), false);
+                    .build(), false,false);
 //            scheduler.scheduleJob(newTrigger().forJob("job").startNow().build());
             scheduler.scheduleJob(newTrigger().withIdentity("job").startNow().build());
             while (scheduler.getCurrentlyExecutingJobs().isEmpty()) {

@@ -106,14 +106,14 @@ public class BroadcastJobListener implements JobListener {
             jl.jobToBeExecuted(context);
         }
     }
-    @Override
-    public void jobExecutionVetoed(JobExecutionContext context) {
-        Iterator<JobListener> itr = listeners.iterator();
-        while(itr.hasNext()) {
-            JobListener jl = itr.next();
-            jl.jobExecutionVetoed(context);
-        }
-    }
+//    @Override
+//    public void jobExecutionVetoed(JobExecutionContext context) {
+//        Iterator<JobListener> itr = listeners.iterator();
+//        while(itr.hasNext()) {
+//            JobListener jl = itr.next();
+//            jl.jobExecutionVetoed(context);
+//        }
+//    }
 //    @Override
 //    public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
 //        Iterator<JobListener> itr = listeners.iterator();

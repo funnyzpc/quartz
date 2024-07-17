@@ -275,15 +275,15 @@ public class StdScheduler implements Scheduler {
         return sched.scheduleJob(trigger);
     }
 
-    /**
-     * <p>
-     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
-     * </p>
-     */
-    @Override
-    public void addJob(JobDetail jobDetail, boolean replace)throws SchedulerException {
-        sched.addJob(jobDetail, replace);
-    }
+//    /**
+//     * <p>
+//     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
+//     * </p>
+//     */
+//    @Override
+//    public void addJob(JobDetail jobDetail, boolean replace)throws SchedulerException {
+//        sched.addJob(jobDetail, replace);
+//    }
     @Override
     public void addJob(JobDetail jobDetail, boolean replace, boolean storeNonDurableWhileAwaitingScheduling) throws SchedulerException {
         sched.addJob(jobDetail, replace, storeNonDurableWhileAwaitingScheduling);

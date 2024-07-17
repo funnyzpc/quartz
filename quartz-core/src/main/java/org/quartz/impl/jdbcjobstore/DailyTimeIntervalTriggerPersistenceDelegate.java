@@ -45,7 +45,7 @@ public class DailyTimeIntervalTriggerPersistenceDelegate extends SimplePropertie
 
     @Override
     public boolean canHandleTriggerType(OperableTrigger trigger) {
-        return ((trigger instanceof DailyTimeIntervalTrigger) && !((DailyTimeIntervalTriggerImpl)trigger).hasAdditionalProperties());
+        return ((trigger instanceof DailyTimeIntervalTrigger) /*&& !((DailyTimeIntervalTriggerImpl)trigger).hasAdditionalProperties()*/);
     }
     @Override
     public String getHandledTriggerTypeDiscriminator() {

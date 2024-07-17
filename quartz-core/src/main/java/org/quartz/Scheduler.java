@@ -493,31 +493,32 @@ public interface Scheduler {
      */
     Date rescheduleJob(Key triggerKey, Trigger newTrigger) throws SchedulerException;
     
-    /**
-     * Add the given <code>Job</code> to the Scheduler - with no associated
-     * <code>Trigger</code>. The <code>Job</code> will be 'dormant' until
-     * it is scheduled with a <code>Trigger</code>, or <code>Scheduler.triggerJob()</code>
-     * is called for it.
-     * 
-     * <p>
-     * The <code>Job</code> must by definition be 'durable', if it is not,
-     * SchedulerException will be thrown.
-     * </p>
-     *
-     * @see #addJob(JobDetail, boolean, boolean)
-     *
-     * @throws SchedulerException
-     *           if there is an internal Scheduler error, or if the Job is not
-     *           durable, or a Job with the same name already exists, and
-     *           <code>replace</code> is <code>false</code>.
-     */
-    void addJob(JobDetail jobDetail, boolean replace) throws SchedulerException;
+//    /**
+//     * Add the given <code>Job</code> to the Scheduler - with no associated
+//     * <code>Trigger</code>. The <code>Job</code> will be 'dormant' until
+//     * it is scheduled with a <code>Trigger</code>, or <code>Scheduler.triggerJob()</code>
+//     * is called for it.
+//     *
+//     * <p>
+//     * The <code>Job</code> must by definition be 'durable', if it is not,
+//     * SchedulerException will be thrown.
+//     * </p>
+//     *
+//     * @see #addJob(JobDetail, boolean, boolean)
+//     *
+//     * @throws SchedulerException
+//     *           if there is an internal Scheduler error, or if the Job is not
+//     *           durable, or a Job with the same name already exists, and
+//     *           <code>replace</code> is <code>false</code>.
+//     */
+//    void addJob(JobDetail jobDetail, boolean replace) throws SchedulerException;
 
     /**
      * Add the given <code>Job</code> to the Scheduler - with no associated
      * <code>Trigger</code>. The <code>Job</code> will be 'dormant' until
      * it is scheduled with a <code>Trigger</code>, or <code>Scheduler.triggerJob()</code>
      * is called for it.
+     * 将给定的作业添加到调度器中，但不关联触发器。作业将处于“休眠”状态，直到使用触发器或Scheduler对其进行调度。为此调用了triggerJob（）。
      *
      * <p>
      * With the <code>storeNonDurableWhileAwaitingScheduling</code> parameter
@@ -525,11 +526,13 @@ public interface Scheduler {
      * scheduled, it will resume normal non-durable behavior (i.e. be deleted
      * once there are no remaining associated triggers).
      * </p>
+     * 将storeNonDurableWhileAwaiting调度参数设置为true时，可以存储非持久作业。一旦被安排，它将恢复正常的非持久行为（即一旦没有剩余的相关触发器，它就会被删除）。
      *
      * @throws SchedulerException
      *           if there is an internal Scheduler error, or if the Job is not
      *           durable, or a Job with the same name already exists, and
      *           <code>replace</code> is <code>false</code>.
+     *           SchedulerException-如果存在内部调度器错误，或者作业不持久，或者已经存在同名作业，并且replace为false。
      */
     void addJob(JobDetail jobDetail, boolean replace, boolean storeNonDurableWhileAwaitingScheduling) throws SchedulerException;
 
