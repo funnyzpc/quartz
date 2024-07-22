@@ -21,7 +21,7 @@ public class StdJDBCConstantsTest {
     public void test01() throws NoSuchDelegateException {
         StdJDBCDelegate stdJDBCDelegate = new StdJDBCDelegate();
         stdJDBCDelegate.initialize(LoggerFactory.getLogger(getClass()), "QRTZ_", "MEE_QUARTZ", "INSTANCE", new SimpleClassLoadHelper(), false, "");
-        String sql = StdJDBCConstants.INSERT_FIRED_TRIGGER;
+        String sql = StdJDBCConstants.SELECT_SIMPLE_TRIGGER;
         System.out.println(sql);
         String rtp = stdJDBCDelegate.rtp(sql);
         System.out.println(rtp);

@@ -114,7 +114,7 @@ public class DisallowConcurrentExecutionJobTest {
 		Scheduler scheduler = new StdSchedulerFactory(props).getScheduler();
 		scheduler.getContext().put(BARRIER, barrier);
 		scheduler.getContext().put(DATE_STAMPS, jobExecDates);
-		scheduler.getListenerManager().addJobListener(new TestJobListener(2));
+//		scheduler.getListenerManager().addJobListener(new TestJobListener(2));
 		scheduler.scheduleJob(job1, trigger1);
 		scheduler.scheduleJob(trigger2);
 		scheduler.start();
@@ -123,10 +123,10 @@ public class DisallowConcurrentExecutionJobTest {
 		
 		scheduler.shutdown(true);
 		
-                Assert.assertThat(jobExecDates, hasSize(2));
-                long fireTimeTrigger1 = jobExecDates.get(0).getTime();
-                long fireTimeTrigger2 = jobExecDates.get(1).getTime();
-                Assert.assertThat(fireTimeTrigger2 - fireTimeTrigger1, greaterThanOrEqualTo(JOB_BLOCK_TIME));
+		Assert.assertThat(jobExecDates, hasSize(2));
+		long fireTimeTrigger1 = jobExecDates.get(0).getTime();
+		long fireTimeTrigger2 = jobExecDates.get(1).getTime();
+		Assert.assertThat(fireTimeTrigger2 - fireTimeTrigger1, greaterThanOrEqualTo(JOB_BLOCK_TIME));
 	}
 	
 	/** QTZ-202 */
@@ -153,7 +153,7 @@ public class DisallowConcurrentExecutionJobTest {
 		Scheduler scheduler = new StdSchedulerFactory(props).getScheduler();
 		scheduler.getContext().put(BARRIER, barrier);
 		scheduler.getContext().put(DATE_STAMPS, jobExecDates);
-		scheduler.getListenerManager().addJobListener(new TestJobListener(2));
+//		scheduler.getListenerManager().addJobListener(new TestJobListener(2));
 		scheduler.scheduleJob(job1, trigger1);
 		scheduler.scheduleJob(trigger2);
 		scheduler.start();

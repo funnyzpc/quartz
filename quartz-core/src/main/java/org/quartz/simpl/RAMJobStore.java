@@ -41,8 +41,6 @@ import org.quartz.Trigger;
 import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.Trigger.TriggerTimeComparator;
-import org.quartz.impl.matchers.GroupMatcher;
-import org.quartz.impl.matchers.StringMatcher;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.JobStore;
 import org.quartz.spi.OperableTrigger;
@@ -485,7 +483,8 @@ public class RAMJobStore implements JobStore {
                     List<OperableTrigger> trigs = getTriggersForJob(tw.key);
                     if ((trigs == null || trigs.size() == 0) /*&& !jw.jobDetail.isDurable()*/) {
                         if (removeJob(jw.key)) {
-                            signaler.notifySchedulerListenersJobDeleted(jw.key);
+                            log.info("invoke removeJob :{} ",jw.key);
+//                            signaler.notifySchedulerListenersJobDeleted(jw.key);
                         }
                     }
                 }
@@ -1190,57 +1189,61 @@ public class RAMJobStore implements JobStore {
         }
     }
 
-    /**
-     * <p>
-     * Resume (un-pause) all of the <code>{@link Trigger}s</code> in the
-     * given group.
-     * </p>
-     *
-     * <p>
-     * If any <code>Trigger</code> missed one or more fire-times, then the
-     * <code>Trigger</code>'s misfire instruction will be applied.
-     * </p>
-     *
-     */
-    @Override
-    public List<String> resumeTriggers(GroupMatcher<Key<?>> matcher) {
-        Set<String> groups = new HashSet<String>();
-        synchronized (lock) {
-//            Set<TriggerKey> keys = getTriggerKeys(matcher);
-//            for (TriggerKey triggerKey: keys) {
-//                groups.add(triggerKey.getGroup());
-//                if(triggersByKey.get(triggerKey) != null) {
-//                    String jobGroup = triggersByKey.get(triggerKey).jobKey.getGroup();
-//                    if(pausedJobGroups.contains(jobGroup)) {
-//                        continue;
-//                    }
-//                }
-//                resumeTrigger(triggerKey);
-//            }
-
-            // Find all matching paused trigger groups, and then remove them.
-            StringMatcher.StringOperatorName operator = matcher.getCompareWithOperator();
-            LinkedList<String> pausedGroups = new LinkedList<String>();
-            String matcherGroup = matcher.getCompareToValue();
-            switch (operator) {
-                case EQUALS:
-                    if(pausedTriggerGroups.contains(matcherGroup)) {
-                        pausedGroups.add(matcher.getCompareToValue());
-                    }
-                    break;
-                default :
-                    for (String group : pausedTriggerGroups) {
-                        if(operator.evaluate(group, matcherGroup)) {
-                            pausedGroups.add(group);
-                        }
-                    }
-            }
-            for (String pausedGroup : pausedGroups) {
-                pausedTriggerGroups.remove(pausedGroup);
-            }
-        }
-        return new ArrayList<String>(groups);
-    }
+//    /**
+//     * <p>
+//     * Resume (un-pause) all of the <code>{@link Trigger}s</code> in the
+//     * given group.
+//     * </p>
+//     *
+//     * <p>
+//     * If any <code>Trigger</code> missed one or more fire-times, then the
+//     * <code>Trigger</code>'s misfire instruction will be applied.
+//     * </p>
+//     *
+//     */
+//    @Override
+//    public List<String> resumeTriggers(Key key) {
+//        Set<String> groups = new HashSet<String>();
+//        synchronized (lock) {
+////            Set<TriggerKey> keys = getTriggerKeys(matcher);
+////            for (TriggerKey triggerKey: keys) {
+////                groups.add(triggerKey.getGroup());
+////                if(triggersByKey.get(triggerKey) != null) {
+////                    String jobGroup = triggersByKey.get(triggerKey).jobKey.getGroup();
+////                    if(pausedJobGroups.contains(jobGroup)) {
+////                        continue;
+////                    }
+////                }
+////                resumeTrigger(triggerKey);
+////            }
+////
+////            // Find all matching paused trigger groups, and then remove them.
+////            StringMatcher.StringOperatorName operator = matcher.getCompareWithOperator();
+////            LinkedList<String> pausedGroups = new LinkedList<String>();
+////            String matcherGroup = matcher.getCompareToValue();
+////            switch (operator) {
+////                case EQUALS:
+////                    if(pausedTriggerGroups.contains(matcherGroup)) {
+////                        pausedGroups.add(matcher.getCompareToValue());
+////                    }
+////                    break;
+////                default :
+////                    for (String group : pausedTriggerGroups) {
+////                        if(operator.evaluate(group, matcherGroup)) {
+////                            pausedGroups.add(group);
+////                        }
+////                    }
+////            }
+//            // todo ... 这里需要修正
+////            Set<Key> keys = getAllJobKeysInSched(key.getName());
+////            Iterator<Key> iterator = keys.iterator();
+////            while (iterator.hasNext()){
+////                Key item = iterator.next();
+////                pausedTriggerGroups.remove(item.getName());
+////            }
+//        }
+//        return new ArrayList<String>(groups);
+//    }
 
     /**
      * <p>
@@ -1326,25 +1329,25 @@ public class RAMJobStore implements JobStore {
 //        }
 //    }
 
-    /**
-     * <p>
-     * Resume (un-pause) all triggers - equivalent of calling <code>resumeTriggerGroup(group)</code>
-     * on every group.
-     * </p>
-     *
-     * <p>
-     * If any <code>Trigger</code> missed one or more fire-times, then the
-     * <code>Trigger</code>'s misfire instruction will be applied.
-     * </p>
-     *
-     * @see #pauseAll()
-     */
-    public void resumeAll() {
-        synchronized (lock) {
-//            pausedJobGroups.clear();
-            resumeTriggers(GroupMatcher.anyTriggerGroup());
-        }
-    }
+//    /**
+//     * <p>
+//     * Resume (un-pause) all triggers - equivalent of calling <code>resumeTriggerGroup(group)</code>
+//     * on every group.
+//     * </p>
+//     *
+//     * <p>
+//     * If any <code>Trigger</code> missed one or more fire-times, then the
+//     * <code>Trigger</code>'s misfire instruction will be applied.
+//     * </p>
+//     *
+//     * @see #pauseAll()
+//     */
+//    public void resumeAll() {
+//        synchronized (lock) {
+////            pausedJobGroups.clear();
+//            resumeTriggers(GroupMatcher.anyTriggerGroup());
+//        }
+//    }
 
     protected boolean applyMisfire(TriggerWrapper tw) {
         long misfireTime = System.currentTimeMillis();
@@ -1360,11 +1363,11 @@ public class RAMJobStore implements JobStore {
 //        if (tw.trigger.getCalendarName() != null) {
 //            cal = retrieveCalendar(tw.trigger.getCalendarName());
 //        }
-        signaler.notifyTriggerListenersMisfired((OperableTrigger)tw.trigger.clone());
+//        signaler.notifyTriggerListenersMisfired((OperableTrigger)tw.trigger.clone());
         tw.trigger.updateAfterMisfire(cal);
         if (tw.trigger.getNextFireTime() == null) {
             tw.state = TriggerWrapper.STATE_COMPLETE;
-            signaler.notifySchedulerListenersFinalized(tw.trigger);
+//            signaler.notifySchedulerListenersFinalized(tw.trigger);
             synchronized (lock) {
                 timeTriggers.remove(tw);
             }

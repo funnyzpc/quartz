@@ -17,9 +17,6 @@
 
 package org.quartz.spi;
 
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.utils.Key;
 
 /**
  * An interface to be used by <code>JobStore</code> instances in order to
@@ -37,13 +34,13 @@ public interface SchedulerSignaler {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    void notifyTriggerListenersMisfired(Trigger trigger);
+//    void notifyTriggerListenersMisfired(Trigger trigger);
 
-    void notifySchedulerListenersFinalized(Trigger trigger);
+//    void notifySchedulerListenersFinalized(Trigger trigger);
 
-    void notifySchedulerListenersJobDeleted(Key key);
+//    void notifySchedulerListenersJobDeleted(Key key);
 
     void signalSchedulingChange(long candidateNewNextFireTime);
 
-    void notifySchedulerListenersError(String string, SchedulerException jpe);
+//    void notifySchedulerListenersError(String string, SchedulerException jpe);
 }

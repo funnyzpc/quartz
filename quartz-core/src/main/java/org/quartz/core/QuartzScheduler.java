@@ -19,11 +19,7 @@
 package org.quartz.core;
 
 import java.io.InputStream;
-import java.lang.management.ManagementFactory;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -36,9 +32,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 import org.quartz.Calendar;
 import org.quartz.ExecuteCfg;
@@ -54,18 +47,14 @@ import org.quartz.Matcher;
 import org.quartz.SchedulerContext;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerListener;
-import org.quartz.SchedulerMetaData;
 import org.quartz.Trigger;
 import org.quartz.TriggerListener;
 import org.quartz.UnableToInterruptJobException;
 import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.Trigger.TriggerState;
-import org.quartz.core.jmx.QuartzSchedulerMBean;
 import org.quartz.impl.ExecuteCfgImpl;
 import org.quartz.impl.JobCfgImpl;
 import org.quartz.impl.SchedulerRepository;
-import org.quartz.impl.matchers.GroupMatcher;
-import org.quartz.listeners.SchedulerListenerSupport;
 import org.quartz.simpl.PropertySettingJobFactory;
 import org.quartz.spi.JobFactory;
 import org.quartz.spi.OperableTrigger;
@@ -152,7 +141,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 
     private SchedulerContext context = new SchedulerContext();
 
-    private ListenerManager listenerManager = new ListenerManagerImpl();
+//    private ListenerManager listenerManager = new ListenerManagerImpl();
     
     private HashMap<String, JobListener> internalJobListeners = new HashMap<String, JobListener>(10);
 
@@ -164,7 +153,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
     
     ExecutingJobsManager jobMgr = null;
 
-    ErrorLogger errLogger = null;
+//    ErrorLogger errLogger = null;
 
     private SchedulerSignaler signaler;
 
@@ -178,7 +167,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
     private volatile boolean shuttingDown = false;
 //    private boolean boundRemotely = false;
 
-    private QuartzSchedulerMBean jmxBean = null;
+//    private QuartzSchedulerMBean jmxBean = null;
     
     private Date initialStart = null;
 
@@ -217,8 +206,8 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
         jobMgr = new ExecutingJobsManager();
         addInternalJobListener(jobMgr);
-        errLogger = new ErrorLogger();
-        addInternalSchedulerListener(errLogger);
+//        errLogger = new ErrorLogger();
+//        addInternalSchedulerListener(errLogger);
         signaler = new SchedulerSignalerImpl(this, this.schedThread);
         getLog().info("Quartz Scheduler v." + getVersion() + " created.");
     }
@@ -330,17 +319,17 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //        jmxBean = new QuartzSchedulerMBeanImpl(this);
 //        mbs.registerMBean(jmxBean, new ObjectName(jmxObjectName));
 //    }
-
-    /**
-     * Unregister the scheduler from the local MBeanServer.
-     */
-    private void unregisterJMX() throws Exception {
-        String jmxObjectName = resources.getJMXObjectName();
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        mbs.unregisterMBean(new ObjectName(jmxObjectName));
-        jmxBean.setSampledStatisticsEnabled(false);
-        getLog().info("Scheduler unregistered from name '" + jmxObjectName + "' in the local MBeanServer.");
-    }
+//
+//    /**
+//     * Unregister the scheduler from the local MBeanServer.
+//     */
+//    private void unregisterJMX() throws Exception {
+//        String jmxObjectName = resources.getJMXObjectName();
+//        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+//        mbs.unregisterMBean(new ObjectName(jmxObjectName));
+//        jmxBean.setSampledStatisticsEnabled(false);
+//        getLog().info("Scheduler unregistered from name '" + jmxObjectName + "' in the local MBeanServer.");
+//    }
 
 //    /**
 //     * <p>
@@ -499,7 +488,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
         // QTZ-212 : calling new schedulerStarting() method on the listeners
         // right after entering start()
-        notifySchedulerListenersStarting();
+//        notifySchedulerListenersStarting();
         if (initialStart == null) {
             initialStart = new Date();
             this.resources.getJobStore().schedulerStarted();            
@@ -509,7 +498,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
         schedThread.togglePause(false);
         getLog().info("Scheduler " + resources.getUniqueIdentifier() + " started.");
-        notifySchedulerListenersStarted();
+//        notifySchedulerListenersStarted();
     }
     @Override
     public void startDelayed(final int seconds) throws SchedulerException
@@ -545,7 +534,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         resources.getJobStore().schedulerPaused();
         schedThread.togglePause(true);
         getLog().info("Scheduler " + resources.getUniqueIdentifier() + " paused.");
-        notifySchedulerListenersInStandbyMode();        
+//        notifySchedulerListenersInStandbyMode();
     }
 
     /**
@@ -650,7 +639,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         // }
         standby();
         schedThread.halt(waitForJobsToComplete);
-        notifySchedulerListenersShuttingdown();
+//        notifySchedulerListenersShuttingdown();
         if( (resources.isInterruptJobsOnShutdown() && !waitForJobsToComplete) || 
                 (resources.isInterruptJobsOnShutdownWithWait() && waitForJobsToComplete)) {
             List<JobExecutionContext> jobs = getCurrentlyExecutingJobs();
@@ -684,7 +673,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         
         shutdownPlugins();
         resources.getJobStore().shutdown();
-        notifySchedulerListenersShutdown();
+//        notifySchedulerListenersShutdown();
         SchedulerRepository.getInstance().remove(resources.getName());
         holdToPreventGC.clear();
         getLog().info("Scheduler " + resources.getUniqueIdentifier() + " shutdown complete.");
@@ -792,9 +781,9 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
             throw new SchedulerException("Based on configured schedule, the given trigger '" + trigger.getKey() + "' will never fire.");
         }
         resources.getJobStore().storeJobAndTrigger(jobDetail, trig);
-        notifySchedulerListenersJobAdded(jobDetail);
+//        notifySchedulerListenersJobAdded(jobDetail);
         notifySchedulerThread(trigger.getNextFireTime().getTime());
-        notifySchedulerListenersSchduled(trigger);
+//        notifySchedulerListenersSchduled(trigger);
         return ft;
     }
 
@@ -880,7 +869,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
         resources.getJobStore().storeTrigger(trig, false);
         notifySchedulerThread(trigger.getNextFireTime().getTime());
-        notifySchedulerListenersSchduled(trigger);
+//        notifySchedulerListenersSchduled(trigger);
         return ft;
     }
 
@@ -915,7 +904,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
         resources.getJobStore().storeJob(jobDetail, replace);
         notifySchedulerThread(0L);
-        notifySchedulerListenersJobAdded(jobDetail);
+//        notifySchedulerListenersJobAdded(jobDetail);
     }
 
     /**
@@ -947,7 +936,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         result = resources.getJobStore().removeJob(jobKey) || result;
         if (result) {
             notifySchedulerThread(0L);
-            notifySchedulerListenersJobDeleted(jobKey);
+//            notifySchedulerListenersJobDeleted(jobKey);
         }
         return result;
     }
@@ -957,9 +946,9 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         boolean result = false;
         result = resources.getJobStore().removeJobs(keys);
         notifySchedulerThread(0L);
-        for(Key key: keys){
-            notifySchedulerListenersJobDeleted(key);
-        }
+//        for(Key key: keys){
+//            notifySchedulerListenersJobDeleted(key);
+//        }
         return result;
     }
     @Override
@@ -997,13 +986,13 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
         resources.getJobStore().storeJobsAndTriggers(triggersAndJobs, replace);
         notifySchedulerThread(0L);
-        for (JobDetail job : triggersAndJobs.keySet()) {
-          notifySchedulerListenersJobAdded(job);
-          Set<? extends Trigger> triggers = triggersAndJobs.get(job);
-          for (Trigger trigger : triggers) {
-            notifySchedulerListenersSchduled(trigger);
-          }
-        }
+//        for (JobDetail job : triggersAndJobs.keySet()) {
+//          notifySchedulerListenersJobAdded(job);
+//          Set<? extends Trigger> triggers = triggersAndJobs.get(job);
+//          for (Trigger trigger : triggers) {
+//            notifySchedulerListenersSchduled(trigger);
+//          }
+//        }
     }
 
     @Override
@@ -1019,9 +1008,9 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         boolean result = false;
         result = resources.getJobStore().removeTriggers(keys);
         notifySchedulerThread(0L);
-        for(Key k: keys){
-            notifySchedulerListenersUnscheduled(k);
-        }
+//        for(Key k: keys){
+//            notifySchedulerListenersUnscheduled(k);
+//        }
         return result;
     }
     
@@ -1036,7 +1025,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         validateState();
         if (resources.getJobStore().removeTrigger(key)) {
             notifySchedulerThread(0L);
-            notifySchedulerListenersUnscheduled(key);
+//            notifySchedulerListenersUnscheduled(key);
         } else {
             return false;
         }
@@ -1086,8 +1075,8 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
         if (resources.getJobStore().replaceTrigger(triggerKey, trig)) {
             notifySchedulerThread(newTrigger.getNextFireTime().getTime());
-            notifySchedulerListenersUnscheduled(triggerKey);
-            notifySchedulerListenersSchduled(newTrigger);
+//            notifySchedulerListenersUnscheduled(triggerKey);
+//            notifySchedulerListenersSchduled(newTrigger);
         } else {
             return null;
         }
@@ -1166,7 +1155,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         validateState();
         resources.getJobStore().pauseTrigger(triggerKey);
         notifySchedulerThread(0L);
-        notifySchedulerListenersPausedTrigger(triggerKey);
+//        notifySchedulerListenersPausedTrigger(triggerKey);
     }
 
 //    /**
@@ -1202,7 +1191,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         validateState();
         resources.getJobStore().pauseJob(key);
         notifySchedulerThread(0L);
-        notifySchedulerListenersPausedJob(key);
+//        notifySchedulerListenersPausedJob(key);
     }
 
     /**
@@ -1219,11 +1208,11 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //        if(groupMatcher == null) {
 //            groupMatcher = GroupMatcher.groupEquals(Scheduler.DEFAULT_GROUP);
 //        }
-        Collection<String> pausedGroups = resources.getJobStore().pauseJobs(triggerName);
+//        Collection<String> pausedGroups = resources.getJobStore().pauseJobs(triggerName);
         notifySchedulerThread(0L);
-        for (String pausedGroup : pausedGroups) {
-            notifySchedulerListenersPausedJobs(pausedGroup);
-        }
+//        for (String pausedGroup : pausedGroups) {
+//            notifySchedulerListenersPausedJobs(pausedGroup);
+//        }
     }
 
     /**
@@ -1243,34 +1232,33 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         validateState();
         resources.getJobStore().resumeTrigger(triggerKey);
         notifySchedulerThread(0L);
-        notifySchedulerListenersResumedTrigger(triggerKey);
+//        notifySchedulerListenersResumedTrigger(triggerKey);
     }
 
-    /**
-     * <p>
-     * Resume (un-pause) all of the <code>{@link Trigger}s</code> in the
-     * matching groups.
-     * </p>
-     * 
-     * <p>
-     * If any <code>Trigger</code> missed one or more fire-times, then the
-     * <code>Trigger</code>'s misfire instruction will be applied.
-     * </p>
-     *  
-     */
-    @Override
-    public void resumeTriggers(GroupMatcher<Key<?>> matcher) throws SchedulerException {
-        validateState();
-        if(matcher == null) {
-//            matcher = GroupMatcher.groupEquals(Scheduler.DEFAULT_GROUP);
-            matcher = GroupMatcher.groupEquals(null);
-        }
-        Collection<String> pausedGroups = resources.getJobStore().resumeTriggers(matcher);
-        notifySchedulerThread(0L);
-        for (String pausedGroup : pausedGroups) {
-            notifySchedulerListenersResumedTriggers(pausedGroup);
-        }
-    }
+//    /**
+//     * <p>
+//     * Resume (un-pause) all of the <code>{@link Trigger}s</code> in the
+//     * matching groups.
+//     * </p>
+//     *
+//     * <p>
+//     * If any <code>Trigger</code> missed one or more fire-times, then the
+//     * <code>Trigger</code>'s misfire instruction will be applied.
+//     * </p>
+//     *
+//     */
+//    @Override
+//    public void resumeTriggers(Key key) throws SchedulerException {
+//        validateState();
+////        if(matcher == null) {
+////            matcher = GroupMatcher.groupEquals(Scheduler.DEFAULT_GROUP);
+////        }
+//        Collection<String> pausedGroups = resources.getJobStore().resumeTriggers(matcher);
+//        notifySchedulerThread(0L);
+//        for (String pausedGroup : pausedGroups) {
+//            notifySchedulerListenersResumedTriggers(pausedGroup);
+//        }
+//    }
 //    @Override
 //    public Set<String> getPausedTriggerGroups() throws SchedulerException {
 //        return resources.getJobStore().getPausedTriggerGroups();
@@ -1294,7 +1282,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         validateState();
         resources.getJobStore().resumeJob(key);
         notifySchedulerThread(0L);
-        notifySchedulerListenersResumedJob(key);
+//        notifySchedulerListenersResumedJob(key);
     }
 
     /**
@@ -1316,11 +1304,11 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //        if(matcher == null) {
 //            matcher = GroupMatcher.groupEquals(Scheduler.DEFAULT_GROUP);
 //        }
-        Collection<String> resumedGroups = resources.getJobStore().resumeJobs(triggerName);
+//        Collection<String> resumedGroups = resources.getJobStore().resumeJobs(triggerName);
         notifySchedulerThread(0L);
-        for (String pausedGroup : resumedGroups) {
-            notifySchedulerListenersResumedJobs(pausedGroup);
-        }
+//        for (String pausedGroup : resumedGroups) {
+//            notifySchedulerListenersResumedJobs(pausedGroup);
+//        }
     }
 
     /**
@@ -1343,8 +1331,8 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //        resources.getJobStore().pauseAll();
         // 喚醒/通知其他任務
         notifySchedulerThread(0L);
-        // 發送郵件消息
-        notifySchedulerListenersPausedTriggers(null);
+//        // 發送郵件消息
+//        notifySchedulerListenersPausedTriggers(null);
     }
 
     /**
@@ -1365,7 +1353,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         validateState();
 //        resources.getJobStore().resumeAll();
         notifySchedulerThread(0L);
-        notifySchedulerListenersResumedTrigger(null);
+//        notifySchedulerListenersResumedTrigger(null);
     }
 
 //    /**
@@ -1500,7 +1488,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
     public void clear() throws SchedulerException {
         validateState();
         resources.getJobStore().clearAllSchedulingData();
-        notifySchedulerListenersUnscheduled(null);
+//        notifySchedulerListenersUnscheduled(null);
     }
     
     
@@ -1576,9 +1564,9 @@ J     *
 //        return resources.getJobStore().getCalendarNames();
 //    }
 
-    public ListenerManager getListenerManager() {
-        return listenerManager;
-    }
+//    public ListenerManager getListenerManager() {
+//        return listenerManager;
+//    }
     
     /**
      * <p>
@@ -1688,33 +1676,34 @@ J     *
 //            return internalTriggerListeners.get(name);
 //        }
 //    }
-
-    /**
-     * <p>
-     * Register the given <code>{@link SchedulerListener}</code> with the
-     * <code>Scheduler</code>'s list of internal listeners.
-     * </p>
-     */
-    public void addInternalSchedulerListener(SchedulerListener schedulerListener) {
-        synchronized (internalSchedulerListeners) {
-            internalSchedulerListeners.add(schedulerListener);
-        }
-    }
-
-    /**
-     * <p>
-     * Remove the given <code>{@link SchedulerListener}</code> from the
-     * <code>Scheduler</code>'s list of internal listeners.
-     * </p>
-     * 
-     * @return true if the identified listener was found in the list, and
-     *         removed.
-     */
-    public boolean removeInternalSchedulerListener(SchedulerListener schedulerListener) {
-        synchronized (internalSchedulerListeners) {
-            return internalSchedulerListeners.remove(schedulerListener);
-        }
-    }
+//
+//    /**
+//     * <p>
+//     * Register the given <code>{@link SchedulerListener}</code> with the
+//     * <code>Scheduler</code>'s list of internal listeners.
+//     * </p>
+//     *  将给定的SchedulerListener注册到Scheduler的内部监听器列表中。
+//     */
+//    public void addInternalSchedulerListener(SchedulerListener schedulerListener) {
+//        synchronized (internalSchedulerListeners) {
+//            internalSchedulerListeners.add(schedulerListener);
+//        }
+//    }
+//
+//    /**
+//     * <p>
+//     * Remove the given <code>{@link SchedulerListener}</code> from the
+//     * <code>Scheduler</code>'s list of internal listeners.
+//     * </p>
+//     *
+//     * @return true if the identified listener was found in the list, and
+//     *         removed.
+//     */
+//    public boolean removeInternalSchedulerListener(SchedulerListener schedulerListener) {
+//        synchronized (internalSchedulerListeners) {
+//            return internalSchedulerListeners.remove(schedulerListener);
+//        }
+//    }
 
     /**
      * <p>
@@ -1742,125 +1731,126 @@ J     *
         }
     }
 
-    private List<TriggerListener> buildTriggerListenerList() throws SchedulerException {
-        List<TriggerListener> allListeners = new LinkedList<TriggerListener>();
-        allListeners.addAll(getListenerManager().getTriggerListeners());
-        allListeners.addAll(getInternalTriggerListeners());
-        return allListeners;
-    }
+//    private List<TriggerListener> buildTriggerListenerList() throws SchedulerException {
+//        List<TriggerListener> allListeners = new LinkedList<TriggerListener>();
+//        allListeners.addAll(getListenerManager().getTriggerListeners());
+//        allListeners.addAll(getInternalTriggerListeners());
+//        return allListeners;
+//    }
 
-    private List<JobListener> buildJobListenerList() throws SchedulerException {
-        List<JobListener> allListeners = new LinkedList<JobListener>();
-        allListeners.addAll(getListenerManager().getJobListeners());
-        allListeners.addAll(getInternalJobListeners());
-        return allListeners;
-    }
-
-    private List<SchedulerListener> buildSchedulerListenerList() {
-        List<SchedulerListener> allListeners = new LinkedList<SchedulerListener>();
-        allListeners.addAll(getListenerManager().getSchedulerListeners());
-        allListeners.addAll(getInternalSchedulerListeners());
-        return allListeners;
-    }
+//    private List<JobListener> buildJobListenerList() throws SchedulerException {
+//        List<JobListener> allListeners = new LinkedList<JobListener>();
+//        allListeners.addAll(getListenerManager().getJobListeners());
+//        allListeners.addAll(getInternalJobListeners());
+//        return allListeners;
+//    }
+//
+//    private List<SchedulerListener> buildSchedulerListenerList() {
+//        List<SchedulerListener> allListeners = new LinkedList<SchedulerListener>();
+//        allListeners.addAll(getListenerManager().getSchedulerListeners());
+//        allListeners.addAll(getInternalSchedulerListeners());
+//        return allListeners;
+//    }
     
-    private boolean matchJobListener(JobListener listener,Key key) {
-        List<Matcher<Key<?>>> matchers = getListenerManager().getJobListenerMatchers(listener.getName());
-        if(matchers == null){
-            return true;
-        }
-        for(Matcher<Key<?>> matcher: matchers) {
-            if(matcher.isMatch(key)){
-                return true;
-            }
-        }
-        return false;
-    }
+//    private boolean matchJobListener(JobListener listener,Key key) {
+//        List<Matcher<Key<?>>> matchers = getListenerManager().getJobListenerMatchers(listener.getName());
+//        if(matchers == null){
+//            return true;
+//        }
+//        for(Matcher<Key<?>> matcher: matchers) {
+//            if(matcher.isMatch(key)){
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+//
+//    private boolean matchTriggerListener(TriggerListener listener,Key key) {
+//        List<Matcher<Key<?>>> matchers = getListenerManager().getTriggerListenerMatchers(listener.getName());
+//        if(matchers == null){
+//            return true;
+//        }
+//        for(Matcher<Key<?>> matcher: matchers) {
+//            if(matcher.isMatch(key)){
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
-    private boolean matchTriggerListener(TriggerListener listener,Key key) {
-        List<Matcher<Key<?>>> matchers = getListenerManager().getTriggerListenerMatchers(listener.getName());
-        if(matchers == null){
-            return true;
-        }
-        for(Matcher<Key<?>> matcher: matchers) {
-            if(matcher.isMatch(key)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean notifyTriggerListenersFired(JobExecutionContext jec) throws SchedulerException {
-        boolean vetoedExecution = false;
-        // build a list of all trigger listeners that are to be notified...  构建一个要通知的所有触发器侦听器的列表。。。
-        List<TriggerListener> triggerListeners = buildTriggerListenerList();
-        // notify all trigger listeners in the list  通知列表中的所有触发器侦听器
-        for(TriggerListener tl: triggerListeners) {
-            try {
-                if(!matchTriggerListener(tl, jec.getTrigger().getKey())){
-                    continue;
-                }
-                tl.triggerFired(jec.getTrigger(), jec);
-                if(tl.vetoJobExecution(jec.getTrigger(), jec)) {
-                    vetoedExecution = true;
-                }
-            } catch (Exception e) {
-                SchedulerException se = new SchedulerException("TriggerListener '" + tl.getName() + "' threw exception: " + e.getMessage(), e);
-                throw se;
-            }
-        }
-        return vetoedExecution;
-    }
+//    public boolean notifyTriggerListenersFired(JobExecutionContext jec) throws SchedulerException {
+//        boolean vetoedExecution = false;
+//        // build a list of all trigger listeners that are to be notified...  构建一个要通知的所有触发器侦听器的列表。。。
+//        List<TriggerListener> triggerListeners = buildTriggerListenerList();
+//        // notify all trigger listeners in the list  通知列表中的所有触发器侦听器
+//        for(TriggerListener tl: triggerListeners) {
+//            try {
+//                if(!matchTriggerListener(tl, jec.getTrigger().getKey())){
+//                    continue;
+//                }
+//                tl.triggerFired(jec.getTrigger(), jec);
+//                if(tl.vetoJobExecution(jec.getTrigger(), jec)) {
+//                    vetoedExecution = true;
+//                }
+//            } catch (Exception e) {
+//                SchedulerException se = new SchedulerException("TriggerListener '" + tl.getName() + "' threw exception: " + e.getMessage(), e);
+//                throw se;
+//            }
+//        }
+//        return vetoedExecution;
+//    }
     
 
-    public void notifyTriggerListenersMisfired(Trigger trigger) throws SchedulerException {
-        // build a list of all trigger listeners that are to be notified... 构建一个要通知的所有触发器侦听器的列表。。。
-        List<TriggerListener> triggerListeners = buildTriggerListenerList();
-        // notify all trigger listeners in the list 通知列表中的所有触发器侦听器
-        for(TriggerListener tl: triggerListeners) {
-            try {
-                if(!matchTriggerListener(tl, trigger.getKey())){
-                    continue;
-                }
-                tl.triggerMisfired(trigger);
-            } catch (Exception e) {
-                SchedulerException se = new SchedulerException("TriggerListener '" + tl.getName() + "' threw exception: " + e.getMessage(), e);
-                throw se;
-            }
-        }
-    }    
+//    public void notifyTriggerListenersMisfired(Trigger trigger) throws SchedulerException {
+//        // build a list of all trigger listeners that are to be notified... 构建一个要通知的所有触发器侦听器的列表。。。
+//        List<TriggerListener> triggerListeners = buildTriggerListenerList();
+//        // notify all trigger listeners in the list 通知列表中的所有触发器侦听器
+//        for(TriggerListener tl: triggerListeners) {
+//            try {
+//                if(!matchTriggerListener(tl, trigger.getKey())){
+//                    continue;
+//                }
+//                tl.triggerMisfired(trigger);
+//            } catch (Exception e) {
+//                SchedulerException se = new SchedulerException("TriggerListener '" + tl.getName() + "' threw exception: " + e.getMessage(), e);
+//                throw se;
+//            }
+//        }
+//    }
 
-    public void notifyTriggerListenersComplete(JobExecutionContext jec,CompletedExecutionInstruction instCode) throws SchedulerException {
-        // build a list of all trigger listeners that are to be notified...
-        List<TriggerListener> triggerListeners = buildTriggerListenerList();
-        // notify all trigger listeners in the list
-        for(TriggerListener tl: triggerListeners) {
-            try {
-                if(!matchTriggerListener(tl, jec.getTrigger().getKey()))
-                    continue;
-                tl.triggerComplete(jec.getTrigger(), jec, instCode);
-            } catch (Exception e) {
-                SchedulerException se = new SchedulerException("TriggerListener '" + tl.getName()+ "' threw exception: " + e.getMessage(), e);
-                throw se;
-            }
-        }
-    }
+//    public void notifyTriggerListenersComplete(JobExecutionContext jec,CompletedExecutionInstruction instCode) throws SchedulerException {
+//        // build a list of all trigger listeners that are to be notified...
+//        List<TriggerListener> triggerListeners = buildTriggerListenerList();
+//        // notify all trigger listeners in the list
+//        for(TriggerListener tl: triggerListeners) {
+//            try {
+//                if(!matchTriggerListener(tl, jec.getTrigger().getKey())){
+//                    continue;
+//                }
+//                tl.triggerComplete(jec.getTrigger(), jec, instCode);
+//            } catch (Exception e) {
+//                SchedulerException se = new SchedulerException("TriggerListener '" + tl.getName()+ "' threw exception: " + e.getMessage(), e);
+//                throw se;
+//            }
+//        }
+//    }
 
-    public void notifyJobListenersToBeExecuted(JobExecutionContext jec) throws SchedulerException {
-        // build a list of all job listeners that are to be notified...
-        List<JobListener> jobListeners = buildJobListenerList();
-        // notify all job listeners
-        for(JobListener jl: jobListeners) {
-            try {
-                if(!matchJobListener(jl, jec.getJobDetail().getKey())){
-                    continue;
-                }
-                jl.jobToBeExecuted(jec);
-            } catch (Exception e) {
-                SchedulerException se = new SchedulerException("JobListener '" + jl.getName() + "' threw exception: " + e.getMessage(), e);
-                throw se;
-            }
-        }
-    }
+//    public void notifyJobListenersToBeExecuted(JobExecutionContext jec) throws SchedulerException {
+//        // build a list of all job listeners that are to be notified...
+//        List<JobListener> jobListeners = buildJobListenerList();
+//        // notify all job listeners
+//        for(JobListener jl: jobListeners) {
+//            try {
+//                if(!matchJobListener(jl, jec.getJobDetail().getKey())){
+//                    continue;
+//                }
+//                jl.jobToBeExecuted(jec);
+//            } catch (Exception e) {
+//                SchedulerException se = new SchedulerException("JobListener '" + jl.getName() + "' threw exception: " + e.getMessage(), e);
+//                throw se;
+//            }
+//        }
+//    }
 
 //    public void notifyJobListenersWasVetoed(JobExecutionContext jec) throws SchedulerException {
 //        // build a list of all job listeners that are to be notified... 构建一个要通知的所有作业侦听器的列表。。。
@@ -1879,283 +1869,284 @@ J     *
 //        }
 //    }
 
-    public void notifyJobListenersWasExecuted(JobExecutionContext jec,JobExecutionException je) throws SchedulerException {
-        // build a list of all job listeners that are to be notified...
-        List<JobListener> jobListeners = buildJobListenerList();
+//    public void notifyJobListenersWasExecuted(JobExecutionContext jec,JobExecutionException je) throws SchedulerException {
+//        // build a list of all job listeners that are to be notified...
+//        List<JobListener> jobListeners = buildJobListenerList();
+//        // notify all job listeners
+//        for(JobListener jl: jobListeners) {
+//            try {
+//                if(!matchJobListener(jl, jec.getJobDetail().getKey())){
+//                    continue;
+//                }
+//                // todo ...
+////                jl.jobWasExecuted(jec, je);
+//            } catch (Exception e) {
+//                SchedulerException se = new SchedulerException("JobListener '" + jl.getName() + "' threw exception: " + e.getMessage(), e);
+//                throw se;
+//            }
+//        }
+//    }
 
-        // notify all job listeners
-        for(JobListener jl: jobListeners) {
-            try {
-                if(!matchJobListener(jl, jec.getJobDetail().getKey())){
-                    continue;
-                }
-                // todo ...
-//                jl.jobWasExecuted(jec, je);
-            } catch (Exception e) {
-                SchedulerException se = new SchedulerException("JobListener '" + jl.getName() + "' threw exception: " + e.getMessage(), e);
-                throw se;
-            }
-        }
-    }
+//    public void notifySchedulerListenersError(String msg, SchedulerException se) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.schedulerError(msg, se);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of error: ", e);
+//                getLog().error( "Original error (for notification) was: " + msg, se);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersSchduled(Trigger trigger) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.jobScheduled(trigger);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of scheduled job." + "  Triger=" + trigger.getKey(), e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersUnscheduled(Key triggerKey) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                if(triggerKey == null){
+//                    sl.schedulingDataCleared();
+//                }
+//                else{
+//                    sl.jobUnscheduled(triggerKey);
+//                }
+//            } catch (Exception e) {
+//                getLog().error(
+//                        "Error while notifying SchedulerListener of unscheduled job."
+//                                + "  Triger=" + (triggerKey == null ? "ALL DATA" : triggerKey), e);
+//            }
+//        }
+//    }
 
-    public void notifySchedulerListenersError(String msg, SchedulerException se) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//    public void notifySchedulerListenersFinalized(Trigger trigger) {
+//        // build a list of all scheduler listeners that are to be notified... 构建一个要通知的所有调度程序侦听器的列表。。。
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.triggerFinalized(trigger);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of finalized trigger." + "  Triger=" + trigger.getKey(), e);
+//            }
+//        }
+//    }
 
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.schedulerError(msg, se);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of error: ", e);
-                getLog().error( "Original error (for notification) was: " + msg, se);
-            }
-        }
-    }
+//    public void notifySchedulerListenersPausedTrigger(Key triggerKey) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.triggerPaused(triggerKey);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of paused trigger: " + triggerKey, e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersPausedTriggers(String group) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.triggersPaused(group);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of paused trigger group." + group, e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersResumedTrigger(Key key) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.triggerResumed(key);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of resumed trigger: " + key, e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersResumedTriggers(String group) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.triggersResumed(group);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of resumed group: " + group, e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersPausedJob(Key key) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.jobPaused(key);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of paused job: " + key, e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersPausedJobs(String group) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.jobsPaused(group);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of paused job group: " + group, e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersResumedJob(Key key) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.jobResumed(key);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of resumed job: " + key, e);
+//            }
+//        }
+//    }
+//
+//    // todo group不使用后需要优化此
+//    public void notifySchedulerListenersResumedJobs(String group) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.jobsResumed(group);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of resumed job group: " + group, e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersInStandbyMode() {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.schedulerInStandbyMode();
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of inStandByMode.", e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersStarted() {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.schedulerStarted();
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of startup.", e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersStarting() {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for (SchedulerListener sl : schedListeners) {
+//            try {
+//                sl.schedulerStarting();
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of startup.", e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersShutdown() {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.schedulerShutdown();
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of shutdown.", e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersShuttingdown() {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.schedulerShuttingdown();
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of shutdown.", e);
+//            }
+//        }
+//    }
+//
+//    public void notifySchedulerListenersJobAdded(JobDetail jobDetail) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.jobAdded(jobDetail);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of JobAdded.", e);
+//            }
+//        }
+//    }
 
-    public void notifySchedulerListenersSchduled(Trigger trigger) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.jobScheduled(trigger);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of scheduled job." + "  Triger=" + trigger.getKey(), e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersUnscheduled(Key triggerKey) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                if(triggerKey == null)
-                    sl.schedulingDataCleared();
-                else
-                    sl.jobUnscheduled(triggerKey);
-            } catch (Exception e) {
-                getLog().error(
-                        "Error while notifying SchedulerListener of unscheduled job."
-                                + "  Triger=" + (triggerKey == null ? "ALL DATA" : triggerKey), e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersFinalized(Trigger trigger) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.triggerFinalized(trigger);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of finalized trigger." + "  Triger=" + trigger.getKey(), e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersPausedTrigger(Key triggerKey) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.triggerPaused(triggerKey);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of paused trigger: " + triggerKey, e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersPausedTriggers(String group) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.triggersPaused(group);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of paused trigger group." + group, e);
-            }
-        }
-    }
-    
-    public void notifySchedulerListenersResumedTrigger(Key key) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.triggerResumed(key);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of resumed trigger: " + key, e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersResumedTriggers(String group) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.triggersResumed(group);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of resumed group: " + group, e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersPausedJob(Key key) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.jobPaused(key);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of paused job: " + key, e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersPausedJobs(String group) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.jobsPaused(group);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of paused job group: " + group, e);
-            }
-        }
-    }
-    
-    public void notifySchedulerListenersResumedJob(Key key) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.jobResumed(key);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of resumed job: " + key, e);
-            }
-        }
-    }
-
-    // todo group不使用后需要优化此
-    public void notifySchedulerListenersResumedJobs(String group) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.jobsResumed(group);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of resumed job group: " + group, e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersInStandbyMode() {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.schedulerInStandbyMode();
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of inStandByMode.", e);
-            }
-        }
-    }
-    
-    public void notifySchedulerListenersStarted() {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.schedulerStarted();
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of startup.", e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersStarting() {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for (SchedulerListener sl : schedListeners) {
-            try {
-                sl.schedulerStarting();
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of startup.", e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersShutdown() {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.schedulerShutdown();
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of shutdown.", e);
-            }
-        }
-    }
-    
-    public void notifySchedulerListenersShuttingdown() {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.schedulerShuttingdown();
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of shutdown.", e);
-            }
-        }
-    }
-    
-    public void notifySchedulerListenersJobAdded(JobDetail jobDetail) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.jobAdded(jobDetail);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of JobAdded.", e);
-            }
-        }
-    }
-
-    public void notifySchedulerListenersJobDeleted(Key jobKey) {
-        // build a list of all scheduler listeners that are to be notified...
-        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
-        // notify all scheduler listeners
-        for(SchedulerListener sl: schedListeners) {
-            try {
-                sl.jobDeleted(jobKey);
-            } catch (Exception e) {
-                getLog().error("Error while notifying SchedulerListener of JobAdded.", e);
-            }
-        }
-    }
+//    public void notifySchedulerListenersJobDeleted(Key jobKey) {
+//        // build a list of all scheduler listeners that are to be notified...
+//        List<SchedulerListener> schedListeners = buildSchedulerListenerList();
+//        // notify all scheduler listeners
+//        for(SchedulerListener sl: schedListeners) {
+//            try {
+//                sl.jobDeleted(jobKey);
+//            } catch (Exception e) {
+//                getLog().error("Error while notifying SchedulerListener of JobAdded.", e);
+//            }
+//        }
+//    }
     
     public void setJobFactory(JobFactory factory) throws SchedulerException {
         if(factory == null) {
@@ -2262,16 +2253,16 @@ J     *
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class ErrorLogger extends SchedulerListenerSupport {
-    ErrorLogger() {
-    }
-    
-    @Override
-    public void schedulerError(String msg, SchedulerException cause) {
-        getLog().error(msg, cause);
-    }
-
-}
+//class ErrorLogger extends SchedulerListenerSupport {
+//    ErrorLogger() {
+//    }
+//
+//    @Override
+//    public void schedulerError(String msg, SchedulerException cause) {
+//        getLog().error(msg, cause);
+//    }
+//
+//}
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2292,11 +2283,11 @@ class ExecutingJobsManager implements JobListener {
         return getClass().getName();
     }
 
-    public int getNumJobsCurrentlyExecuting() {
-        synchronized (executingJobs) {
-            return executingJobs.size();
-        }
-    }
+//    public int getNumJobsCurrentlyExecuting() {
+//        synchronized (executingJobs) {
+//            return executingJobs.size();
+//        }
+//    }
     @Override
     public void jobToBeExecuted(JobExecutionContext context) {
         numJobsFired.incrementAndGet();

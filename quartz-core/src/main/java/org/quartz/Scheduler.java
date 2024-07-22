@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.quartz.Trigger.TriggerState;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.spi.JobFactory;
 import org.quartz.utils.Key;
 
@@ -380,19 +379,19 @@ public interface Scheduler {
      */
     void setJobFactory(JobFactory factory) throws SchedulerException;
     
-    
-    /**
-     * Get a reference to the scheduler's <code>ListenerManager</code>,
-     * through which listeners may be registered.
-     *  
-     * @return the scheduler's <code>ListenerManager</code>
-     * @throws SchedulerException if the scheduler is not local
-     * @see ListenerManager
-     * @see JobListener
-     * @see TriggerListener
-     * @see SchedulerListener
-     */
-    ListenerManager getListenerManager()  throws SchedulerException;
+//    /**
+//     * Get a reference to the scheduler's <code>ListenerManager</code>,
+//     * through which listeners may be registered.
+//     *   获取调度程序的ListenerManager的引用，通过它可以注册侦听器。
+//     *
+//     * @return the scheduler's <code>ListenerManager</code>
+//     * @throws SchedulerException if the scheduler is not local
+//     * @see ListenerManager
+//     * @see JobListener
+//     * @see TriggerListener
+//     * @see SchedulerListener
+//     */
+//    ListenerManager getListenerManager()  throws SchedulerException;
     
     ///////////////////////////////////////////////////////////////////////////
     ///
@@ -691,19 +690,19 @@ public interface Scheduler {
      */
     void resumeTrigger(Key triggerKey) throws SchedulerException;
 
-    /**
-     * Resume (un-pause) all of the <code>{@link Trigger}s</code> in matching groups.
-     * 
-     * <p>
-     * If any <code>Trigger</code> missed one or more fire-times, then the
-     * <code>Trigger</code>'s misfire instruction will be applied.
-     * </p>
-     * 
-     * @param matcher The matcher to evaluate against know paused groups
-     * @throws SchedulerException On error
-     * @see #pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
-     */
-    void resumeTriggers(GroupMatcher<Key<?>> matcher) throws SchedulerException;
+//    /**
+//     * Resume (un-pause) all of the <code>{@link Trigger}s</code> in matching groups.
+//     *
+//     * <p>
+//     * If any <code>Trigger</code> missed one or more fire-times, then the
+//     * <code>Trigger</code>'s misfire instruction will be applied.
+//     * </p>
+//     *
+//     * @param matcher The matcher to evaluate against know paused groups
+//     * @throws SchedulerException On error
+//     * @see #pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
+//     */
+//    void resumeTriggers(GroupMatcher<Key<?>> matcher) throws SchedulerException;
 
 //    /**
 //     * Pause all triggers - similar to calling <code>pauseTriggerGroup(group)</code>

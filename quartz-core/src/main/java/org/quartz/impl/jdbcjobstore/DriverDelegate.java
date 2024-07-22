@@ -30,7 +30,6 @@ import org.quartz.JobCfg;
 import org.quartz.JobDetail;
 import org.quartz.JobPersistenceException;
 import org.quartz.Trigger;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.utils.Key;
@@ -282,6 +281,7 @@ public interface DriverDelegate {
      * 
      * @return true if the job exists and disallows concurrent execution, false otherwise
      */
+    @Deprecated
     boolean isJobNonConcurrent(Connection conn,Key jobKey) throws SQLException;
 
     /**
@@ -469,47 +469,47 @@ public interface DriverDelegate {
      */
     int updateTriggerStateFromOtherStates(Connection conn,Key triggerKey, String newState, String oldState1,String oldState2, String oldState3)throws SQLException;
 
-    /**
-     * <p>
-     * Update all triggers in the given group to the given new state, if they
-     * are in one of the given old states.
-     * </p>
-     * 
-     * @param conn
-     *          the DB connection
-     * @param matcher
-     *          the group matcher to evaluate against the known triggers
-     * @param newState
-     *          the new state for the trigger
-     * @param oldState1
-     *          one of the old state the trigger must be in
-     * @param oldState2
-     *          one of the old state the trigger must be in
-     * @param oldState3
-     *          one of the old state the trigger must be in
-     * @return int the number of rows updated
-     * @throws SQLException
-     */
-    int updateTriggerGroupStateFromOtherStates(Connection conn, GroupMatcher<Key<?>> matcher, String newState, String oldState1, String oldState2, String oldState3) throws SQLException;
+//    /**
+//     * <p>
+//     * Update all triggers in the given group to the given new state, if they
+//     * are in one of the given old states.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB connection
+//     * @param matcher
+//     *          the group matcher to evaluate against the known triggers
+//     * @param newState
+//     *          the new state for the trigger
+//     * @param oldState1
+//     *          one of the old state the trigger must be in
+//     * @param oldState2
+//     *          one of the old state the trigger must be in
+//     * @param oldState3
+//     *          one of the old state the trigger must be in
+//     * @return int the number of rows updated
+//     * @throws SQLException
+//     */
+//    int updateTriggerGroupStateFromOtherStates(Connection conn, GroupMatcher<Key<?>> matcher, String newState, String oldState1, String oldState2, String oldState3) throws SQLException;
 
-    /**
-     * <p>
-     * Update all of the triggers of the given group to the given new state, if
-     * they are in the given old state.
-     * </p>
-     * 
-     * @param conn
-     *          the DB connection
-     * @param matcher
-     *          the matcher to evaluate against the known triggers
-     * @param newState
-     *          the new state for the trigger group
-     * @param oldState
-     *          the old state the triggers must be in
-     * @return int the number of rows updated
-     * @throws SQLException
-     */
-    int updateTriggerGroupStateFromOtherState(Connection conn, GroupMatcher<Key<?>> matcher, String newState, String oldState) throws SQLException;
+//    /**
+//     * <p>
+//     * Update all of the triggers of the given group to the given new state, if
+//     * they are in the given old state.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB connection
+//     * @param matcher
+//     *          the matcher to evaluate against the known triggers
+//     * @param newState
+//     *          the new state for the trigger group
+//     * @param oldState
+//     *          the old state the triggers must be in
+//     * @return int the number of rows updated
+//     * @throws SQLException
+//     */
+//    int updateTriggerGroupStateFromOtherState(Connection conn, GroupMatcher<Key<?>> matcher, String newState, String oldState) throws SQLException;
 
     /**
      * <p>
@@ -696,19 +696,19 @@ public interface DriverDelegate {
 
 //    List<String> selectTriggerGroups(Connection conn, GroupMatcher<TriggerKey> matcher) throws SQLException;
 
-    /**
-     * <p>
-     * Select all of the triggers contained in a given group.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param matcher
-     *          to evaluate against known triggers
-     * @return a Set of <code>TriggerKey</code>s
-     */
-    @Deprecated
-    Set<Key> selectTriggersInGroup(Connection conn, GroupMatcher<Key<?>> matcher) throws SQLException;
+//    /**
+//     * <p>
+//     * Select all of the triggers contained in a given group.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param matcher
+//     *          to evaluate against known triggers
+//     * @return a Set of <code>TriggerKey</code>s
+//     */
+//    @Deprecated
+//    Set<Key> selectTriggersInGroup(Connection conn, GroupMatcher<Key<?>> matcher) throws SQLException;
 
     /**
      * <p>

@@ -15,8 +15,6 @@
  */
 package org.quartz.impl;
 
-import java.io.IOException;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
@@ -62,7 +60,7 @@ public class SchedulerDetailsSetterTest extends TestCase {
         } catch (AbstractMethodError ame) {
             // expected
         }
-
+        // 反射设置属性
         SchedulerDetailsSetter.setDetails(tp, "name", "id");
     }
 

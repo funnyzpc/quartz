@@ -26,6 +26,8 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.core.JobRunShell;
 import org.quartz.spi.TriggerFiredBundle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -39,6 +41,8 @@ import org.quartz.spi.TriggerFiredBundle;
  * @author James House
  */
 public class JTAJobRunShell extends JobRunShell {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,12 +100,12 @@ public class JTAJobRunShell extends JobRunShell {
         cleanupUserTransaction();
         boolean beganSuccessfully = false;
         try {
-            getLog().debug("Looking up UserTransaction.");
+            log.debug("Looking up UserTransaction.");
             ut = UserTransactionHelper.lookupUserTransaction();
             if (transactionTimeout != null) {
                 ut.setTransactionTimeout(transactionTimeout);
             }
-            getLog().debug("Beginning UserTransaction.");
+            log.debug("Beginning UserTransaction.");
             ut.begin();
             beganSuccessfully = true;
         } catch (SchedulerException se) {
@@ -126,7 +130,7 @@ public class JTAJobRunShell extends JobRunShell {
         try {
             try {
                 if (ut.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
-                    getLog().debug("UserTransaction marked for rollback only.");
+                    log.debug("UserTransaction marked for rollback only.");
                     successfulExecution = false;
                 }
             } catch (SystemException e) {
@@ -134,14 +138,14 @@ public class JTAJobRunShell extends JobRunShell {
             }
             if (successfulExecution) {
                 try {
-                    getLog().debug("Committing UserTransaction.");
+                    log.debug("Committing UserTransaction.");
                     ut.commit();
                 } catch (Exception nse) {
                     throw new SchedulerException("JTAJobRunShell could not commit UserTransaction.", nse);
                 }
             } else {
                 try {
-                    getLog().debug("Rolling-back UserTransaction.");
+                    log.debug("Rolling-back UserTransaction.");
                     ut.rollback();
                 } catch (Exception nse) {
                     throw new SchedulerException("JTAJobRunShell could not rollback UserTransaction.", nse);

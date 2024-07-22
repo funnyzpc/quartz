@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 
 import org.quartz.Trigger.TriggerState;
-import org.quartz.impl.matchers.GroupMatcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -221,9 +220,9 @@ public abstract class AbstractSchedulerTest {
         s = sched.getTriggerState(key("t4"/* , "g1"  */));
         assertTrue("State of trigger t4 expected to be PAUSED ", s.equals(TriggerState.PAUSED));
         
-        sched.resumeTriggers(GroupMatcher.triggerGroupEquals("g1"));
-        s = sched.getTriggerState(key("t2"/* , "g1"  */));
-        assertTrue("State of trigger t2 expected to be NORMAL ", s.equals(TriggerState.NORMAL));
+//        sched.resumeTriggers(GroupMatcher.triggerGroupEquals("g1"));
+//        s = sched.getTriggerState(key("t2"/* , "g1"  */));
+//        assertTrue("State of trigger t2 expected to be NORMAL ", s.equals(TriggerState.NORMAL));
         s = sched.getTriggerState(key("t4"/* , "g1"  */));
         assertTrue("State of trigger t4 expected to be NORMAL ", s.equals(TriggerState.NORMAL));
 //        pausedGroups = sched.getPausedTriggerGroups();

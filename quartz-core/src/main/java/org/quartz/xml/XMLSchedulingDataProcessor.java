@@ -51,9 +51,17 @@ import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.quartz.*;
+import org.quartz.CalendarIntervalScheduleBuilder;
+import org.quartz.CronScheduleBuilder;
 import org.quartz.DateBuilder.IntervalUnit;
-import org.quartz.impl.matchers.GroupMatcher;
+import org.quartz.JobDetail;
+import org.quartz.JobPersistenceException;
+import org.quartz.ObjectAlreadyExistsException;
+import org.quartz.ScheduleBuilder;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.Trigger;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.MutableTrigger;
 import org.quartz.utils.Key;
@@ -452,8 +460,8 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
     }
     
     /**
-     * Process the xmlfile named <code>fileName</code> with the given system
-     * ID.
+     * Process the xmlfile named <code>fileName</code> with the given system ID.
+     * 使用给定的系统ID处理名为fileName的xml文件。
      * 
      * @param stream
      *          an input stream containing the xml content.
@@ -620,9 +628,10 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
 //            String triggerJobGroup = getTrimmedToNullString(xpath, "q:job-group", triggerNode);
 
             int triggerPriority = Trigger.DEFAULT_PRIORITY;
-            if(triggerPriorityString != null)
+            if(triggerPriorityString != null){
                 triggerPriority = Integer.valueOf(triggerPriorityString);
-            
+            }
+
             String startTimeString = getTrimmedToNullString(xpath, "q:start-time", triggerNode);
             String startTimeFutureSecsString = getTrimmedToNullString(xpath, "q:start-time-seconds-in-future", triggerNode);
             String endTimeString = getTrimmedToNullString(xpath, "q:end-time", triggerNode);
@@ -746,12 +755,13 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
 
     protected Boolean getBoolean(XPath xpathToElement, String elementName, Document document) throws XPathExpressionException {
         Node directive = (Node) xpathToElement.evaluate(elementName, document, XPathConstants.NODE);
-        if(directive == null || directive.getTextContent() == null)
+        if(directive == null || directive.getTextContent() == null){
             return null;
-        
+        }
         String val = directive.getTextContent();
-        if(val.equalsIgnoreCase("true") || val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))
+        if(val.equalsIgnoreCase("true") || val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y")){
             return Boolean.TRUE;
+        }
         return Boolean.FALSE;
     }
 
@@ -981,10 +991,12 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
             
             
             if(dupeJ != null /*|| detail.isDurable()*/) {
-                if (triggersOfJob != null && triggersOfJob.size() > 0)
+                if (triggersOfJob != null && triggersOfJob.size() > 0) {
                     sched.addJob(detail, true, true);  // add the job regardless is durable or not b/c we have trigger to add
-                else
+                }
+                else{
                     sched.addJob(detail, true, false); // add the job only if a replacement or durable, else exception will throw!
+                }
             }
             else {
                 boolean addJobWithFirstSchedule = true;

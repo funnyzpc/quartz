@@ -17,17 +17,10 @@ import java.util.TimeZone;
 
 import junit.framework.TestCase;
 
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.quartz.*;
-//import org.quartz.impl.DirectSchedulerFactory;
-import org.quartz.impl.SchedulerRepository;
 import org.quartz.impl.StdSchedulerFactory;
-import org.quartz.impl.jdbcjobstore.JdbcQuartzTestUtilities;
-import org.quartz.impl.jdbcjobstore.JobStoreTX;
-import org.quartz.impl.matchers.GroupMatcher;
+
 import org.quartz.simpl.CascadingClassLoadHelper;
-import org.quartz.simpl.SimpleThreadPool;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.utils.DBConnectionManager;
 import org.quartz.utils.Key;

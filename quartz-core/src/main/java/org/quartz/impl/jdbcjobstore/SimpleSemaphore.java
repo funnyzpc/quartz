@@ -91,9 +91,9 @@ public class SimpleSemaphore implements Semaphore {
                     // 如果 locks 里已经有lockName则表示其他线程已经持有此锁，此时需要等待被唤醒
                     this.wait();
                 } catch (InterruptedException ie) {
-//                    if(log.isDebugEnabled()) {
-//                        log.debug("Lock '" + lockName + "' was not obtained by: " + Thread.currentThread().getName());
-//                    }
+                    if(log.isDebugEnabled()) {
+                        log.debug("Lock '" + lockName + "' was not obtained by: " + Thread.currentThread().getName());
+                    }
                 }
             }
 //            if(log.isDebugEnabled()) {

@@ -46,7 +46,6 @@ import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.impl.DefaultThreadExecutor;
 import org.quartz.impl.JobCfgImpl;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.JobStore;
@@ -971,11 +970,11 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //        if (trig.getCalendarName() != null) {
 //            cal = retrieveCalendar(conn, trig.getCalendarName());
 //        }
-        schedSignaler.notifyTriggerListenersMisfired(trig);
+//        schedSignaler.notifyTriggerListenersMisfired(trig);
         trig.updateAfterMisfire(cal);
         if (trig.getNextFireTime() == null) {
             storeTrigger(conn, trig,null, true, STATE_COMPLETE, forceState, recovering);
-            schedSignaler.notifySchedulerListenersFinalized(trig);
+//            schedSignaler.notifySchedulerListenersFinalized(trig);
         } else {
             storeTrigger(conn, trig, null, true, newStateIfNotComplete,forceState, recovering);
         }
@@ -2486,96 +2485,95 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //        }
 //    }
     
-    /**
-     * <p>
-     * Resume (un-pause) all of the <code>{@link org.quartz.Trigger}s</code>
-     * matching the given groupMatcher.
-     *  恢复（取消暂停）与给定groupMatcher匹配的所有触发器。
-     * </p>
-     * 
-     * <p>
-     * If any <code>Trigger</code> missed one or more fire-times, then the
-     * <code>Trigger</code>'s misfire instruction will be applied.
-     *  如果任何触发器错过了一次或多次点火，则将应用触发器的失火指令。
-     * </p>
-     * 
-     * @see #pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public Set<String> resumeTriggers(final GroupMatcher<Key<?>> matcher) throws JobPersistenceException {
-        return (Set<String>) executeInLock(
-            LOCK_TRIGGER_ACCESS,
-            new TransactionCallback() {
-                @Override
-                public Set<String> execute(Connection conn) throws JobPersistenceException {
-                    return resumeTriggerGroup(conn, matcher);
-                }
-            });
-
-    }
+//    /**
+//     * <p>
+//     * Resume (un-pause) all of the <code>{@link org.quartz.Trigger}s</code>
+//     * matching the given groupMatcher.
+//     *  恢复（取消暂停）与给定groupMatcher匹配的所有触发器。
+//     * </p>
+//     *
+//     * <p>
+//     * If any <code>Trigger</code> missed one or more fire-times, then the
+//     * <code>Trigger</code>'s misfire instruction will be applied.
+//     *  如果任何触发器错过了一次或多次点火，则将应用触发器的失火指令。
+//     * </p>
+//     *
+//     * @see #pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
+//     */
+//    @Override
+//    @SuppressWarnings("unchecked")
+//    public Set<String> resumeTriggers(Key key) throws JobPersistenceException {
+//        return (Set<String>) executeInLock(
+//            LOCK_TRIGGER_ACCESS,
+//            new TransactionCallback() {
+//                @Override
+//                public Set<String> execute(Connection conn) throws JobPersistenceException {
+//                    return resumeTriggerGroup(conn, matcher);
+//                }
+//            });
+//    }
     
-    /**
-     * <p>
-     * Resume (un-pause) all of the <code>{@link org.quartz.Trigger}s</code>
-     * matching the given groupMatcher.
-     *  恢复（取消暂停）与给定groupMatcher匹配的所有触发器。
-     * </p>
-     * 
-     * <p>
-     * If any <code>Trigger</code> missed one or more fire-times, then the
-     * <code>Trigger</code>'s misfire instruction will be applied.
-     *  如果任何触发器错过了一次或多次点火，则将应用触发器的失火指令。
-     * </p>
-     * 
-     * @see # pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
-     */
-    public Set<String> resumeTriggerGroup(Connection conn,GroupMatcher<Key<?>> matcher) throws JobPersistenceException {
-        try {
-//            getDelegate().deletePausedTriggerGroup(conn, matcher);
-            HashSet<String> triggerNames = new HashSet<String>();
-            Set<Key> keys = getDelegate().selectTriggersInGroup(conn, matcher);
-            for (Key key: keys) {
-                resumeTrigger(conn, key);
-                triggerNames.add(key.getName());
-            }
-            return triggerNames;
-            // FUTURE_TODO: find an efficient way to resume triggers (better than the
-            // above)... logic below is broken because of
-            // findTriggersToBeBlocked()
-            /*
-             * int res =
-             * getDelegate().updateTriggerGroupStateFromOtherState(conn,
-             * groupName, STATE_WAITING, PAUSED);
-             * 
-             * if(res > 0) {
-             * 
-             * long misfireTime = System.currentTimeMillis();
-             * if(getMisfireThreshold() > 0) misfireTime -=
-             * getMisfireThreshold();
-             * 
-             * Key[] misfires =
-             * getDelegate().selectMisfiredTriggersInGroupInState(conn,
-             * groupName, STATE_WAITING, misfireTime);
-             * 
-             * List blockedTriggers = findTriggersToBeBlocked(conn,
-             * groupName);
-             * 
-             * Iterator itr = blockedTriggers.iterator(); while(itr.hasNext()) {
-             * Key key = (Key)itr.next();
-             * getDelegate().updateTriggerState(conn, key.getName(),
-             * key.getGroup(), BLOCKED); }
-             * 
-             * for(int i=0; i < misfires.length; i++) {               String
-             * newState = STATE_WAITING;
-             * if(blockedTriggers.contains(misfires[i])) newState =
-             * BLOCKED; updateMisfiredTrigger(conn,
-             * misfires[i].getName(), misfires[i].getGroup(), newState, true); } }
-             */
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't pause trigger group '"+ matcher + "': " + e.getMessage(), e);
-        }
-    }
+//    /**
+//     * <p>
+//     * Resume (un-pause) all of the <code>{@link org.quartz.Trigger}s</code>
+//     * matching the given groupMatcher.
+//     *  恢复（取消暂停）与给定groupMatcher匹配的所有触发器。
+//     * </p>
+//     *
+//     * <p>
+//     * If any <code>Trigger</code> missed one or more fire-times, then the
+//     * <code>Trigger</code>'s misfire instruction will be applied.
+//     *  如果任何触发器错过了一次或多次点火，则将应用触发器的失火指令。
+//     * </p>
+//     *
+//     * @see # pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
+//     */
+//    public Set<String> resumeTriggerGroup(Connection conn,GroupMatcher<Key<?>> matcher) throws JobPersistenceException {
+//        try {
+////            getDelegate().deletePausedTriggerGroup(conn, matcher);
+//            HashSet<String> triggerNames = new HashSet<String>();
+//            Set<Key> keys = getDelegate().selectTriggersInGroup(conn, matcher);
+//            for (Key key: keys) {
+//                resumeTrigger(conn, key);
+//                triggerNames.add(key.getName());
+//            }
+//            return triggerNames;
+//            // FUTURE_TODO: find an efficient way to resume triggers (better than the
+//            // above)... logic below is broken because of
+//            // findTriggersToBeBlocked()
+//            /*
+//             * int res =
+//             * getDelegate().updateTriggerGroupStateFromOtherState(conn,
+//             * groupName, STATE_WAITING, PAUSED);
+//             *
+//             * if(res > 0) {
+//             *
+//             * long misfireTime = System.currentTimeMillis();
+//             * if(getMisfireThreshold() > 0) misfireTime -=
+//             * getMisfireThreshold();
+//             *
+//             * Key[] misfires =
+//             * getDelegate().selectMisfiredTriggersInGroupInState(conn,
+//             * groupName, STATE_WAITING, misfireTime);
+//             *
+//             * List blockedTriggers = findTriggersToBeBlocked(conn,
+//             * groupName);
+//             *
+//             * Iterator itr = blockedTriggers.iterator(); while(itr.hasNext()) {
+//             * Key key = (Key)itr.next();
+//             * getDelegate().updateTriggerState(conn, key.getName(),
+//             * key.getGroup(), BLOCKED); }
+//             *
+//             * for(int i=0; i < misfires.length; i++) {               String
+//             * newState = STATE_WAITING;
+//             * if(blockedTriggers.contains(misfires[i])) newState =
+//             * BLOCKED; updateMisfiredTrigger(conn,
+//             * misfires[i].getName(), misfires[i].getGroup(), newState, true); } }
+//             */
+//        } catch (SQLException e) {
+//            throw new JobPersistenceException("Couldn't pause trigger group '"+ matcher + "': " + e.getMessage(), e);
+//        }
+//    }
 
 //    /**
 //     * <p>
@@ -3624,7 +3622,8 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                 return executeInNonManagedTXLock(lockName, txCallback, null);
             } catch (JobPersistenceException jpe) {
                 if(retry % 4 == 0) {
-                    schedSignaler.notifySchedulerListenersError("An error occurred while " + txCallback, jpe);
+                    log.error("An error occurred while {},{} " ,txCallback, jpe);
+//                    schedSignaler.notifySchedulerListenersError("An error occurred while " + txCallback, jpe);
                 }
             } catch (RuntimeException e) {
                 getLog().error("retryExecuteInNonManagedTXLock: RuntimeException " + e.getMessage(), e);

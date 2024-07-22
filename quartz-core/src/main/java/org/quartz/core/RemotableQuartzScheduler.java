@@ -34,7 +34,6 @@ import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.UnableToInterruptJobException;
 import org.quartz.Trigger.TriggerState;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.utils.Key;
 
 /**
@@ -121,7 +120,7 @@ public interface RemotableQuartzScheduler extends Remote {
 
     void resumeTrigger(Key triggerKey) throws SchedulerException, RemoteException;
 
-    void resumeTriggers(GroupMatcher<Key<?>> matcher) throws SchedulerException, RemoteException;
+//    void resumeTriggers(Key key) throws SchedulerException, RemoteException;
 
 //    Set<String> getPausedTriggerGroups() throws SchedulerException, RemoteException;
     

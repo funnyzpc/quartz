@@ -34,7 +34,6 @@ import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.Trigger.TriggerState;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.utils.Key;
 
 /**
@@ -487,18 +486,18 @@ public interface JobStore {
      */
     void resumeTrigger(Key triggerKey) throws JobPersistenceException;
 
-    /**
-     * Resume (un-pause) all of the <code>{@link org.quartz.Trigger}s</code>
-     * in the given group.
-     *
-     * <p>
-     * If any <code>Trigger</code> missed one or more fire-times, then the
-     * <code>Trigger</code>'s misfire instruction will be applied.
-     * </p>
-     *
-     * @see #pauseTriggers(GroupMatcher)
-     */
-    Collection<String> resumeTriggers(GroupMatcher<Key<?>> matcher) throws JobPersistenceException;
+//    /**
+//     * Resume (un-pause) all of the <code>{@link org.quartz.Trigger}s</code>
+//     * in the given group.
+//     *
+//     * <p>
+//     * If any <code>Trigger</code> missed one or more fire-times, then the
+//     * <code>Trigger</code>'s misfire instruction will be applied.
+//     * </p>
+//     *
+//     * @see #pauseTriggers(GroupMatcher)
+//     */
+//    Collection<String> resumeTriggers(Key key) throws JobPersistenceException;
 
 //    Set<String> getPausedTriggerGroups() throws JobPersistenceException;
 

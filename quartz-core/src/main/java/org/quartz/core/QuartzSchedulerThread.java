@@ -285,7 +285,8 @@ public class QuartzSchedulerThread extends Thread {
 //                        }
                     } catch (JobPersistenceException jpe) {
                         if (acquiresFailed == 0) {
-                            qs.notifySchedulerListenersError("An error occurred while scanning for the next triggers to fire.",jpe);
+                            log.error("An error occurred while scanning for the next triggers to fire.",jpe);
+//                            qs.notifySchedulerListenersError("An error occurred while scanning for the next triggers to fire.",jpe);
                         }
                         if (acquiresFailed < Integer.MAX_VALUE){
                             acquiresFailed++;
@@ -316,8 +317,9 @@ public class QuartzSchedulerThread extends Thread {
                                         // on 'synchronize', so we must recompute
                                         now = System.currentTimeMillis();
                                         timeUntilTrigger = triggerTime - now;
-                                        if(timeUntilTrigger >= 1)
+                                        if(timeUntilTrigger >= 1){
                                             sigLock.wait(timeUntilTrigger);
+                                        }
                                     } catch (InterruptedException ignore) {
                                     }
                                 }
@@ -346,7 +348,9 @@ public class QuartzSchedulerThread extends Thread {
                                     bndles = res;
                                 }
                             } catch (SchedulerException se) {
-                                qs.notifySchedulerListenersError("An error occurred while firing triggers '"+ triggers + "'", se);
+                                se.printStackTrace();
+                                log.error("An error occurred while firing triggers '"+ triggers + "'", se);
+//                                qs.notifySchedulerListenersError("An error occurred while firing triggers '"+ triggers + "'", se);
                                 //QTZ-179 : a problem occurred interacting with the triggers from the db
                                 //we release them and loop again
                                 for (int i = 0; i < triggers.size(); i++) {
@@ -488,10 +492,12 @@ public class QuartzSchedulerThread extends Thread {
                 return false;
             }
             boolean earlier = false;
-            if(getSignaledNextFireTime() == 0)
+            if(getSignaledNextFireTime() == 0){
                 earlier = true;
-            else if(getSignaledNextFireTime() < oldTime )
+            }
+            else if(getSignaledNextFireTime() < oldTime ){
                 earlier = true;
+            }
             if(earlier) {
                 // so the new time is considered earlier, but is it enough earlier?
                 long diff = oldTime - System.currentTimeMillis();

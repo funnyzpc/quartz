@@ -18,11 +18,8 @@
 
 package org.quartz.core;
 
-import org.quartz.utils.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
 import org.quartz.spi.SchedulerSignaler;
 
 /**
@@ -67,29 +64,29 @@ public class SchedulerSignalerImpl implements SchedulerSignaler {
      * 
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    @Override
-    public void notifyTriggerListenersMisfired(Trigger trigger) {
-        try {
-            sched.notifyTriggerListenersMisfired(trigger);
-        } catch (SchedulerException se) {
-            sched.getLog().error("Error notifying listeners of trigger misfire.", se);
-            sched.notifySchedulerListenersError("Error notifying listeners of trigger misfire.", se);
-        }
-    }
-    @Override
-    public void notifySchedulerListenersFinalized(Trigger trigger) {
-        sched.notifySchedulerListenersFinalized(trigger);
-    }
+//    @Override
+//    public void notifyTriggerListenersMisfired(Trigger trigger) {
+//        try {
+//            sched.notifyTriggerListenersMisfired(trigger);
+//        } catch (SchedulerException se) {
+//            sched.getLog().error("Error notifying listeners of trigger misfire.", se);
+//            sched.notifySchedulerListenersError("Error notifying listeners of trigger misfire.", se);
+//        }
+//    }
+//    @Override
+//    public void notifySchedulerListenersFinalized(Trigger trigger) {
+//        sched.notifySchedulerListenersFinalized(trigger);
+//    }
     @Override
     public void signalSchedulingChange(long candidateNewNextFireTime) {
         schedThread.signalSchedulingChange(candidateNewNextFireTime);
     }
-    @Override
-    public void notifySchedulerListenersJobDeleted(Key key) {
-        sched.notifySchedulerListenersJobDeleted(key);
-    }
-    @Override
-    public void notifySchedulerListenersError(String string, SchedulerException jpe) {
-        sched.notifySchedulerListenersError(string, jpe);
-    }
+//    @Override
+//    public void notifySchedulerListenersJobDeleted(Key key) {
+//        sched.notifySchedulerListenersJobDeleted(key);
+//    }
+//    @Override
+//    public void notifySchedulerListenersError(String string, SchedulerException jpe) {
+//        sched.notifySchedulerListenersError(string, jpe);
+//    }
 }

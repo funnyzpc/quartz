@@ -58,8 +58,6 @@ import org.quartz.impl.ExecuteCfgImpl;
 import org.quartz.impl.JobCfgImpl;
 import org.quartz.impl.JobDetailImpl;
 import org.quartz.impl.jdbcjobstore.TriggerPersistenceDelegate.TriggerPropertyBundle;
-import org.quartz.impl.matchers.GroupMatcher;
-import org.quartz.impl.matchers.StringMatcher;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.OperableTrigger;
@@ -1103,38 +1101,38 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         }
     }
 
-    protected boolean isMatcherEquals(final GroupMatcher<?> matcher) {
-        return matcher.getCompareWithOperator().equals(StringMatcher.StringOperatorName.EQUALS);
-    }
-
-    protected String toSqlEqualsClause(final GroupMatcher<?> matcher) {
-        return matcher.getCompareToValue();
-    }
-
-    @Deprecated
-    protected String toSqlLikeClause(final GroupMatcher<?> matcher) {
-        String groupName;
-        switch(matcher.getCompareWithOperator()) {
-            case EQUALS:
-                groupName = matcher.getCompareToValue();
-                break;
-            case CONTAINS:
-                groupName = "%" + matcher.getCompareToValue() + "%";
-                break;
-            case ENDS_WITH:
-                groupName = "%" + matcher.getCompareToValue();
-                break;
-            case STARTS_WITH:
-                groupName = matcher.getCompareToValue() + "%";
-                break;
-            case ANYTHING:
-                groupName = "%";
-                break;
-            default:
-                throw new UnsupportedOperationException("Don't know how to translate " + matcher.getCompareWithOperator() + " into SQL");
-        }
-        return groupName;
-    }
+//    protected boolean isMatcherEquals(final GroupMatcher<?> matcher) {
+//        return matcher.getCompareWithOperator().equals(StringMatcher.StringOperatorName.EQUALS);
+//    }
+//
+//    protected String toSqlEqualsClause(final GroupMatcher<?> matcher) {
+//        return matcher.getCompareToValue();
+//    }
+//
+//    @Deprecated
+//    protected String toSqlLikeClause(final GroupMatcher<?> matcher) {
+//        String groupName;
+//        switch(matcher.getCompareWithOperator()) {
+//            case EQUALS:
+//                groupName = matcher.getCompareToValue();
+//                break;
+//            case CONTAINS:
+//                groupName = "%" + matcher.getCompareToValue() + "%";
+//                break;
+//            case ENDS_WITH:
+//                groupName = "%" + matcher.getCompareToValue();
+//                break;
+//            case STARTS_WITH:
+//                groupName = matcher.getCompareToValue() + "%";
+//                break;
+//            case ANYTHING:
+//                groupName = "%";
+//                break;
+//            default:
+//                throw new UnsupportedOperationException("Don't know how to translate " + matcher.getCompareWithOperator() + " into SQL");
+//        }
+//        return groupName;
+//    }
 
     //---------------------------------------------------------------------------
     // triggers
@@ -1531,43 +1529,43 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         }
     }
 
-    /**
-     * <p>
-     * Update all triggers in the given group to the given new state, if they
-     * are in one of the given old states.
-     * </p>
-     * 
-     * @param conn
-     *          the DB connection
-     * @param matcher
-     *          the groupMatcher to evaluate the triggers against
-     * @param newState
-     *          the new state for the trigger
-     * @param oldState1
-     *          one of the old state the trigger must be in
-     * @param oldState2
-     *          one of the old state the trigger must be in
-     * @param oldState3
-     *          one of the old state the trigger must be in
-     * @return int the number of rows updated
-     * @throws SQLException
-     */
-    @Override
-    public int updateTriggerGroupStateFromOtherStates(Connection conn,GroupMatcher<Key<?>> matcher, String newState, String oldState1,String oldState2, String oldState3) throws SQLException {
-        PreparedStatement ps = null;
-        try {
-            // UPDATE QRTZ_TRIGGERS SET TRIGGER_STATE = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ? AND (TRIGGER_STATE = ? OR TRIGGER_STATE = ? OR TRIGGER_STATE = ?)
-            ps = conn.prepareStatement(rtp(UPDATE_TRIGGER_GROUP_STATE_FROM_STATES));
-            ps.setString(1, newState);
-//            ps.setString(2, toSqlLikeClause(matcher));
-            ps.setString(2, oldState1);
-            ps.setString(3, oldState2);
-            ps.setString(4, oldState3);
-            return ps.executeUpdate();
-        } finally {
-            closeStatement(ps);
-        }
-    }
+//    /**
+//     * <p>
+//     * Update all triggers in the given group to the given new state, if they
+//     * are in one of the given old states.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB connection
+//     * @param matcher
+//     *          the groupMatcher to evaluate the triggers against
+//     * @param newState
+//     *          the new state for the trigger
+//     * @param oldState1
+//     *          one of the old state the trigger must be in
+//     * @param oldState2
+//     *          one of the old state the trigger must be in
+//     * @param oldState3
+//     *          one of the old state the trigger must be in
+//     * @return int the number of rows updated
+//     * @throws SQLException
+//     */
+//    @Override
+//    public int updateTriggerGroupStateFromOtherStates(Connection conn,GroupMatcher<Key<?>> matcher, String newState, String oldState1,String oldState2, String oldState3) throws SQLException {
+//        PreparedStatement ps = null;
+//        try {
+//            // UPDATE QRTZ_TRIGGERS SET TRIGGER_STATE = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ? AND (TRIGGER_STATE = ? OR TRIGGER_STATE = ? OR TRIGGER_STATE = ?)
+//            ps = conn.prepareStatement(rtp(UPDATE_TRIGGER_GROUP_STATE_FROM_STATES));
+//            ps.setString(1, newState);
+////            ps.setString(2, toSqlLikeClause(matcher));
+//            ps.setString(2, oldState1);
+//            ps.setString(3, oldState2);
+//            ps.setString(4, oldState3);
+//            return ps.executeUpdate();
+//        } finally {
+//            closeStatement(ps);
+//        }
+//    }
 
     /**
      * <p>
@@ -1602,37 +1600,37 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         }
     }
 
-    /**
-     * <p>
-     * Update all of the triggers of the given group to the given new state, if
-     * they are in the given old state.
-     * </p>
-     * 
-     * @param conn
-     *          the DB connection
-     * @param matcher
-     *          the groupMatcher to evaluate the triggers against
-     * @param newState
-     *          the new state for the trigger group
-     * @param oldState
-     *          the old state the triggers must be in
-     * @return int the number of rows updated
-     * @throws SQLException
-     */
-    @Override
-    public int updateTriggerGroupStateFromOtherState(Connection conn,GroupMatcher<Key<?>> matcher, String newState, String oldState) throws SQLException {
-        PreparedStatement ps = null;
-        try {
-            // UPDATE QRTZ_TRIGGERS SET TRIGGER_STATE = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ? AND TRIGGER_STATE = ?
-            ps = conn.prepareStatement(rtp(UPDATE_TRIGGER_GROUP_STATE_FROM_STATE));
-            ps.setString(1, newState);
-//            ps.setString(2, toSqlLikeClause(matcher));
-            ps.setString(2, oldState);
-            return ps.executeUpdate();
-        } finally {
-            closeStatement(ps);
-        }
-    }
+//    /**
+//     * <p>
+//     * Update all of the triggers of the given group to the given new state, if
+//     * they are in the given old state.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB connection
+//     * @param matcher
+//     *          the groupMatcher to evaluate the triggers against
+//     * @param newState
+//     *          the new state for the trigger group
+//     * @param oldState
+//     *          the old state the triggers must be in
+//     * @return int the number of rows updated
+//     * @throws SQLException
+//     */
+//    @Override
+//    public int updateTriggerGroupStateFromOtherState(Connection conn,GroupMatcher<Key<?>> matcher, String newState, String oldState) throws SQLException {
+//        PreparedStatement ps = null;
+//        try {
+//            // UPDATE QRTZ_TRIGGERS SET TRIGGER_STATE = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ? AND TRIGGER_STATE = ?
+//            ps = conn.prepareStatement(rtp(UPDATE_TRIGGER_GROUP_STATE_FROM_STATE));
+//            ps.setString(1, newState);
+////            ps.setString(2, toSqlLikeClause(matcher));
+//            ps.setString(2, oldState);
+//            return ps.executeUpdate();
+//        } finally {
+//            closeStatement(ps);
+//        }
+//    }
 
     /**
      * <p>
@@ -2300,45 +2298,45 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //        }
 //    }
 
-    /**
-     * <p>
-     * Select all of the triggers contained in a given group.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param matcher
-     *          to evaluate against known triggers
-     * @return a Set of <code>TriggerKey</code>s
-     */
-    @Deprecated
-    @Override
-    public Set<Key> selectTriggersInGroup(Connection conn, GroupMatcher<Key<?>> matcher) throws SQLException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            if(isMatcherEquals(matcher)) {
-                // SELECT TRIGGER_NAME, TRIGGER_GROUP FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP = ?
-                ps = conn.prepareStatement(rtp(SELECT_TRIGGERS_IN_GROUP));
-                ps.setString(1, toSqlEqualsClause(matcher));
-            }
-            else {
-                // SELECT TRIGGER_NAME, TRIGGER_GROUP FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ?
-                ps = conn.prepareStatement(rtp(SELECT_TRIGGERS_IN_GROUP_LIKE));
-                ps.setString(1, toSqlLikeClause(matcher));
-            }
-            rs = ps.executeQuery();
-            Set<Key> keys = new HashSet();
-            while (rs.next()) {
-//                keys.add(triggerKey(rs.getString(1), rs.getString(2)));
-                keys.add(key(rs.getString(1),rs.getString(2)));
-            }
-            return keys;
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-        }
-    }
+//    /**
+//     * <p>
+//     * Select all of the triggers contained in a given group.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param matcher
+//     *          to evaluate against known triggers
+//     * @return a Set of <code>TriggerKey</code>s
+//     */
+//    @Deprecated
+//    @Override
+//    public Set<Key> selectTriggersInGroup(Connection conn, GroupMatcher<Key<?>> matcher) throws SQLException {
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            if(isMatcherEquals(matcher)) {
+//                // SELECT TRIGGER_NAME, TRIGGER_GROUP FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP = ?
+//                ps = conn.prepareStatement(rtp(SELECT_TRIGGERS_IN_GROUP));
+//                ps.setString(1, toSqlEqualsClause(matcher));
+//            }
+//            else {
+//                // SELECT TRIGGER_NAME, TRIGGER_GROUP FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ?
+//                ps = conn.prepareStatement(rtp(SELECT_TRIGGERS_IN_GROUP_LIKE));
+//                ps.setString(1, toSqlLikeClause(matcher));
+//            }
+//            rs = ps.executeQuery();
+//            Set<Key> keys = new HashSet();
+//            while (rs.next()) {
+////                keys.add(triggerKey(rs.getString(1), rs.getString(2)));
+//                keys.add(key(rs.getString(1),rs.getString(2)));
+//            }
+//            return keys;
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//        }
+//    }
 
 //    public int insertPausedTriggerGroup(Connection conn, String groupName)
 //        throws SQLException {

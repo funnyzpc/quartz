@@ -131,38 +131,38 @@ public class ListenerManagerImpl implements ListenerManager {
             return (globalJobListeners.remove(name) != null);
         }
     }
-    @Override
-    public List<JobListener> getJobListeners() {
-        synchronized (globalJobListeners) {
-            return java.util.Collections.unmodifiableList(new LinkedList<JobListener>(globalJobListeners.values()));
-        }
-    }
-    @Override
-    public JobListener getJobListener(String name) {
-        synchronized (globalJobListeners) {
-            return globalJobListeners.get(name);
-        }
-    }
-    @Override
-    public void addTriggerListener(TriggerListener triggerListener, Matcher<Key<?>> ... matchers) {
-        addTriggerListener(triggerListener, Arrays.asList(matchers));
-    }
-    @Override
-    public void addTriggerListener(TriggerListener triggerListener, List<Matcher<Key<?>>> matchers) {
-        if (triggerListener.getName() == null || triggerListener.getName().length() == 0) {
-            throw new IllegalArgumentException("TriggerListener name cannot be empty.");
-        }
-        synchronized (globalTriggerListeners) {
-            globalTriggerListeners.put(triggerListener.getName(), triggerListener);
-            LinkedList<Matcher<Key<?>>> matchersL = new  LinkedList<Matcher<Key<?>>>();
-            if(matchers != null && matchers.size() > 0){
-                matchersL.addAll(matchers);
-            }else{
-                matchersL.add(EverythingMatcher.allTriggers());
-            }
-            globalTriggerListenersMatchers.put(triggerListener.getName(),matchersL);
-        }
-    }
+//    @Override
+//    public List<JobListener> getJobListeners() {
+//        synchronized (globalJobListeners) {
+//            return java.util.Collections.unmodifiableList(new LinkedList<JobListener>(globalJobListeners.values()));
+//        }
+//    }
+//    @Override
+//    public JobListener getJobListener(String name) {
+//        synchronized (globalJobListeners) {
+//            return globalJobListeners.get(name);
+//        }
+//    }
+//    @Override
+//    public void addTriggerListener(TriggerListener triggerListener, Matcher<Key<?>> ... matchers) {
+//        addTriggerListener(triggerListener, Arrays.asList(matchers));
+//    }
+//    @Override
+//    public void addTriggerListener(TriggerListener triggerListener, List<Matcher<Key<?>>> matchers) {
+//        if (triggerListener.getName() == null || triggerListener.getName().length() == 0) {
+//            throw new IllegalArgumentException("TriggerListener name cannot be empty.");
+//        }
+//        synchronized (globalTriggerListeners) {
+//            globalTriggerListeners.put(triggerListener.getName(), triggerListener);
+//            LinkedList<Matcher<Key<?>>> matchersL = new  LinkedList<Matcher<Key<?>>>();
+//            if(matchers != null && matchers.size() > 0){
+//                matchersL.addAll(matchers);
+//            }else{
+//                matchersL.add(EverythingMatcher.allTriggers());
+//            }
+//            globalTriggerListenersMatchers.put(triggerListener.getName(),matchersL);
+//        }
+//    }
     @Override
     public void addTriggerListener(TriggerListener triggerListener) {
         addTriggerListener(triggerListener, EverythingMatcher.allTriggers());
@@ -182,33 +182,33 @@ public class ListenerManagerImpl implements ListenerManager {
             globalTriggerListenersMatchers.put(triggerListener.getName(),matchers);
         }
     }
-    @Override
-    public boolean addTriggerListenerMatcher(String listenerName, Matcher<Key<?>> matcher) {
-        if(matcher == null){
-            throw new IllegalArgumentException("Non-null value not acceptable.");
-        }
-        synchronized (globalTriggerListeners) {
-            List<Matcher<Key<?>>> matchers = globalTriggerListenersMatchers.get(listenerName);
-            if(matchers == null){
-                return false;
-            }
-            matchers.add(matcher);
-            return true;
-        }
-    }
-    @Override
-    public boolean removeTriggerListenerMatcher(String listenerName, Matcher<Key<?>> matcher) {
-        if(matcher == null){
-            throw new IllegalArgumentException("Non-null value not acceptable.");
-        }
-        synchronized (globalTriggerListeners) {
-            List<Matcher<Key<?>>> matchers = globalTriggerListenersMatchers.get(listenerName);
-            if(matchers == null){
-                return false;
-            }
-            return matchers.remove(matcher);
-        }
-    }
+//    @Override
+//    public boolean addTriggerListenerMatcher(String listenerName, Matcher<Key<?>> matcher) {
+//        if(matcher == null){
+//            throw new IllegalArgumentException("Non-null value not acceptable.");
+//        }
+//        synchronized (globalTriggerListeners) {
+//            List<Matcher<Key<?>>> matchers = globalTriggerListenersMatchers.get(listenerName);
+//            if(matchers == null){
+//                return false;
+//            }
+//            matchers.add(matcher);
+//            return true;
+//        }
+//    }
+//    @Override
+//    public boolean removeTriggerListenerMatcher(String listenerName, Matcher<Key<?>> matcher) {
+//        if(matcher == null){
+//            throw new IllegalArgumentException("Non-null value not acceptable.");
+//        }
+//        synchronized (globalTriggerListeners) {
+//            List<Matcher<Key<?>>> matchers = globalTriggerListenersMatchers.get(listenerName);
+//            if(matchers == null){
+//                return false;
+//            }
+//            return matchers.remove(matcher);
+//        }
+//    }
     @Override
     public List<Matcher<Key<?>>> getTriggerListenerMatchers(String listenerName) {
         synchronized (globalTriggerListeners) {
@@ -219,26 +219,26 @@ public class ListenerManagerImpl implements ListenerManager {
             return Collections.unmodifiableList(matchers);
         }
     }
-    @Override
-    public boolean setTriggerListenerMatchers(String listenerName, List<Matcher<Key<?>>> matchers)  {
-        if(matchers == null){
-            throw new IllegalArgumentException("Non-null value not acceptable.");
-        }
-        synchronized (globalTriggerListeners) {
-            List<Matcher<Key<?>>> oldMatchers = globalTriggerListenersMatchers.get(listenerName);
-            if(oldMatchers == null){
-                return false;
-            }
-            globalTriggerListenersMatchers.put(listenerName, matchers);
-            return true;
-        }
-    }
-    @Override
-    public boolean removeTriggerListener(String name) {
-        synchronized (globalTriggerListeners) {
-            return (globalTriggerListeners.remove(name) != null);
-        }
-    }
+//    @Override
+//    public boolean setTriggerListenerMatchers(String listenerName, List<Matcher<Key<?>>> matchers)  {
+//        if(matchers == null){
+//            throw new IllegalArgumentException("Non-null value not acceptable.");
+//        }
+//        synchronized (globalTriggerListeners) {
+//            List<Matcher<Key<?>>> oldMatchers = globalTriggerListenersMatchers.get(listenerName);
+//            if(oldMatchers == null){
+//                return false;
+//            }
+//            globalTriggerListenersMatchers.put(listenerName, matchers);
+//            return true;
+//        }
+//    }
+//    @Override
+//    public boolean removeTriggerListener(String name) {
+//        synchronized (globalTriggerListeners) {
+//            return (globalTriggerListeners.remove(name) != null);
+//        }
+//    }
     
     @Override
     public List<TriggerListener> getTriggerListeners() {
@@ -246,12 +246,12 @@ public class ListenerManagerImpl implements ListenerManager {
             return java.util.Collections.unmodifiableList(new LinkedList<TriggerListener>(globalTriggerListeners.values()));
         }
     }
-    @Override
-    public TriggerListener getTriggerListener(String name) {
-        synchronized (globalTriggerListeners) {
-            return globalTriggerListeners.get(name);
-        }
-    }
+//    @Override
+//    public TriggerListener getTriggerListener(String name) {
+//        synchronized (globalTriggerListeners) {
+//            return globalTriggerListeners.get(name);
+//        }
+//    }
     
     @Override
     public void addSchedulerListener(SchedulerListener schedulerListener) {
@@ -259,12 +259,12 @@ public class ListenerManagerImpl implements ListenerManager {
             schedulerListeners.add(schedulerListener);
         }
     }
-    @Override
-    public boolean removeSchedulerListener(SchedulerListener schedulerListener) {
-        synchronized (schedulerListeners) {
-            return schedulerListeners.remove(schedulerListener);
-        }
-    }
+//    @Override
+//    public boolean removeSchedulerListener(SchedulerListener schedulerListener) {
+//        synchronized (schedulerListeners) {
+//            return schedulerListeners.remove(schedulerListener);
+//        }
+//    }
     @Override
     public List<SchedulerListener> getSchedulerListeners() {
         synchronized (schedulerListeners) {

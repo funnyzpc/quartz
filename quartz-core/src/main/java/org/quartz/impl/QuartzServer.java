@@ -21,9 +21,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
-import org.quartz.listeners.SchedulerListenerSupport;
 
 /**
  * <p>
@@ -52,7 +50,7 @@ import org.quartz.listeners.SchedulerListenerSupport;
  *
  * @author James House
  */
-public class QuartzServer extends SchedulerListenerSupport {
+public class QuartzServer /*extends SchedulerListenerSupport*/ {
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -116,37 +114,37 @@ public class QuartzServer extends SchedulerListenerSupport {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    /**
-     * <p>
-     * Called by the <code>{@link Scheduler}</code> when a serious error has
-     * occured within the scheduler - such as repeated failures in the <code>JobStore</code>,
-     * or the inability to instantiate a <code>Job</code> instance when its
-     * <code>Trigger</code> has fired.
-     * </p>
-     *
-     * <p>
-     * The <code>getErrorCode()</code> method of the given SchedulerException
-     * can be used to determine more specific information about the type of
-     * error that was encountered.
-     * </p>
-     */
-    @Override
-    public void schedulerError(String msg, SchedulerException cause) {
-        System.err.println("*** " + msg);
-        cause.printStackTrace();
-    }
-
-    /**
-     * <p>
-     * Called by the <code>{@link Scheduler}</code> to inform the listener
-     * that it has shutdown.
-     * </p>
-     */
-    @Override
-    public void schedulerShutdown() {
-        System.out.println("\n*** The scheduler is now shutdown.");
-        sched = null;
-    }
+//    /**
+//     * <p>
+//     * Called by the <code>{@link Scheduler}</code> when a serious error has
+//     * occured within the scheduler - such as repeated failures in the <code>JobStore</code>,
+//     * or the inability to instantiate a <code>Job</code> instance when its
+//     * <code>Trigger</code> has fired.
+//     * </p>
+//     *
+//     * <p>
+//     * The <code>getErrorCode()</code> method of the given SchedulerException
+//     * can be used to determine more specific information about the type of
+//     * error that was encountered.
+//     * </p>
+//     */
+//    @Override
+//    public void schedulerError(String msg, SchedulerException cause) {
+//        System.err.println("*** " + msg);
+//        cause.printStackTrace();
+//    }
+//
+//    /**
+//     * <p>
+//     * Called by the <code>{@link Scheduler}</code> to inform the listener
+//     * that it has shutdown.
+//     * </p>
+//     */
+//    @Override
+//    public void schedulerShutdown() {
+//        System.out.println("\n*** The scheduler is now shutdown.");
+//        sched = null;
+//    }
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

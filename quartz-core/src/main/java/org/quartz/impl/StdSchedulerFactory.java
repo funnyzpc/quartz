@@ -786,6 +786,7 @@ public class StdSchedulerFactory implements SchedulerFactory {
             initException = new SchedulerException("JobStore class '" + jsClass+ "' could not be instantiated.", e);
             throw initException;
         }
+        // 反射设置属性
         SchedulerDetailsSetter.setDetails(js, schedName, schedInstId);
         tProps = cfg.getPropertyGroup(PROP_JOB_STORE_PREFIX, true, new String[] {PROP_JOB_STORE_LOCK_HANDLER_PREFIX});
         try {
@@ -1159,15 +1160,17 @@ public class StdSchedulerFactory implements SchedulerFactory {
             for (int i = 0; i < plugins.length; i++) {
                 plugins[i].initialize(pluginNames[i], scheduler, loadHelper);
             }
-            // add listeners 添加监听
-            for (int i = 0; i < jobListeners.length; i++) {
-                // job监听(job_detail)
-                qs.getListenerManager().addJobListener(jobListeners[i], EverythingMatcher.allJobs());
-            }
-            for (int i = 0; i < triggerListeners.length; i++) {
-                // trigger监听(triggers)
-                qs.getListenerManager().addTriggerListener(triggerListeners[i], EverythingMatcher.allTriggers());
-            }
+
+//            // add listeners 添加监听
+//            for (int i = 0; i < jobListeners.length; i++) {
+//                // job监听(job_detail)
+//                qs.getListenerManager().addJobListener(jobListeners[i], EverythingMatcher.allJobs());
+//            }
+//            for (int i = 0; i < triggerListeners.length; i++) {
+//                // trigger监听(triggers)
+//                qs.getListenerManager().addTriggerListener(triggerListeners[i], EverythingMatcher.allTriggers());
+//            }
+
             // set scheduler context data... 设置scheduler上下文数据
             for(Object key: schedCtxtProps.keySet()) {
                 String val = schedCtxtProps.getProperty((String) key);    
@@ -1237,8 +1240,9 @@ public class StdSchedulerFactory implements SchedulerFactory {
             if(qsInited){
                 qs.shutdown(false);
             }
-            else if(tpInited)
+            else if(tpInited){
                 tp.shutdown(false);
+            }
         } catch (Exception e) {
             getLog().error("Got another exception while shutting down after instantiation exception", e);
         }
@@ -1317,8 +1321,9 @@ public class StdSchedulerFactory implements SchedulerFactory {
     private Class<?> loadClass(String className) throws ClassNotFoundException, SchedulerConfigException {
         try {
             ClassLoader cl = findClassloader();
-            if(cl != null)
+            if(cl != null){
                 return cl.loadClass(className);
+            }
             throw new SchedulerConfigException("Unable to find a class loader on the current thread or class.");
         } catch (ClassNotFoundException e) {
             if(getClass().getClassLoader() != null)

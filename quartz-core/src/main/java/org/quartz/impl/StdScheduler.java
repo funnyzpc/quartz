@@ -26,7 +26,6 @@ import org.quartz.ExecuteCfg;
 import org.quartz.JobCfg;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
-import org.quartz.ListenerManager;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerContext;
 import org.quartz.SchedulerException;
@@ -35,7 +34,6 @@ import org.quartz.Trigger;
 import org.quartz.UnableToInterruptJobException;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.core.QuartzScheduler;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.quartz.spi.JobFactory;
 import org.quartz.utils.Key;
 
@@ -415,15 +413,15 @@ public class StdScheduler implements Scheduler {
         sched.resumeTrigger(triggerKey);
     }
 
-    /**
-     * <p>
-     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
-     * </p>
-     */
-    @Override
-    public void resumeTriggers(GroupMatcher<Key<?>> matcher) throws SchedulerException {
-        sched.resumeTriggers(matcher);
-    }
+//    /**
+//     * <p>
+//     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
+//     * </p>
+//     */
+//    @Override
+//    public void resumeTriggers(GroupMatcher<Key<?>> matcher) throws SchedulerException {
+//        sched.resumeTriggers(matcher);
+//    }
 
     /**
      * <p>
@@ -640,13 +638,13 @@ public class StdScheduler implements Scheduler {
         sched.setJobFactory(factory);
     }
 
-    /**
-     * @see org.quartz.Scheduler#getListenerManager()
-     */
-    @Override
-    public ListenerManager getListenerManager() throws SchedulerException {
-        return sched.getListenerManager();
-    }
+//    /**
+//     * @see org.quartz.Scheduler#getListenerManager()
+//     */
+//    @Override
+//    public ListenerManager getListenerManager() throws SchedulerException {
+//        return sched.getListenerManager();
+//    }
     @Override
     public boolean interrupt(Key jobKey) throws UnableToInterruptJobException {
         return sched.interrupt(jobKey);

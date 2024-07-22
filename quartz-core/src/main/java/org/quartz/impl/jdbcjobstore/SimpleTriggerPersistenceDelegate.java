@@ -82,8 +82,10 @@ public class SimpleTriggerPersistenceDelegate implements TriggerPersistenceDeleg
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            ps = conn.prepareStatement(Util.rtp(SELECT_SIMPLE_TRIGGER, tablePrefix, schedNameLiteral));
+//            ps = conn.prepareStatement(Util.rtp(SELECT_SIMPLE_TRIGGER, tablePrefix, schedNameLiteral));
+            ps = conn.prepareStatement(Util.rtp(SELECT_SIMPLE_EXECUTE_CFG, tablePrefix, schedNameLiteral));
             ps.setString(1, triggerKey.getName());
+            ps.setString(2, triggerKey.getType());
 //            ps.setString(2, triggerKey.getGroup());
             rs = ps.executeQuery();
             if (rs.next()) {
