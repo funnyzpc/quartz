@@ -271,18 +271,18 @@ public interface DriverDelegate {
      */
     int deleteJobDetail(Connection conn,Key jobKey) throws SQLException;
 
-    /**
-     * <p>
-     * Check whether or not the given job disallows concurrent execution.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * 
-     * @return true if the job exists and disallows concurrent execution, false otherwise
-     */
-    @Deprecated
-    boolean isJobNonConcurrent(Connection conn,Key jobKey) throws SQLException;
+//    /**
+//     * <p>
+//     * Check whether or not the given job disallows concurrent execution.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     *
+//     * @return true if the job exists and disallows concurrent execution, false otherwise
+//     */
+//    @Deprecated
+//    boolean isJobNonConcurrent(Connection conn,Key jobKey) throws SQLException;
 
     /**
      * <p>
@@ -390,7 +390,7 @@ public interface DriverDelegate {
      * <p>
      * Update the base trigger data.
      * </p>
-     * 
+     *
      * @param conn
      *          the DB Connection
      * @param trigger
@@ -399,7 +399,7 @@ public interface DriverDelegate {
      *          the state that the trigger should be stored in
      * @return the number of rows updated
      */
-    int updateTrigger(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException;
+//    int updateTrigger(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException;
     int updateJobCfg(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException;
 
     /**
@@ -859,18 +859,18 @@ public interface DriverDelegate {
     // trigger firing
     //---------------------------------------------------------------------------
 
-    /**
-     * <p>
-     * Select the next time that a trigger will be fired.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @return the next fire time, or 0 if no trigger will be fired
-     * 
-     * @deprecated Does not account for misfires.
-     */
-    long selectNextFireTime(Connection conn) throws SQLException;
+//    /**
+//     * <p>
+//     * Select the next time that a trigger will be fired.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @return the next fire time, or 0 if no trigger will be fired
+//     *
+//     * @deprecated Does not account for misfires.
+//     */
+//    long selectNextFireTime(Connection conn) throws SQLException;
 
     /**
      * <p>
@@ -964,7 +964,7 @@ public interface DriverDelegate {
      * 
      * @return a List of FiredTriggerRecord objects.
      */
-    List<FiredTriggerRecord> selectFiredTriggerRecords(Connection conn, String triggerName/*, String groupName*/) throws SQLException;
+    List<FiredTriggerRecord> selectFiredTriggerRecords(Connection conn, Key key/*, String groupName*/) throws SQLException;
 
     /**
      * <p>
@@ -974,7 +974,7 @@ public interface DriverDelegate {
      * 
      * @return a List of FiredTriggerRecord objects.
      */
-    List<FiredTriggerRecord> selectFiredTriggerRecordsByJob(Connection conn,String jobName/*, String groupName*/) throws SQLException;
+    List<FiredTriggerRecord> selectFiredTriggerRecordsByJob(Connection conn,Key key /*, String groupName*/) throws SQLException;
 
     /**
      * <p>
@@ -1012,7 +1012,7 @@ public interface DriverDelegate {
      *          the fired trigger entry to delete
      * @return the number of rows deleted
      */
-    int deleteFiredTrigger(Connection conn, String entryId) throws SQLException;
+    int deleteFiredTrigger(Connection conn, String entryId,Key key) throws SQLException;
 
 //    /**
 //     * <p>

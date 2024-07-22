@@ -269,11 +269,12 @@ public interface ListenerManager {
 //     *         removed.
 //     */
 //    public boolean removeSchedulerListener(SchedulerListener schedulerListener);
-
-    /**
-     * Get a List containing all of the <code>{@link SchedulerListener}</code>s
-     * registered with the <code>Scheduler</code>, in the order in which they were registered.
-     */
-    public List<SchedulerListener> getSchedulerListeners();
+//
+//    /**
+//     * Get a List containing all of the <code>{@link SchedulerListener}</code>s
+//     * registered with the <code>Scheduler</code>, in the order in which they were registered.
+//     * 获取一个列表，其中包含按注册顺序向调度器注册的所有SchedulerListener。
+//     */
+//    public List<SchedulerListener> getSchedulerListeners();
 
 }

@@ -1189,9 +1189,9 @@ public class StdSchedulerFactory implements SchedulerFactory {
             getLog().info("Quartz scheduler '" + scheduler.getSchedulerName() + "' initialized from " + propSrc);
             getLog().info("Quartz scheduler version: " + qs.getVersion());
     
-            // prevents the repository from being garbage collected
+            // prevents the repository from being garbage collected 防止存储库被垃圾回收
             qs.addNoGCObject(schedRep);
-            // prevents the db manager from being garbage collected
+            // prevents the db manager from being garbage collected 防止数据库管理器被垃圾回收
             if (dbMgr != null) {
                 qs.addNoGCObject(dbMgr);
             }
@@ -1326,8 +1326,9 @@ public class StdSchedulerFactory implements SchedulerFactory {
             }
             throw new SchedulerConfigException("Unable to find a class loader on the current thread or class.");
         } catch (ClassNotFoundException e) {
-            if(getClass().getClassLoader() != null)
+            if(getClass().getClassLoader() != null) {
                 return getClass().getClassLoader().loadClass(className);
+            }
             throw e;
         }
     }

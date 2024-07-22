@@ -779,32 +779,32 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         }
     }
 
-    /**
-     * <p>
-     * Check whether or not the given job is stateful.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @return true if the job exists and is stateful, false otherwise
-     */
-    @Override
-    public boolean isJobNonConcurrent(Connection conn,Key jobKey) throws SQLException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            // SELECT IS_NONCONCURRENT FROM QRTZ_JOB_DETAILS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
-            ps = conn.prepareStatement(rtp(SELECT_JOB_NONCONCURRENT));
-            ps.setString(1, jobKey.getName());
-//            ps.setString(2, jobKey.getGroup());
-            rs = ps.executeQuery();
-            if (!rs.next()) { return false; }
-            return getBoolean(rs, COL_IS_NONCONCURRENT);
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-        }
-    }
+//    /**
+//     * <p>
+//     * Check whether or not the given job is stateful.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @return true if the job exists and is stateful, false otherwise
+//     */
+//    @Override
+//    public boolean isJobNonConcurrent(Connection conn,Key jobKey) throws SQLException {
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            // SELECT IS_NONCONCURRENT FROM QRTZ_JOB_DETAILS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
+//            ps = conn.prepareStatement(rtp(SELECT_JOB_NONCONCURRENT));
+//            ps.setString(1, jobKey.getName());
+////            ps.setString(2, jobKey.getGroup());
+//            rs = ps.executeQuery();
+//            if (!rs.next()) { return false; }
+//            return getBoolean(rs, COL_IS_NONCONCURRENT);
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//        }
+//    }
 
     /**
      * <p>
@@ -1210,129 +1210,129 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         return insertResult;
     }
 
-    /**
-     * <p>
-     * Insert the blob trigger data.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param trigger
-     *          the trigger to insert
-     * @return the number of rows inserted
-     */
-    @Deprecated
-    public int insertBlobTrigger(Connection conn, OperableTrigger trigger) throws SQLException, IOException {
-        PreparedStatement ps = null;
-        ByteArrayOutputStream os = null;
-        try {
-            // update the blob
-            os = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(os);
-            oos.writeObject(trigger);
-            oos.close();
-
-            byte[] buf = os.toByteArray();
-            ByteArrayInputStream is = new ByteArrayInputStream(buf);
-            // INSERT INTO QRTZ_BLOB_TRIGGERS (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP, BLOB_DATA)  VALUES('MEE_QUARTZ', ?, ?, ?)
-            ps = conn.prepareStatement(rtp(INSERT_BLOB_TRIGGER));
-            ps.setString(1, trigger.getKey().getName());
-//            ps.setString(2, trigger.getKey().getGroup());
-            ps.setBinaryStream(2, is, buf.length);
-            return ps.executeUpdate();
-        } finally {
-            closeStatement(ps);
-        }
-    }
-
-    /**
-     * <p>
-     * Update the base trigger data.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param trigger
-     *          the trigger to insert
-     * @param state
-     *          the state that the trigger should be stored in
-     * @return the number of rows updated
-     */
-    @Override
-    public int updateTrigger(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException {
-        // save some clock cycles by unnecessarily writing job data blob ...
-//        boolean updateJobData = trigger.getJobDataMap().isDirty();
-//        ByteArrayOutputStream baos = null;
-//        if(updateJobData) {
-//            baos = serializeJobData(trigger.getJobDataMap());
+//    /**
+//     * <p>
+//     * Insert the blob trigger data.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param trigger
+//     *          the trigger to insert
+//     * @return the number of rows inserted
+//     */
+//    @Deprecated
+//    public int insertBlobTrigger(Connection conn, OperableTrigger trigger) throws SQLException, IOException {
+//        PreparedStatement ps = null;
+//        ByteArrayOutputStream os = null;
+//        try {
+//            // update the blob
+//            os = new ByteArrayOutputStream();
+//            ObjectOutputStream oos = new ObjectOutputStream(os);
+//            oos.writeObject(trigger);
+//            oos.close();
+//
+//            byte[] buf = os.toByteArray();
+//            ByteArrayInputStream is = new ByteArrayInputStream(buf);
+//            // INSERT INTO QRTZ_BLOB_TRIGGERS (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP, BLOB_DATA)  VALUES('MEE_QUARTZ', ?, ?, ?)
+//            ps = conn.prepareStatement(rtp(INSERT_BLOB_TRIGGER));
+//            ps.setString(1, trigger.getKey().getName());
+////            ps.setString(2, trigger.getKey().getGroup());
+//            ps.setBinaryStream(2, is, buf.length);
+//            return ps.executeUpdate();
+//        } finally {
+//            closeStatement(ps);
 //        }
-        PreparedStatement ps = null;
-        int insertResult = 0;
-        try {
-//            if(updateJobData) {
-//                // UPDATE QRTZ_TRIGGERS SET JOB_NAME = ?, JOB_GROUP = ?, DESCRIPTION = ?, NEXT_FIRE_TIME = ?, PREV_FIRE_TIME = ?, TRIGGER_STATE = ?, TRIGGER_TYPE = ?, START_TIME = ?, END_TIME = ?, CALENDAR_NAME = ?, MISFIRE_INSTR = ?, PRIORITY = ?, JOB_DATA = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-//                ps = conn.prepareStatement(rtp(UPDATE_TRIGGER));
-//            } else {
-//                // UPDATE QRTZ_TRIGGERS SET JOB_NAME = ?, JOB_GROUP = ?, DESCRIPTION = ?, NEXT_FIRE_TIME = ?, PREV_FIRE_TIME = ?, TRIGGER_STATE = ?, TRIGGER_TYPE = ?, START_TIME = ?, END_TIME = ?, CALENDAR_NAME = ?, MISFIRE_INSTR = ?, PRIORITY = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-//                ps = conn.prepareStatement(rtp(UPDATE_TRIGGER_SKIP_DATA));
-//            }
-            ps = conn.prepareStatement(rtp(UPDATE_TRIGGER_SKIP_DATA));
+//    }
 
-//            ps.setString(1, trigger.getJobKey().getName());
-//            ps.setString(2, trigger.getJobKey().getGroup());
-            ps.setString(1, trigger.getDescription());
-            long nextFireTime = -1;
-            if (trigger.getNextFireTime() != null) {
-                nextFireTime = trigger.getNextFireTime().getTime();
-            }
-            ps.setBigDecimal(2, new BigDecimal(String.valueOf(nextFireTime)));
-            long prevFireTime = -1;
-            if (trigger.getPreviousFireTime() != null) {
-                prevFireTime = trigger.getPreviousFireTime().getTime();
-            }
-            ps.setBigDecimal(3, new BigDecimal(String.valueOf(prevFireTime)));
-            ps.setString(4, state);
-            TriggerPersistenceDelegate tDel = findTriggerPersistenceDelegate(trigger);
-//            String type = TTYPE_BLOB;
-//            if(tDel != null){
-//                type = tDel.getHandledTriggerTypeDiscriminator();
+//    /**
+//     * <p>
+//     * Update the base trigger data.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param trigger
+//     *          the trigger to insert
+//     * @param state
+//     *          the state that the trigger should be stored in
+//     * @return the number of rows updated
+//     */
+//    @Override
+//    public int updateTrigger(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException {
+//        // save some clock cycles by unnecessarily writing job data blob ...
+////        boolean updateJobData = trigger.getJobDataMap().isDirty();
+////        ByteArrayOutputStream baos = null;
+////        if(updateJobData) {
+////            baos = serializeJobData(trigger.getJobDataMap());
+////        }
+//        PreparedStatement ps = null;
+//        int insertResult = 0;
+//        try {
+////            if(updateJobData) {
+////                // UPDATE QRTZ_TRIGGERS SET JOB_NAME = ?, JOB_GROUP = ?, DESCRIPTION = ?, NEXT_FIRE_TIME = ?, PREV_FIRE_TIME = ?, TRIGGER_STATE = ?, TRIGGER_TYPE = ?, START_TIME = ?, END_TIME = ?, CALENDAR_NAME = ?, MISFIRE_INSTR = ?, PRIORITY = ?, JOB_DATA = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
+////                ps = conn.prepareStatement(rtp(UPDATE_TRIGGER));
+////            } else {
+////                // UPDATE QRTZ_TRIGGERS SET JOB_NAME = ?, JOB_GROUP = ?, DESCRIPTION = ?, NEXT_FIRE_TIME = ?, PREV_FIRE_TIME = ?, TRIGGER_STATE = ?, TRIGGER_TYPE = ?, START_TIME = ?, END_TIME = ?, CALENDAR_NAME = ?, MISFIRE_INSTR = ?, PRIORITY = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
+////                ps = conn.prepareStatement(rtp(UPDATE_TRIGGER_SKIP_DATA));
+////            }
+//            ps = conn.prepareStatement(rtp(UPDATE_TRIGGER_SKIP_DATA));
+//
+////            ps.setString(1, trigger.getJobKey().getName());
+////            ps.setString(2, trigger.getJobKey().getGroup());
+//            ps.setString(1, trigger.getDescription());
+//            long nextFireTime = -1;
+//            if (trigger.getNextFireTime() != null) {
+//                nextFireTime = trigger.getNextFireTime().getTime();
 //            }
-            String type = tDel.getHandledTriggerTypeDiscriminator();
-            ps.setString(5, type);
-            ps.setBigDecimal(6, new BigDecimal(String.valueOf(trigger.getStartTime().getTime())));
-            long endTime = 0;
-            if (trigger.getEndTime() != null) {
-                endTime = trigger.getEndTime().getTime();
-            }
-            ps.setBigDecimal(7, new BigDecimal(String.valueOf(endTime)));
-            ps.setString(8, trigger.getCalendarName());
-            ps.setInt(9, trigger.getMisfireInstruction());
-            ps.setInt(10, trigger.getPriority());
-
-//            if(updateJobData) {
-//                setBytes(ps, 11, baos);
-//                ps.setString(12, trigger.getKey().getName());
-////                ps.setString(14, trigger.getKey().getGroup());
-//            } else {
-//                ps.setString(11, trigger.getKey().getName());
-////                ps.setString(13, trigger.getKey().getGroup());
+//            ps.setBigDecimal(2, new BigDecimal(String.valueOf(nextFireTime)));
+//            long prevFireTime = -1;
+//            if (trigger.getPreviousFireTime() != null) {
+//                prevFireTime = trigger.getPreviousFireTime().getTime();
 //            }
-            ps.setString(11, trigger.getKey().getName());
-            insertResult = ps.executeUpdate();
-//            if(tDel == null){
-//                updateBlobTrigger(conn, trigger);
+//            ps.setBigDecimal(3, new BigDecimal(String.valueOf(prevFireTime)));
+//            ps.setString(4, state);
+//            TriggerPersistenceDelegate tDel = findTriggerPersistenceDelegate(trigger);
+////            String type = TTYPE_BLOB;
+////            if(tDel != null){
+////                type = tDel.getHandledTriggerTypeDiscriminator();
+////            }
+//            String type = tDel.getHandledTriggerTypeDiscriminator();
+//            ps.setString(5, type);
+//            ps.setBigDecimal(6, new BigDecimal(String.valueOf(trigger.getStartTime().getTime())));
+//            long endTime = 0;
+//            if (trigger.getEndTime() != null) {
+//                endTime = trigger.getEndTime().getTime();
 //            }
-//            else{
-//                tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail);
-//            }
-            tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail);
-        } catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            closeStatement(ps);
-        }
-        return insertResult;
-    }
+//            ps.setBigDecimal(7, new BigDecimal(String.valueOf(endTime)));
+//            ps.setString(8, trigger.getCalendarName());
+//            ps.setInt(9, trigger.getMisfireInstruction());
+//            ps.setInt(10, trigger.getPriority());
+//
+////            if(updateJobData) {
+////                setBytes(ps, 11, baos);
+////                ps.setString(12, trigger.getKey().getName());
+//////                ps.setString(14, trigger.getKey().getGroup());
+////            } else {
+////                ps.setString(11, trigger.getKey().getName());
+//////                ps.setString(13, trigger.getKey().getGroup());
+////            }
+//            ps.setString(11, trigger.getKey().getName());
+//            insertResult = ps.executeUpdate();
+////            if(tDel == null){
+////                updateBlobTrigger(conn, trigger);
+////            }
+////            else{
+////                tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail);
+////            }
+//            tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail);
+//        } catch (Exception e){
+//            e.printStackTrace();
+//        }finally {
+//            closeStatement(ps);
+//        }
+//        return insertResult;
+//    }
 
     @Override
     public int updateJobCfg(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException {
@@ -2678,35 +2678,35 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     // trigger firing
     //---------------------------------------------------------------------------
 
-    /**
-     * <p>
-     * Select the next time that a trigger will be fired.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @return the next fire time, or 0 if no trigger will be fired
-     * 
-     * @deprecated Does not account for misfires.
-     */
-    @Override
-    public long selectNextFireTime(Connection conn) throws SQLException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = conn.prepareStatement(rtp(SELECT_NEXT_FIRE_TIME));
-            ps.setString(1, STATE_WAITING);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getLong(ALIAS_COL_NEXT_FIRE_TIME);
-            } else {
-                return 0L;
-            }
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-        }
-    }
+//    /**
+//     * <p>
+//     * Select the next time that a trigger will be fired.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @return the next fire time, or 0 if no trigger will be fired
+//     *
+//     * @deprecated Does not account for misfires.
+//     */
+//    @Override
+//    public long selectNextFireTime(Connection conn) throws SQLException {
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            ps = conn.prepareStatement(rtp(SELECT_NEXT_FIRE_TIME));
+//            ps.setString(1, STATE_WAITING);
+//            rs = ps.executeQuery();
+//            if (rs.next()) {
+//                return rs.getLong(ALIAS_COL_NEXT_FIRE_TIME);
+//            } else {
+//                return 0L;
+//            }
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//        }
+//    }
 
     /**
      * <p>
@@ -2903,6 +2903,8 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                 setBoolean(ps, 6, false);
             }
             ps.setString(7, trigger.getFireInstanceId());
+            ps.setString(8, trigger.getKey().getName());
+            ps.setString(9, trigger.getKey().getType());
             return ps.executeUpdate();
         } finally {
             closeStatement(ps);
@@ -2918,21 +2920,24 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      * @return a List of FiredTriggerRecord objects.
      */
     @Override
-    public List<FiredTriggerRecord> selectFiredTriggerRecords(Connection conn, String triggerName/*, String groupName*/) throws SQLException {
+    public List<FiredTriggerRecord> selectFiredTriggerRecords(Connection conn,Key key/*, String groupName*/) throws SQLException {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
             List<FiredTriggerRecord> lst = new LinkedList<FiredTriggerRecord>();
-            if (triggerName != null) {
-                // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-                ps = conn.prepareStatement(rtp(SELECT_FIRED_TRIGGER));
-                ps.setString(1, triggerName);
-//                ps.setString(2, groupName);
-            } else {
-                // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP = ?
-                ps = conn.prepareStatement(rtp(SELECT_FIRED_TRIGGER_GROUP));
-//                ps.setString(1, groupName);
-            }
+//            if (triggerName != null) {
+//                // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
+//                ps = conn.prepareStatement(rtp(SELECT_FIRED_TRIGGER));
+//                ps.setString(1, triggerName);
+////                ps.setString(2, groupName);
+//            } else {
+//                // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP = ?
+//                ps = conn.prepareStatement(rtp(SELECT_FIRED_TRIGGER_GROUP));
+////                ps.setString(1, groupName);
+//            }
+            ps = conn.prepareStatement(rtp(SELECT_FIRED_TRIGGER));
+            ps.setString(1, key.getName());
+            ps.setString(2, key.getType());
             rs = ps.executeQuery();
             while (rs.next()) {
                 FiredTriggerRecord rec = new FiredTriggerRecord();
@@ -2969,21 +2974,24 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      * @return a List of FiredTriggerRecord objects.
      */
     @Override
-    public List<FiredTriggerRecord> selectFiredTriggerRecordsByJob(Connection conn, String jobName/*, String groupName*/) throws SQLException {
+    public List<FiredTriggerRecord> selectFiredTriggerRecordsByJob(Connection conn,Key key/*, String groupName*/) throws SQLException {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
             List<FiredTriggerRecord> lst = new LinkedList<FiredTriggerRecord>();
-            if (jobName != null) {
-                // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
-                ps = conn.prepareStatement(rtp(SELECT_FIRED_TRIGGERS_OF_JOB));
-                ps.setString(1, jobName);
-//                ps.setString(2, groupName);
-            } else {
-                // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_GROUP = ?
-                ps = conn.prepareStatement(rtp(SELECT_FIRED_TRIGGERS_OF_JOB_GROUP));
-//                ps.setString(1, groupName);
-            }
+//            if (jobName != null) {
+//                // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
+//                ps = conn.prepareStatement(rtp(SELECT_FIRED_TRIGGERS_OF_JOB));
+//                ps.setString(1, jobName);
+////                ps.setString(2, groupName);
+//            } else {
+//                // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_GROUP = ?
+//                ps = conn.prepareStatement(rtp(SELECT_FIRED_TRIGGERS_OF_JOB_GROUP));
+////                ps.setString(1, groupName);
+//            }
+            ps = conn.prepareStatement(rtp(SELECT_FIRED_TRIGGERS_OF_JOB));
+            ps.setString(1, key.getName());
+            ps.setString(2, key.getType());
             rs = ps.executeQuery();
             while (rs.next()) {
                 FiredTriggerRecord rec = new FiredTriggerRecord();
@@ -3078,20 +3086,23 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     /**
      * <p>
      * Delete a fired trigger.
+     * 删除已触发的触发器。
      * </p>
      * 
      * @param conn
      *          the DB Connection
      * @param entryId
      *          the fired trigger entry to delete
-     * @return the number of rows deleted
+     * @return the number of rows deleted 删除的行数
      */
     @Override
-    public int deleteFiredTrigger(Connection conn, String entryId) throws SQLException {
+    public int deleteFiredTrigger(Connection conn, String entryId,Key key) throws SQLException {
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(rtp(DELETE_FIRED_TRIGGER));
             ps.setString(1, entryId);
+            ps.setString(2, key.getName());
+            ps.setString(3, key.getType());
             return ps.executeUpdate();
         } finally {
             closeStatement(ps);

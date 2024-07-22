@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -106,7 +105,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     
     protected Class<? extends DriverDelegate> delegateClass = StdJDBCDelegate.class;
 
-    protected HashMap<String, Calendar> calendarCache = new HashMap<String, Calendar>();
+//    protected HashMap<String, Calendar> calendarCache = new HashMap<String, Calendar>();
 
     private DriverDelegate delegate;
 
@@ -195,7 +194,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         if (prefix == null) {
             prefix = "";
         }
-
         this.tablePrefix = prefix;
     }
 
@@ -218,7 +216,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         if (useProp == null) {
             useProp = "false";
         }
-
         this.useProperties = Boolean.valueOf(useProp);
     }
 
@@ -423,8 +420,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     @SuppressWarnings("UnusedDeclaration") /* called reflectively */
     public void setMisfireThreshold(long misfireThreshold) {
         if (misfireThreshold < 1) {
-            throw new IllegalArgumentException(
-                    "Misfirethreshold must be larger than 0");
+            throw new IllegalArgumentException("Misfirethreshold must be larger than 0");
         }
         this.misfireThreshold = misfireThreshold;
     }
@@ -2240,7 +2236,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
             return currentState;
         }
         try {
-            List<FiredTriggerRecord> lst = getDelegate().selectFiredTriggerRecordsByJob(conn,jobKey.getName()/*,jobKey.getGroup()*/);
+            List<FiredTriggerRecord> lst = getDelegate().selectFiredTriggerRecordsByJob(conn,jobKey/*,jobKey.getGroup()*/);
             if (lst.size() > 0) {
                 FiredTriggerRecord rec = lst.get(0);
                 if (rec.isJobDisallowsConcurrentExecution()) { // OLD_TODO: worry about failed/recovering/volatile job  states?
@@ -2738,6 +2734,8 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     
     // FUTURE_TODO: this really ought to return something like a FiredTriggerBundle,
     // so that the fireInstanceId doesn't have to be on the trigger...
+    // FUTURE_TODO：这真的应该返回类似FiredTriggerBundle的东西，
+    // 这样fireInstanceId就不必在触发器上。。。
     protected List<OperableTrigger> acquireNextTrigger(Connection conn, long noLaterThan, int maxCount, long timeWindow) throws JobPersistenceException {
         // noLaterThan: now + 30S
         // maxCount: Math.min(availThreadCount, qsRsrcs.getMaxBatchSize())
@@ -2793,6 +2791,11 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                     // data?), we then should log a warning and continue to next trigger.
                     // User would need to manually fix these triggers from DB as they will not
                     // able to be clean up by Quartz since we are not returning it to be processed.
+                    // 从数据库获取触发器时，在nextFireTime上不应返回NULL。
+                    // 但无论出于什么原因，如果我们确实有这种情况（糟糕的触发器实现或
+                    // 数据？），然后，我们应该记录一个警告并继续下一个触发。
+                    // 用户需要从数据库手动修复这些触发器，因为它们不会
+                    // 由于我们不会将其退回进行处理，因此可以由Quartz进行清理。
                     if (nextFireTime == null) {
                         log.warn("Trigger {} returned null on nextFireTime and yet still exists in DB!",nextTrigger.getKey());
                         continue;
@@ -2847,7 +2850,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                     try {
                         getDelegate().updateTriggerStateFromOtherState(conn,trigger.getKey(), STATE_WAITING, STATE_ACQUIRED);
                         getDelegate().updateTriggerStateFromOtherState(conn,trigger.getKey(), STATE_WAITING, STATE_BLOCKED);
-                        getDelegate().deleteFiredTrigger(conn, trigger.getFireInstanceId());
+                        getDelegate().deleteFiredTrigger(conn, trigger.getFireInstanceId(),trigger.getKey());
                     } catch (SQLException e) {
                         throw new JobPersistenceException("Couldn't release acquired trigger: " + e.getMessage(), e);
                     }
@@ -3069,7 +3072,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
             throw new JobPersistenceException("Couldn't update trigger state(s): " + e.getMessage(), e);
         }
         try {
-            getDelegate().deleteFiredTrigger(conn, trigger.getFireInstanceId());
+            getDelegate().deleteFiredTrigger(conn, trigger.getFireInstanceId(),trigger.getKey());
         } catch (SQLException e) {
             throw new JobPersistenceException("Couldn't delete fired trigger: " + e.getMessage(), e);
         }
@@ -3419,8 +3422,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                     int completeCount = 0;
                     for (Key k : keys) {
                         if (getDelegate().selectTriggerState(conn,k).equals(STATE_COMPLETE)) {
-                            List<FiredTriggerRecord> firedTriggers =
-                                    getDelegate().selectFiredTriggerRecords(conn,k.getName()/*, triggerKey.getGroup()*/);
+                            List<FiredTriggerRecord> firedTriggers = getDelegate().selectFiredTriggerRecords(conn,k/*, triggerKey.getGroup()*/);
                             if (firedTriggers.isEmpty()) {
                                 if (removeTrigger(conn,k)) {
                                     completeCount++;

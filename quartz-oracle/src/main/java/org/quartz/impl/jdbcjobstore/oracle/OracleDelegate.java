@@ -371,93 +371,93 @@ public class OracleDelegate extends StdJDBCDelegate {
         return insertResult;
     }
 
-    @Override
-    public int updateTrigger(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
-        // save some clock cycles by unnecessarily writing job data blob ... 通过不必要地写入作业数据blob来节省一些时钟周期。。。
-        boolean updateJobData = trigger.getJobDataMap().isDirty();
-        byte[] data = null;
-        if (updateJobData && trigger.getJobDataMap().size() > 0) {
-            data = serializeJobData(trigger.getJobDataMap()).toByteArray();
-        }
-        PreparedStatement ps = null;
-        PreparedStatement ps2 = null;
-        ResultSet rs = null;
-        int insertResult = 0;
-        try {
-            ps = conn.prepareStatement(rtp(UPDATE_ORACLE_TRIGGER));
-                
-//            ps.setString(1, trigger.getJobKey().getName());
-//            ps.setString(2, trigger.getJobKey().getGroup());
-            ps.setString(1, trigger.getDescription());
-            long nextFireTime = -1;
-            if (trigger.getNextFireTime() != null) {
-                nextFireTime = trigger.getNextFireTime().getTime();
-            }
-            ps.setBigDecimal(2, new BigDecimal(String.valueOf(nextFireTime)));
-            long prevFireTime = -1;
-            if (trigger.getPreviousFireTime() != null) {
-                prevFireTime = trigger.getPreviousFireTime().getTime();
-            }
-            ps.setBigDecimal(3, new BigDecimal(String.valueOf(prevFireTime)));
-            ps.setString(4, state);
-            
-            TriggerPersistenceDelegate tDel = findTriggerPersistenceDelegate(trigger);
-//            String type = TTYPE_BLOB;
-//            if(tDel != null){
-//                type = tDel.getHandledTriggerTypeDiscriminator();
+//    @Override
+//    public int updateTrigger(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
+//        // save some clock cycles by unnecessarily writing job data blob ... 通过不必要地写入作业数据blob来节省一些时钟周期。。。
+//        boolean updateJobData = trigger.getJobDataMap().isDirty();
+//        byte[] data = null;
+//        if (updateJobData && trigger.getJobDataMap().size() > 0) {
+//            data = serializeJobData(trigger.getJobDataMap()).toByteArray();
+//        }
+//        PreparedStatement ps = null;
+//        PreparedStatement ps2 = null;
+//        ResultSet rs = null;
+//        int insertResult = 0;
+//        try {
+//            ps = conn.prepareStatement(rtp(UPDATE_ORACLE_TRIGGER));
+//
+////            ps.setString(1, trigger.getJobKey().getName());
+////            ps.setString(2, trigger.getJobKey().getGroup());
+//            ps.setString(1, trigger.getDescription());
+//            long nextFireTime = -1;
+//            if (trigger.getNextFireTime() != null) {
+//                nextFireTime = trigger.getNextFireTime().getTime();
 //            }
-            String type = tDel.getHandledTriggerTypeDiscriminator();
-            ps.setString(5, type);
-            
-            ps.setBigDecimal(6, new BigDecimal(String.valueOf(trigger.getStartTime().getTime())));
-            long endTime = 0;
-            if (trigger.getEndTime() != null) {
-                endTime = trigger.getEndTime().getTime();
-            }
-            ps.setBigDecimal(7, new BigDecimal(String.valueOf(endTime)));
-            ps.setString(8, trigger.getCalendarName());
-            ps.setInt(9, trigger.getMisfireInstruction());
-            ps.setInt(10, trigger.getPriority());
-            ps.setString(11, trigger.getKey().getName());
-//            ps.setString(14, trigger.getKey().getGroup());
-            insertResult = ps.executeUpdate();
-            if(updateJobData) {
-                ps.close();
-
-                ps = conn.prepareStatement(rtp(UPDATE_ORACLE_TRIGGER_JOB_DETAIL_EMPTY_BLOB));
-                ps.setString(1, trigger.getKey().getName());
-//                ps.setString(2, trigger.getKey().getGroup());
-                ps.executeUpdate();
-                ps.close();
-
-                ps = conn.prepareStatement(rtp(SELECT_ORACLE_TRIGGER_JOB_DETAIL_BLOB));
-                ps.setString(1, trigger.getKey().getName());
-//                ps.setString(2, trigger.getKey().getGroup());
-
-                rs = ps.executeQuery();
-                if (rs.next()) {
-                    Blob dbBlob = writeDataToBlob(rs, 1, data);
-                    ps2 = conn.prepareStatement(rtp(UPDATE_ORACLE_TRIGGER_JOB_DETAIL_BLOB));
-                    ps2.setBlob(1, dbBlob);
-                    ps2.setString(2, trigger.getKey().getName());
-//                    ps2.setString(3, trigger.getKey().getGroup());
-                    ps2.executeUpdate();
-                }
-            }
-//            if(tDel == null){
-//                updateBlobTrigger(conn, trigger);
+//            ps.setBigDecimal(2, new BigDecimal(String.valueOf(nextFireTime)));
+//            long prevFireTime = -1;
+//            if (trigger.getPreviousFireTime() != null) {
+//                prevFireTime = trigger.getPreviousFireTime().getTime();
 //            }
-//            else{
-//                tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail);
+//            ps.setBigDecimal(3, new BigDecimal(String.valueOf(prevFireTime)));
+//            ps.setString(4, state);
+//
+//            TriggerPersistenceDelegate tDel = findTriggerPersistenceDelegate(trigger);
+////            String type = TTYPE_BLOB;
+////            if(tDel != null){
+////                type = tDel.getHandledTriggerTypeDiscriminator();
+////            }
+//            String type = tDel.getHandledTriggerTypeDiscriminator();
+//            ps.setString(5, type);
+//
+//            ps.setBigDecimal(6, new BigDecimal(String.valueOf(trigger.getStartTime().getTime())));
+//            long endTime = 0;
+//            if (trigger.getEndTime() != null) {
+//                endTime = trigger.getEndTime().getTime();
 //            }
-            tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail);
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-            closeStatement(ps2);
-        }
-        return insertResult;
-    }
+//            ps.setBigDecimal(7, new BigDecimal(String.valueOf(endTime)));
+//            ps.setString(8, trigger.getCalendarName());
+//            ps.setInt(9, trigger.getMisfireInstruction());
+//            ps.setInt(10, trigger.getPriority());
+//            ps.setString(11, trigger.getKey().getName());
+////            ps.setString(14, trigger.getKey().getGroup());
+//            insertResult = ps.executeUpdate();
+//            if(updateJobData) {
+//                ps.close();
+//
+//                ps = conn.prepareStatement(rtp(UPDATE_ORACLE_TRIGGER_JOB_DETAIL_EMPTY_BLOB));
+//                ps.setString(1, trigger.getKey().getName());
+////                ps.setString(2, trigger.getKey().getGroup());
+//                ps.executeUpdate();
+//                ps.close();
+//
+//                ps = conn.prepareStatement(rtp(SELECT_ORACLE_TRIGGER_JOB_DETAIL_BLOB));
+//                ps.setString(1, trigger.getKey().getName());
+////                ps.setString(2, trigger.getKey().getGroup());
+//
+//                rs = ps.executeQuery();
+//                if (rs.next()) {
+//                    Blob dbBlob = writeDataToBlob(rs, 1, data);
+//                    ps2 = conn.prepareStatement(rtp(UPDATE_ORACLE_TRIGGER_JOB_DETAIL_BLOB));
+//                    ps2.setBlob(1, dbBlob);
+//                    ps2.setString(2, trigger.getKey().getName());
+////                    ps2.setString(3, trigger.getKey().getGroup());
+//                    ps2.executeUpdate();
+//                }
+//            }
+////            if(tDel == null){
+////                updateBlobTrigger(conn, trigger);
+////            }
+////            else{
+////                tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail);
+////            }
+//            tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail);
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//            closeStatement(ps2);
+//        }
+//        return insertResult;
+//    }
     
 //    @Override
 //    public int insertCalendar(Connection conn, String calendarName, Calendar calendar) throws IOException, SQLException {

@@ -265,10 +265,11 @@ public class ListenerManagerImpl implements ListenerManager {
 //            return schedulerListeners.remove(schedulerListener);
 //        }
 //    }
-    @Override
-    public List<SchedulerListener> getSchedulerListeners() {
-        synchronized (schedulerListeners) {
-            return java.util.Collections.unmodifiableList(new ArrayList<SchedulerListener>(schedulerListeners));
-        }
-    }
+//    @Override
+//    public List<SchedulerListener> getSchedulerListeners() {
+//        synchronized (schedulerListeners) {
+//            return java.util.Collections.unmodifiableList(new ArrayList<SchedulerListener>(schedulerListeners));
+//        }
+//    }
+
 }

@@ -21,7 +21,6 @@ package org.quartz.core;
 import java.io.InputStream;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -40,10 +39,7 @@ import org.quartz.Job;
 import org.quartz.JobCfg;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.quartz.JobListener;
-import org.quartz.ListenerManager;
-import org.quartz.Matcher;
 import org.quartz.SchedulerContext;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerListener;
@@ -443,9 +439,9 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         holdToPreventGC.add(obj);
     }
 
-    public boolean removeNoGCObject(Object obj) {
-        return holdToPreventGC.remove(obj);
-    }
+//    public boolean removeNoGCObject(Object obj) {
+//        return holdToPreventGC.remove(obj);
+//    }
 
     /**
      * <p>
@@ -508,6 +504,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
 
         Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 try { Thread.sleep(seconds * 1000L); }
                 catch(InterruptedException ignore) {}
@@ -1583,86 +1580,86 @@ J     *
         }
     }
 
-    /**
-     * <p>
-     * Remove the identified <code>{@link JobListener}</code> from the <code>Scheduler</code>'s
-     * list of <i>internal</i> listeners.
-     * </p>
-     * 
-     * @return true if the identified listener was found in the list, and
-     *         removed.
-     */
-    public boolean removeInternalJobListener(String name) {
-        synchronized (internalJobListeners) {
-            return (internalJobListeners.remove(name) != null);
-        }
-    }
-    
-    /**
-     * <p>
-     * Get a List containing all of the <code>{@link org.quartz.JobListener}</code>s
-     * in the <code>Scheduler</code>'s <i>internal</i> list.
-     * </p>
-     */
-    public List<JobListener> getInternalJobListeners() {
-        synchronized (internalJobListeners) {
-            return java.util.Collections.unmodifiableList(new LinkedList<JobListener>(internalJobListeners.values()));
-        }
-    }
-
-    /**
-     * <p>
-     * Get the <i>internal</i> <code>{@link org.quartz.JobListener}</code>
-     * that has the given name.
-     * </p>
-     */
-    public JobListener getInternalJobListener(String name) {
-        synchronized (internalJobListeners) {
-            return internalJobListeners.get(name);
-        }
-    }
-    
-    /**
-     * <p>
-     * Add the given <code>{@link org.quartz.TriggerListener}</code> to the
-     * <code>Scheduler</code>'s <i>internal</i> list.
-     * </p>
-     */
-    public void addInternalTriggerListener(TriggerListener triggerListener) {
-        if (triggerListener.getName() == null || triggerListener.getName().length() == 0) {
-            throw new IllegalArgumentException("TriggerListener name cannot be empty.");
-        }
-        synchronized (internalTriggerListeners) {
-            internalTriggerListeners.put(triggerListener.getName(), triggerListener);
-        }
-    }
-
-    /**
-     * <p>
-     * Remove the identified <code>{@link TriggerListener}</code> from the <code>Scheduler</code>'s
-     * list of <i>internal</i> listeners.
-     * </p>
-     * 
-     * @return true if the identified listener was found in the list, and
-     *         removed.
-     */
-    public boolean removeinternalTriggerListener(String name) {
-        synchronized (internalTriggerListeners) {
-            return (internalTriggerListeners.remove(name) != null);
-        }
-    }
-
-    /**
-     * <p>
-     * Get a list containing all of the <code>{@link org.quartz.TriggerListener}</code>s
-     * in the <code>Scheduler</code>'s <i>internal</i> list.
-     * </p>
-     */
-    public List<TriggerListener> getInternalTriggerListeners() {
-        synchronized (internalTriggerListeners) {
-            return java.util.Collections.unmodifiableList(new LinkedList<TriggerListener>(internalTriggerListeners.values()));
-        }
-    }
+//    /**
+//     * <p>
+//     * Remove the identified <code>{@link JobListener}</code> from the <code>Scheduler</code>'s
+//     * list of <i>internal</i> listeners.
+//     * </p>
+//     *
+//     * @return true if the identified listener was found in the list, and
+//     *         removed.
+//     */
+//    public boolean removeInternalJobListener(String name) {
+//        synchronized (internalJobListeners) {
+//            return (internalJobListeners.remove(name) != null);
+//        }
+//    }
+//
+//    /**
+//     * <p>
+//     * Get a List containing all of the <code>{@link org.quartz.JobListener}</code>s
+//     * in the <code>Scheduler</code>'s <i>internal</i> list.
+//     * </p>
+//     */
+//    public List<JobListener> getInternalJobListeners() {
+//        synchronized (internalJobListeners) {
+//            return java.util.Collections.unmodifiableList(new LinkedList<JobListener>(internalJobListeners.values()));
+//        }
+//    }
+//
+//    /**
+//     * <p>
+//     * Get the <i>internal</i> <code>{@link org.quartz.JobListener}</code>
+//     * that has the given name.
+//     * </p>
+//     */
+//    public JobListener getInternalJobListener(String name) {
+//        synchronized (internalJobListeners) {
+//            return internalJobListeners.get(name);
+//        }
+//    }
+//
+//    /**
+//     * <p>
+//     * Add the given <code>{@link org.quartz.TriggerListener}</code> to the
+//     * <code>Scheduler</code>'s <i>internal</i> list.
+//     * </p>
+//     */
+//    public void addInternalTriggerListener(TriggerListener triggerListener) {
+//        if (triggerListener.getName() == null || triggerListener.getName().length() == 0) {
+//            throw new IllegalArgumentException("TriggerListener name cannot be empty.");
+//        }
+//        synchronized (internalTriggerListeners) {
+//            internalTriggerListeners.put(triggerListener.getName(), triggerListener);
+//        }
+//    }
+//
+//    /**
+//     * <p>
+//     * Remove the identified <code>{@link TriggerListener}</code> from the <code>Scheduler</code>'s
+//     * list of <i>internal</i> listeners.
+//     * </p>
+//     *
+//     * @return true if the identified listener was found in the list, and
+//     *         removed.
+//     */
+//    public boolean removeinternalTriggerListener(String name) {
+//        synchronized (internalTriggerListeners) {
+//            return (internalTriggerListeners.remove(name) != null);
+//        }
+//    }
+//
+//    /**
+//     * <p>
+//     * Get a list containing all of the <code>{@link org.quartz.TriggerListener}</code>s
+//     * in the <code>Scheduler</code>'s <i>internal</i> list.
+//     * </p>
+//     */
+//    public List<TriggerListener> getInternalTriggerListeners() {
+//        synchronized (internalTriggerListeners) {
+//            return java.util.Collections.unmodifiableList(new LinkedList<TriggerListener>(internalTriggerListeners.values()));
+//        }
+//    }
 
 //    /**
 //     * <p>

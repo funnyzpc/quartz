@@ -54,6 +54,7 @@ import javax.xml.xpath.XPathFactory;
 import org.quartz.CalendarIntervalScheduleBuilder;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.DateBuilder.IntervalUnit;
+import org.quartz.Job;
 import org.quartz.JobDetail;
 import org.quartz.JobPersistenceException;
 import org.quartz.ObjectAlreadyExistsException;
@@ -189,25 +190,29 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
           @Override
           public String getNamespaceURI(String prefix)
           {
-              if (prefix == null)
+              if (prefix == null) {
                   throw new IllegalArgumentException("Null prefix");
-              if (XMLConstants.XML_NS_PREFIX.equals(prefix))
+              }
+              if (XMLConstants.XML_NS_PREFIX.equals(prefix)) {
                   return XMLConstants.XML_NS_URI;
-              if (XMLConstants.XMLNS_ATTRIBUTE.equals(prefix))
+              }
+              if (XMLConstants.XMLNS_ATTRIBUTE.equals(prefix)) {
                   return XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
+              }
         
-              if ("q".equals(prefix))
+              if ("q".equals(prefix)) {
                   return QUARTZ_NS;
+              }
         
               return XMLConstants.NULL_NS_URI;
           }
-        
-          public Iterator<?> getPrefixes(String namespaceURI)
+          @Override
+          public Iterator<String> getPrefixes(String namespaceURI)
           {
               // This method isn't necessary for XPath processing.
               throw new UnsupportedOperationException();
           }
-        
+          @Override
           public String getPrefix(String namespaceURI)
           {
               // This method isn't necessary for XPath processing.
@@ -297,8 +302,9 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
      * delete the group is encountered.
      */
     public void addJobGroupToNeverDelete(String group) {
-        if(group != null)
+        if(group != null) {
             jobGroupsToNeverDelete.add(group);
+        }
     }
     
     /**
@@ -327,8 +333,9 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
      * delete the group is encountered.
      */
     public void addTriggerGroupToNeverDelete(String group) {
-        if(group != null)
+        if(group != null) {
             triggerGroupsToNeverDelete.add(group);
+        }
     }
     
     /**
@@ -572,7 +579,7 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
             Node jobDetailNode = jobNodes.item(i);
             String t = null;
             String jobName = getTrimmedToNullString(xpath, "q:name", jobDetailNode);
-            String jobGroup = getTrimmedToNullString(xpath, "q:group", jobDetailNode);
+//            String jobGroup = getTrimmedToNullString(xpath, "q:group", jobDetailNode);
             String jobDescription = getTrimmedToNullString(xpath, "q:description", jobDetailNode);
             String jobClassName = getTrimmedToNullString(xpath, "q:job-class", jobDetailNode);
             t = getTrimmedToNullString(xpath, "q:durability", jobDetailNode);
@@ -601,8 +608,9 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
                 jobDetail.getJobDataMap().put(key, value);
             }
             
-            if(log.isDebugEnabled())
+            if(log.isDebugEnabled()) {
                 log.debug("Parsed job definition: " + jobDetail);
+            }
 
             addJobToSchedule(jobDetail);
         }
@@ -638,10 +646,12 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
 
             //QTZ-273 : use of DatatypeConverter.parseDateTime() instead of SimpleDateFormat
             Date triggerStartTime;
-            if(startTimeFutureSecsString != null)
+            if(startTimeFutureSecsString != null) {
                 triggerStartTime = new Date(System.currentTimeMillis() + (Long.valueOf(startTimeFutureSecsString) * 1000L));
-            else 
+            }
+            else {
                 triggerStartTime = (startTimeString == null || startTimeString.length() == 0 ? new Date() : DatatypeConverter.parseDateTime(startTimeString).getTime());
+            }
             Date triggerEndTime = endTimeString == null || endTimeString.length() == 0 ? null : DatatypeConverter.parseDateTime(endTimeString).getTime();
 
 //            TriggerKey triggerKey = triggerKey(triggerName, triggerGroup);
@@ -661,21 +671,27 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
                     .withRepeatCount(repeatCount);
                 
                 if (triggerMisfireInstructionConst != null && triggerMisfireInstructionConst.length() != 0) {
-                    if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_FIRE_NOW"))
-                        ((SimpleScheduleBuilder)sched).withMisfireHandlingInstructionFireNow();
-                    else if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_EXISTING_COUNT"))
-                        ((SimpleScheduleBuilder)sched).withMisfireHandlingInstructionNextWithExistingCount();
-                    else if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_REMAINING_COUNT"))
-                        ((SimpleScheduleBuilder)sched).withMisfireHandlingInstructionNextWithRemainingCount();
-                    else if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_RESCHEDULE_NOW_WITH_EXISTING_REPEAT_COUNT"))
-                        ((SimpleScheduleBuilder)sched).withMisfireHandlingInstructionNowWithExistingCount();
-                    else if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_RESCHEDULE_NOW_WITH_REMAINING_REPEAT_COUNT"))
-                        ((SimpleScheduleBuilder)sched).withMisfireHandlingInstructionNowWithRemainingCount();
+                    if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_FIRE_NOW")) {
+                        ((SimpleScheduleBuilder) sched).withMisfireHandlingInstructionFireNow();
+                    }
+                    else if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_EXISTING_COUNT")) {
+                        ((SimpleScheduleBuilder) sched).withMisfireHandlingInstructionNextWithExistingCount();
+                    }
+                    else if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_REMAINING_COUNT")) {
+                        ((SimpleScheduleBuilder) sched).withMisfireHandlingInstructionNextWithRemainingCount();
+                    }
+                    else if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_RESCHEDULE_NOW_WITH_EXISTING_REPEAT_COUNT")) {
+                        ((SimpleScheduleBuilder) sched).withMisfireHandlingInstructionNowWithExistingCount();
+                    }
+                    else if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_RESCHEDULE_NOW_WITH_REMAINING_REPEAT_COUNT")) {
+                        ((SimpleScheduleBuilder) sched).withMisfireHandlingInstructionNowWithRemainingCount();
+                    }
                     else if(triggerMisfireInstructionConst.equals("MISFIRE_INSTRUCTION_SMART_POLICY")) {
                         // do nothing.... (smart policy is default)
                     }
-                    else
+                    else {
                         throw new ParseException("Unexpected/Unhandlable Misfire Instruction encountered '" + triggerMisfireInstructionConst + "', for trigger: " + triggerKey, -1);
+                    }
                 }
             } else if (triggerNode.getNodeName().equals("cron")) {
                 String cronExpression = getTrimmedToNullString(xpath, "q:cron-expression", triggerNode);
@@ -744,12 +760,12 @@ public class XMLSchedulingDataProcessor implements ErrorHandler {
     
     protected String getTrimmedToNullString(XPath xpathToElement, String elementName, Node parentNode) throws XPathExpressionException {
         String str = (String) xpathToElement.evaluate(elementName,parentNode, XPathConstants.STRING);
-        if(str != null)
+        if(str != null){
             str = str.trim();
-        
-        if(str != null && str.length() == 0)
+        }
+        if(str != null && str.length() == 0){
             str = null;
-        
+        }
         return str;
     }
 

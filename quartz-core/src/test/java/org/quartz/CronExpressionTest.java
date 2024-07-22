@@ -18,6 +18,9 @@ package org.quartz;
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -484,7 +487,24 @@ public class CronExpressionTest extends SerializationTestSupport {
     
     // execute with version number to generate a new version's serialized form
     public static void main(String[] args) throws Exception {
-        new CronExpressionTest().writeJobDataFile("1.5.2");
+//        new CronExpressionTest().writeJobDataFile("1.5.2");
+        new CronExpressionTest().test02();
+
     }
+
+
+    public void test02() throws ParseException {
+        final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date d = new Date();
+        CronExpression cronExpression = new CronExpression("0 0/1 * * * ?");
+        cronExpression.setTimeZone(TimeZone.getDefault());
+        cronExpression.getTimeAfter(d);
+        for(int i=0;i<10;i++ ){
+            Date nd = cronExpression.getNextValidTimeAfter(d);
+            System.out.println("fireTime: " + fmt.format(nd));
+            d=nd;
+        }
+    }
+
 
 }
