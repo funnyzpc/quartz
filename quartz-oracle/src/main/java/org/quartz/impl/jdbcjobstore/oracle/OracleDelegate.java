@@ -173,20 +173,20 @@ public class OracleDelegate extends StdJDBCDelegate {
     // protected methods that can be overridden by subclasses
     //---------------------------------------------------------------------------
 
-    @Override
-    protected Object getObjectFromBlob(ResultSet rs, String colName) throws ClassNotFoundException, IOException, SQLException {
-        Object obj = null;
-        InputStream binaryInput = rs.getBinaryStream(colName);
-        if (binaryInput != null) {
-            ObjectInputStream in = new ObjectInputStream(binaryInput);
-            try {
-                obj = in.readObject();
-            } finally {
-                in.close();
-            }
-        }
-        return obj;
-    }
+//    @Override
+//    protected Object getObjectFromBlob(ResultSet rs, String colName) throws ClassNotFoundException, IOException, SQLException {
+//        Object obj = null;
+//        InputStream binaryInput = rs.getBinaryStream(colName);
+//        if (binaryInput != null) {
+//            ObjectInputStream in = new ObjectInputStream(binaryInput);
+//            try {
+//                obj = in.readObject();
+//            } finally {
+//                in.close();
+//            }
+//        }
+//        return obj;
+//    }
 
     @Override
     public int insertJobDetail(Connection conn, JobDetail job) throws IOException, SQLException {
@@ -238,14 +238,14 @@ public class OracleDelegate extends StdJDBCDelegate {
 
     }
 
-    @Override
-    protected Object getJobDataFromBlob(ResultSet rs, String colName) throws ClassNotFoundException, IOException, SQLException {
-        if (canUseProperties()) {
-            InputStream binaryInput = rs.getBinaryStream(colName);
-            return binaryInput;
-        }
-        return getObjectFromBlob(rs, colName);
-    }
+//    @Override
+//    protected Object getJobDataFromBlob(ResultSet rs, String colName) throws ClassNotFoundException, IOException, SQLException {
+//        if (canUseProperties()) {
+//            InputStream binaryInput = rs.getBinaryStream(colName);
+//            return binaryInput;
+//        }
+//        return getObjectFromBlob(rs, colName);
+//    }
 
     @Override
     public int updateJobDetail(Connection conn, JobDetail job) throws IOException, SQLException {
