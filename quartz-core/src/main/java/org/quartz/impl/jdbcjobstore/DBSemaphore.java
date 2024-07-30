@@ -116,11 +116,13 @@ public abstract class DBSemaphore implements Semaphore, Constants,StdJDBCConstan
 //        }
         // lockName没有被当前线程本地变量持有则执行if内的
         if (!isLockOwner(lockName)) {
-            // SELECT or UPDATE QRTZ_LOCKS
+            // expandedSQL: SELECT * FROM QRTZ_LOCKS
+            // expandedInsertSQL: UPDATE QRTZ_LOCKS
             executeSQL(conn, lockName, expandedSQL, expandedInsertSQL);
 //            if(log.isDebugEnabled()) {
 //                log.debug("Lock '" + lockName + "' given to: " + Thread.currentThread().getName());
 //            }
+            // 如果 executeSQL 执行成功了，则 实例存活期间不会进入当前if代码块
             getThreadLocks().add(lockName);
             //getThreadLocksObtainer().put(lockName, new
             // Exception("Obtainer..."));

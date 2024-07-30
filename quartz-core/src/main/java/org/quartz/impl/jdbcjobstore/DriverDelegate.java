@@ -311,23 +311,23 @@ public interface DriverDelegate {
      */
     int updateJobData(Connection conn, JobDetail job) throws IOException, SQLException;
 
-    /**
-     * <p>
-     * Select the JobDetail object for a given job name / group name.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * 
-     * @return the populated JobDetail object
-     * @throws ClassNotFoundException
-     *           if a class found during deserialization cannot be found or if
-     *           the job class could not be found
-     * @throws IOException
-     *           if deserialization causes an error
-     */
-    @Deprecated
-    JobDetail selectJobDetail(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException;
+//    /**
+//     * <p>
+//     * Select the JobDetail object for a given job name / group name.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     *
+//     * @return the populated JobDetail object
+//     * @throws ClassNotFoundException
+//     *           if a class found during deserialization cannot be found or if
+//     *           the job class could not be found
+//     * @throws IOException
+//     *           if deserialization causes an error
+//     */
+//    @Deprecated
+//    JobDetail selectJobDetail(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException;
     JobDetail selectJobCfg(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException;
     /**
      * <p>

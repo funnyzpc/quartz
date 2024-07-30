@@ -119,7 +119,7 @@ public interface Constants {
     String COL_CRON_EXPRESSION = "CRON_EXPRESSION";
 
     // TABLE_BLOB_TRIGGERS columns names
-    String COL_BLOB = "BLOB_DATA";
+//    String COL_BLOB = "BLOB_DATA";
 
     String COL_TIME_ZONE_ID = "TIME_ZONE_ID";
 

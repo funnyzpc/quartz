@@ -373,7 +373,6 @@ public class QuartzSchedulerResources {
         if (jobRunShellFactory == null) {
             throw new IllegalArgumentException("JobRunShellFactory cannot be null.");
         }
-
         this.jobRunShellFactory = jobRunShellFactory;
     }
 
@@ -421,6 +420,7 @@ public class QuartzSchedulerResources {
     /**
      * Get whether to set the class load context of spawned threads to that
      * of the initializing thread.
+     * 获取是否将生成线程的类加载上下文设置为初始化线程的类负载上下文。
      */
     public boolean isThreadsInheritInitializersClassLoadContext() {
         return threadsInheritInitializersClassLoadContext;
@@ -430,8 +430,7 @@ public class QuartzSchedulerResources {
      * Set whether to set the class load context of spawned threads to that
      * of the initializing thread.
      */
-    public void setThreadsInheritInitializersClassLoadContext(
-            boolean threadsInheritInitializersClassLoadContext) {
+    public void setThreadsInheritInitializersClassLoadContext(boolean threadsInheritInitializersClassLoadContext) {
         this.threadsInheritInitializersClassLoadContext = threadsInheritInitializersClassLoadContext;
     }
 
@@ -455,46 +454,46 @@ public class QuartzSchedulerResources {
 //    public void setRMIBindName(String rmiBindName) {
 //        this.rmiBindName = rmiBindName;
 //    }
-
-    /**
-     * Get whether the QuartzScheduler should be registered with the local 
-     * MBeanServer.
-     */
-    public boolean getJMXExport() {
-        return jmxExport;
-    }
-
-    /**
-     * Set whether the QuartzScheduler should be registered with the local 
-     * MBeanServer.
-     */
-    @Deprecated
-    public void setJMXExport(boolean jmxExport) {
-        this.jmxExport = jmxExport;
-    }
-
-    /**
-     * Get the name under which the QuartzScheduler should be registered with 
-     * the local MBeanServer.  If unset, defaults to the value calculated by 
-     * <code>generateJMXObjectName<code>.
-     * 
-     * @see #generateJMXObjectName(String, String)
-     */
-    public String getJMXObjectName() {
-        return (jmxObjectName == null) ? generateJMXObjectName(name, instanceId) : jmxObjectName;
-    }
-
-    /**
-     * Set the name under which the QuartzScheduler should be registered with 
-     * the local MBeanServer.  If unset, defaults to the value calculated by 
-     * <code>generateJMXObjectName<code>.
-     * 
-     * @see #generateJMXObjectName(String, String)
-     */
-    @Deprecated
-    public void setJMXObjectName(String jmxObjectName) {
-        this.jmxObjectName = jmxObjectName;
-    }
+//
+//    /**
+//     * Get whether the QuartzScheduler should be registered with the local
+//     * MBeanServer.
+//     */
+//    public boolean getJMXExport() {
+//        return jmxExport;
+//    }
+//
+//    /**
+//     * Set whether the QuartzScheduler should be registered with the local
+//     * MBeanServer.
+//     */
+//    @Deprecated
+//    public void setJMXExport(boolean jmxExport) {
+//        this.jmxExport = jmxExport;
+//    }
+//
+//    /**
+//     * Get the name under which the QuartzScheduler should be registered with
+//     * the local MBeanServer.  If unset, defaults to the value calculated by
+//     * <code>generateJMXObjectName<code>.
+//     *
+//     * @see #generateJMXObjectName(String, String)
+//     */
+//    public String getJMXObjectName() {
+//        return (jmxObjectName == null) ? generateJMXObjectName(name, instanceId) : jmxObjectName;
+//    }
+//
+//    /**
+//     * Set the name under which the QuartzScheduler should be registered with
+//     * the local MBeanServer.  If unset, defaults to the value calculated by
+//     * <code>generateJMXObjectName<code>.
+//     *
+//     * @see #generateJMXObjectName(String, String)
+//     */
+//    @Deprecated
+//    public void setJMXObjectName(String jmxObjectName) {
+//        this.jmxObjectName = jmxObjectName;
+//    }
 
     /**
      * Get the ThreadExecutor which runs the QuartzSchedulerThread

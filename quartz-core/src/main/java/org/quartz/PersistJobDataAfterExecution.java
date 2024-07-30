@@ -24,18 +24,23 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 执行后保留作业数据
+ *
  * An annotation that marks a {@link Job} class as one that makes updates to its
  * {@link JobDataMap} during execution, and wishes the scheduler to re-store the
- * <code>JobDataMap</code> when execution completes. 
+ * <code>JobDataMap</code> when execution completes.
+ * 一种注释，将Job类标记为在执行过程中对其JobDataMap进行更新的类，并希望调度器在执行完成时重新存储JobDataMap。
  *   
  * <p>Jobs that are marked with this annotation should also seriously consider
  * using the {@link DisallowConcurrentExecution} annotation, to avoid data
  * storage race conditions with concurrently executing job instances.</p>
+ * 标记有此注释的作业还应认真考虑使用DisallowConcurrentExecution注释，以避免并发执行作业实例的数据存储竞争情况。
  *
  * @see DisallowConcurrentExecution
  * 
  * @author jhouse
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

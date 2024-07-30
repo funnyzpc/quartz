@@ -84,8 +84,7 @@ public class CronTriggerPersistenceDelegate implements TriggerPersistenceDelegat
 //            ps = conn.prepareStatement(Util.rtp(SELECT_CRON_TRIGGER, tablePrefix, schedNameLiteral));
             ps = conn.prepareStatement(Util.rtp(SELECT_CRON_EXECUTE_CFG, tablePrefix, schedNameLiteral));
             ps.setString(1, triggerKey.getName());
-            // todo ... 是否可从Key中取得
-            ps.setString(2,"CRON");
+            ps.setString(2,triggerKey.getType());
 //            ps.setString(2, triggerKey.getGroup());
             rs = ps.executeQuery();
             if (rs.next()) {

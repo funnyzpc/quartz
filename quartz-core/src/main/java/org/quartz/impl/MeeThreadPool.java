@@ -418,7 +418,7 @@ public class MeeThreadPool implements ThreadPool {
 
         /**
          * <p>
-         * Loop, executing targets as they are received.
+         * Loop, executing targets as they are received. 循环，在收到目标时执行目标。
          * </p>
          */
         @Override
@@ -435,24 +435,24 @@ public class MeeThreadPool implements ThreadPool {
                             runnable.run();
                         }
                     }
-                } catch (InterruptedException unblock) {
-                    // do nothing (loop will terminate if shutdown() was called
+                } catch (Throwable e) {
+                    // do nothing (loop will terminate if shutdown() was called 不做任何事情（如果调用了shutdown（），循环将终止
                     try {
-                        log.error("Worker thread was interrupt()'ed.", unblock);
-                    } catch(Exception e) {
-                        // ignore to help with a tomcat glitch
+                        if( e instanceof InterruptedException){
+                            log.error("Worker thread was interrupt()'ed.", e);
+                        }else{
+                            log.error("Error while executing the Runnable: ", e);
+                        }
+                    } catch(Exception e2) {
+                        // ignore to help with a tomcat glitch 忽略以帮助解决tomcat故障
+                        e.printStackTrace();
                     }
-                } catch (Throwable exceptionInRunnable) {
-                    try {
-                        log.error("Error while executing the Runnable: ", exceptionInRunnable);
-                    } catch(Exception e) {
-                        // ignore to help with a tomcat glitch
-                    }
+
                 } finally {
                     synchronized(lock) {
                         runnable = null;
                     }
-                    // repair the thread in case the runnable mucked it up...
+                    // repair the thread in case the runnable mucked it up... 修理螺纹，以防运行时把它弄坏了。。。
                     if(getPriority() != tp.getThreadPriority()) {
                         setPriority(tp.getThreadPriority());
                     }
@@ -465,12 +465,7 @@ public class MeeThreadPool implements ThreadPool {
                     }
                 }
             }
-            //if (log.isDebugEnabled())
-            try {
-                log.debug("WorkerThread is shut down.");
-            } catch(Exception e) {
-                // ignore to help with a tomcat glitch
-            }
+            log.debug("WorkerThread is shut down.");
         }
     }
 }

@@ -40,7 +40,11 @@ import org.quartz.utils.ClassUtils;
  * This implementation does not re-use any objects, it simply makes a new
  * JTAJobRunShell each time <code>borrowJobRunShell()</code> is called.
  * </p>
- * 
+ *
+ * 负责创建在org.quartz.core中使用的JobRunShell实例。QuartzScheduler实例。它将创建一个标准的JobRunShell，
+ * 除非作业类具有ExecuteInJTATransaction注释，在这种情况下，它将创建JTAJobRunShell。
+ * 此实现不重用任何对象，它只是在每次调用borrowJobRunShell（）时创建一个新的JTAJobRunShell。
+ *
  * @author James House
  */
 public class JTAAnnotationAwareJobRunShellFactory implements JobRunShellFactory {

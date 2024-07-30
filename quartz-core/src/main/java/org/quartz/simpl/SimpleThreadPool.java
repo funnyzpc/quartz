@@ -49,7 +49,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author James House
  * @author Juergen Donnerstag
  */
-@Deprecated
 public class SimpleThreadPool implements ThreadPool {
 
     /*

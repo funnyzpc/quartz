@@ -31,11 +31,14 @@ import org.quartz.spi.TriggerFiredBundle;
  * to be used within the <class>{@link org.quartz.core.QuartzScheduler}
  * </code> instance.
  * </p>
- * 
+ * 负责创建在org.quartz.core中使用的JTAJobRunShell实例。QuartzScheduler实例。
+ *
+ *
  * <p>
  * This implementation does not re-use any objects, it simply makes a new
  * JTAJobRunShell each time <code>borrowJobRunShell()</code> is called.
  * </p>
+ * 此实现不重用任何对象，它只是在每次调用borrowJobRunShell（）时创建一个新的JTAJobRunShell。
  * 
  * @author James House
  */

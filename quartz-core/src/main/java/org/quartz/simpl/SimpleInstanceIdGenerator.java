@@ -32,7 +32,7 @@ public class SimpleInstanceIdGenerator implements InstanceIdGenerator {
     @Override
     public String generateInstanceId() throws SchedulerException {
         try {
-            return InetAddress.getLocalHost().getHostName() + System.currentTimeMillis();
+            return InetAddress.getLocalHost().getHostName() +"_"+ System.currentTimeMillis();
         } catch (Exception e) {
             throw new SchedulerException("Couldn't get host name!", e);
         }

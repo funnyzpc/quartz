@@ -403,16 +403,20 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
 //    }
 
     /**
+     *  执行后保留作业数据
      * @return whether the associated Job class carries the {@link PersistJobDataAfterExecution} annotation.
      */
+    @Deprecated
     @Override
     public boolean isPersistJobDataAfterExecution() {
         return ClassUtils.isAnnotationPresent(jobClass, PersistJobDataAfterExecution.class);
     }
 
     /**
+     * 不允许并发执行
      * @return whether the associated Job class carries the {@link DisallowConcurrentExecution} annotation.
      */
+    @Deprecated
     @Override
     public boolean isConcurrentExectionDisallowed() {
         return ClassUtils.isAnnotationPresent(jobClass, DisallowConcurrentExecution.class);

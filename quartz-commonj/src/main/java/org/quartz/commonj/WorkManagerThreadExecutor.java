@@ -36,6 +36,7 @@ import javax.naming.NamingException;
  * @author matt.accola
  * @version $Revision$ $Date$
  */
+@Deprecated
 public class WorkManagerThreadExecutor implements ThreadExecutor {
     private final Logger log = LoggerFactory.getLogger(getClass());
 

@@ -9,6 +9,7 @@ package org.quartz.spi;
  * @author matt.accola
  * @version $Revision$ $Date$
  */
+@Deprecated
 public interface ThreadExecutor {
 
     /**

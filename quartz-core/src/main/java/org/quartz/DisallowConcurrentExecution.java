@@ -24,14 +24,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ *  不允许并发执行
+ *
  * An annotation that marks a {@link Job} class as one that must not have multiple
  * instances executed concurrently (where instance is based-upon a {@link JobDetail} 
  * definition - or in other words based upon a {@link JobKey}).
+ *
+ * 将作业类标记为不得同时执行多个实例的注释（其中实例基于JobDetail定义，换句话说，基于JobKey）。
  *
  * @see PersistJobDataAfterExecution
  * 
  * @author jhouse
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

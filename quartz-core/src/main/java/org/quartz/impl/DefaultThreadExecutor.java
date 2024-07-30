@@ -24,6 +24,7 @@ import org.quartz.spi.ThreadExecutor;
  * @author matt.accola
  * @version $Revision$ $Date$
  */
+@Deprecated
 public class DefaultThreadExecutor implements ThreadExecutor {
 
     @Override

@@ -1060,6 +1060,7 @@ public class StdSchedulerFactory implements SchedulerFactory {
             if (userTXLocation != null) {
                 UserTransactionHelper.setUserTxLocation(userTXLocation);
             }
+            // 默认走false,具体配置见: org.quartz.scheduler.wrapJobExecutionInUserTransaction
             if (wrapJobInTx) {
                 jrsf = new JTAJobRunShellFactory();
             } else {
@@ -1254,7 +1255,8 @@ public class StdSchedulerFactory implements SchedulerFactory {
     }
 
 
-    private void setBeanProps(Object obj, Properties props) throws NoSuchMethodException, IllegalAccessException,
+    private void setBeanProps(Object obj, Properties props)
+            throws NoSuchMethodException, IllegalAccessException,
             java.lang.reflect.InvocationTargetException,
             IntrospectionException, SchedulerConfigException {
         props.remove("class");

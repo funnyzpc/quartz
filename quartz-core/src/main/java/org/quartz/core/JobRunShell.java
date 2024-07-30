@@ -119,6 +119,7 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
         Job job = null;
         JobDetail jobDetail = firedTriggerBundle.getJobDetail();
         try {
+            // 创建job实例并补充上下文及参数
             job = sched.getJobFactory().newJob(firedTriggerBundle, scheduler);
         } catch (SchedulerException se) {
             log.error("An error occured instantiating job to be executed. job= '" + jobDetail.getKey() + "'", se);

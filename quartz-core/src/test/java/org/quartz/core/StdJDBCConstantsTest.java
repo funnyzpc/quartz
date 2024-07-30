@@ -7,6 +7,17 @@ import org.quartz.impl.jdbcjobstore.StdJDBCDelegate;
 import org.quartz.simpl.SimpleClassLoadHelper;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 /**
  * StdJDBCConstantsTest
  *
@@ -21,10 +32,59 @@ public class StdJDBCConstantsTest {
     public void test01() throws NoSuchDelegateException {
         StdJDBCDelegate stdJDBCDelegate = new StdJDBCDelegate();
         stdJDBCDelegate.initialize(LoggerFactory.getLogger(getClass()), "QRTZ_", "MEE_QUARTZ", "INSTANCE", new SimpleClassLoadHelper(), false, "");
-        String sql = StdJDBCConstants.DELETE_FIRED_TRIGGER;
+        String sql = StdJDBCConstants.DELETE_SCHEDULER_STATE;
         System.out.println(sql);
         String rtp = stdJDBCDelegate.rtp(sql);
         System.out.println(rtp);
     }
+
+    @Test
+    public void test02(){
+        String s = Integer.toBinaryString(2147483647);
+        System.out.println(s);
+        System.out.println(Integer.toBinaryString(Integer.MAX_VALUE));
+    }
+
+    ByteBuffer buffer = ByteBuffer.allocate(1024);
+//    ByteBuffer out = ByteBuffer.allocate(1024);
+
+    @Test
+    public void test03() throws Exception {
+        List<SocketChannel> scs = new ArrayList<SocketChannel>(8);
+        ServerSocketChannel ssc = ServerSocketChannel.open();
+        Selector selector = Selector.open();
+        ssc.bind( new InetSocketAddress(8000));
+        ssc.configureBlocking(false);
+        ssc.register(selector, SelectionKey.OP_ACCEPT);
+        for(;;){
+            SocketChannel sc= ssc.accept();
+            if(sc==null){
+                System.out.println("此时没有客户连接，waiting...");
+                TimeUnit.SECONDS.sleep(3);
+            }else{
+                System.out.println("有客户连接上来了...");
+                scs.add(sc);
+            }
+            TAG:
+            for(SocketChannel sct:scs){
+                sct.configureBlocking(false);
+
+                int effective = sct.read(buffer);
+                if(effective!=0){
+                    buffer.flip();
+                    System.out.println(new java.lang.String(buffer.array()));
+                    sct.close();
+//                    sct.write("hello".getBytes(StandardCharsets.UTF_8))
+                    sct.shutdownOutput();
+                    scs.remove(sct);
+                    break TAG;
+                }else{
+                    System.out.println("Client data is empty!");
+                }
+            }
+
+        }
+    }
+
 
 }

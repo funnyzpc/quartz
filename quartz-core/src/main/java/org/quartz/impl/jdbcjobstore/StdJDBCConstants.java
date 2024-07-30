@@ -110,25 +110,25 @@ public interface StdJDBCConstants extends Constants {
 
     String COUNT_MISFIRED_JOB_IN_STATE = "SELECT COUNT(TRIGGER_NAME) FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND NOT (MISFIRE_INSTR = -1) AND NEXT_FIRE_TIME < ? AND TRIGGER_STATE = ?";
     // SELECT COUNT(TRIGGER_NAME) FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND NOT (MISFIRE_INSTR = -1) AND NEXT_FIRE_TIME < ? AND TRIGGER_STATE = ?
-    String COUNT_MISFIRED_TRIGGERS_IN_STATE = "SELECT COUNT("
-        + COL_TRIGGER_NAME + ") FROM "
-        + TABLE_PREFIX_SUBST + TABLE_TRIGGERS + " WHERE "
-        + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST + " AND NOT ("
-        + COL_MISFIRE_INSTRUCTION + " = " + Trigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY + ") AND " 
-        + COL_NEXT_FIRE_TIME + " < ? " 
-        + "AND " + COL_TRIGGER_STATE + " = ?";
+//    String COUNT_MISFIRED_TRIGGERS_IN_STATE = "SELECT COUNT("
+//        + COL_TRIGGER_NAME + ") FROM "
+//        + TABLE_PREFIX_SUBST + TABLE_TRIGGERS + " WHERE "
+//        + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST + " AND NOT ("
+//        + COL_MISFIRE_INSTRUCTION + " = " + Trigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY + ") AND "
+//        + COL_NEXT_FIRE_TIME + " < ? "
+//        + "AND " + COL_TRIGGER_STATE + " = ?";
 
     String SELECT_HAS_MISFIRED_JOB_TRIGGERS_IN_STATE = "SELECT TRIGGER_NAME,SCHED_NAME,TRIGGER_TYPE FROM {0}JOB_CFG " +
             "WHERE SCHED_NAME = {1} AND NOT (MISFIRE_INSTR = -1) AND NEXT_FIRE_TIME < ? AND TRIGGER_STATE = ? ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC ";
     // SELECT TRIGGER_NAME, TRIGGER_GROUP FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND NOT (MISFIRE_INSTR = -1) AND NEXT_FIRE_TIME < ? AND TRIGGER_STATE = ? ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC
-    String SELECT_HAS_MISFIRED_TRIGGERS_IN_STATE = "SELECT "
-        + COL_TRIGGER_NAME +" , "+COL_SCHEDULER_NAME+ " FROM "
-        + TABLE_PREFIX_SUBST + TABLE_TRIGGERS + " WHERE "
-        + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST + " AND NOT ("
-        + COL_MISFIRE_INSTRUCTION + " = " + Trigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY + ") AND " 
-        + COL_NEXT_FIRE_TIME + " < ? " 
-        + "AND " + COL_TRIGGER_STATE + " = ? "
-        + "ORDER BY " + COL_NEXT_FIRE_TIME + " ASC, " + COL_PRIORITY + " DESC";
+//    String SELECT_HAS_MISFIRED_TRIGGERS_IN_STATE = "SELECT "
+//        + COL_TRIGGER_NAME +" , "+COL_SCHEDULER_NAME+ " FROM "
+//        + TABLE_PREFIX_SUBST + TABLE_TRIGGERS + " WHERE "
+//        + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST + " AND NOT ("
+//        + COL_MISFIRE_INSTRUCTION + " = " + Trigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY + ") AND "
+//        + COL_NEXT_FIRE_TIME + " < ? "
+//        + "AND " + COL_TRIGGER_STATE + " = ? "
+//        + "ORDER BY " + COL_NEXT_FIRE_TIME + " ASC, " + COL_PRIORITY + " DESC";
 //    String SELECT_HAS_MISFIRED_TRIGGERS_IN_STATE = "SELECT "
 //            + COL_TRIGGER_NAME + ", " + COL_TRIGGER_GROUP + " FROM "
 //            + TABLE_PREFIX_SUBST + TABLE_TRIGGERS + " WHERE "
@@ -478,11 +478,11 @@ public interface StdJDBCConstants extends Constants {
 //            + " = ? AND " + COL_TRIGGER_GROUP + " = ?";
 
     // UPDATE QRTZ_BLOB_TRIGGERS SET BLOB_DATA = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-    String UPDATE_BLOB_TRIGGER = "UPDATE "
-            + TABLE_PREFIX_SUBST + TABLE_BLOB_TRIGGERS + " SET " + COL_BLOB
-            + " = ? WHERE " 
-            + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST
-            + " AND " + COL_TRIGGER_NAME + " = ? ";
+//    String UPDATE_BLOB_TRIGGER = "UPDATE "
+//            + TABLE_PREFIX_SUBST + TABLE_BLOB_TRIGGERS + " SET " + COL_BLOB
+//            + " = ? WHERE "
+//            + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST
+//            + " AND " + COL_TRIGGER_NAME + " = ? ";
 //    String UPDATE_BLOB_TRIGGER = "UPDATE "
 //            + TABLE_PREFIX_SUBST + TABLE_BLOB_TRIGGERS + " SET " + COL_BLOB
 //            + " = ? WHERE "
@@ -604,16 +604,17 @@ public interface StdJDBCConstants extends Constants {
 //            + " AND " + COL_JOB_NAME + " = ? AND " + COL_JOB_GROUP
 //            + " = ?";
 
+    String UPDATE_JOB_CFG_STATES_FROM_OTHER_STATE = "UPDATE {0}JOB_CFG SET TRIGGER_STATE = ? WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? AND TRIGGER_TYPE = ? AND TRIGGER_STATE = ?";
     // UPDATE QRTZ_TRIGGERS SET TRIGGER_STATE = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ? AND TRIGGER_STATE = ?
-    String UPDATE_JOB_TRIGGER_STATES_FROM_OTHER_STATE = "UPDATE "
-            + TABLE_PREFIX_SUBST
-            + TABLE_TRIGGERS
-            + " SET "
-            + COL_TRIGGER_STATE
-            + " = ? WHERE "
-            + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST
-            + " AND " + COL_TRIGGER_NAME
-            + " = ? AND "+ COL_TRIGGER_STATE + " = ?";
+//    String UPDATE_JOB_TRIGGER_STATES_FROM_OTHER_STATE = "UPDATE "
+//            + TABLE_PREFIX_SUBST
+//            + TABLE_TRIGGERS
+//            + " SET "
+//            + COL_TRIGGER_STATE
+//            + " = ? WHERE "
+//            + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST
+//            + " AND " + COL_TRIGGER_NAME
+//            + " = ? AND "+ COL_TRIGGER_STATE + " = ?";
 //    String UPDATE_JOB_TRIGGER_STATES_FROM_OTHER_STATE = "UPDATE "
 //            + TABLE_PREFIX_SUBST
 //            + TABLE_TRIGGERS
@@ -915,6 +916,7 @@ public interface StdJDBCConstants extends Constants {
 //            + "AND (" + COL_MISFIRE_INSTRUCTION + " = -1 OR (" +COL_MISFIRE_INSTRUCTION+ " != -1 AND "+ COL_NEXT_FIRE_TIME + " >= ?)) "
 //            + "ORDER BY "+ COL_NEXT_FIRE_TIME + " ASC, " + COL_PRIORITY + " DESC";
 
+    @Deprecated
     // 写入 存储与已触发的Trigger相关的状态信息
     // INSERT INTO QRTZ_FIRED_TRIGGERS (SCHED_NAME, ENTRY_ID, TRIGGER_NAME, TRIGGER_GROUP, INSTANCE_NAME, FIRED_TIME, SCHED_TIME, STATE, JOB_NAME, JOB_GROUP, IS_NONCONCURRENT, REQUESTS_RECOVERY, PRIORITY) VALUES('MEE_QUARTZ', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     String INSERT_FIRED_TRIGGER = "INSERT INTO {0}FIRED_TRIGGERS (SCHED_NAME, ENTRY_ID, TRIGGER_NAME,TRIGGER_TYPE, INSTANCE_NAME, FIRED_TIME, SCHED_TIME, STATE, IS_NONCONCURRENT, REQUESTS_RECOVERY, PRIORITY) " +
@@ -928,6 +930,7 @@ public interface StdJDBCConstants extends Constants {
 //            + COL_REQUESTS_RECOVERY + ", " + COL_PRIORITY
 //            + ") VALUES(" + SCHED_NAME_SUBST + ", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+    @Deprecated
     // 更新 存储与已触发的Trigger相关的状态信息 根据应用实例/调度名称 + 调度器实例id
     // UPDATE QRTZ_FIRED_TRIGGERS SET INSTANCE_NAME = ?, FIRED_TIME = ?, SCHED_TIME = ?, STATE = ?, JOB_NAME = ?, JOB_GROUP = ?, IS_NONCONCURRENT = ?, REQUESTS_RECOVERY = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND ENTRY_ID = ?
     String UPDATE_FIRED_TRIGGER = "UPDATE {0}FIRED_TRIGGERS SET INSTANCE_NAME = ?, FIRED_TIME = ?, SCHED_TIME = ?, STATE = ?, IS_NONCONCURRENT = ?, REQUESTS_RECOVERY = ? " +
@@ -955,6 +958,7 @@ public interface StdJDBCConstants extends Constants {
             + " WHERE "
             + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST
             + " AND " + COL_INSTANCE_NAME + " = ?";
+
     // 查询 存储与已触发的Trigger相关的状态信息 根据应用实例/调度名称 + 调度器实例名 + 是否接受恢复执行
     // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND INSTANCE_NAME = ? AND REQUESTS_RECOVERY = ?
     String SELECT_INSTANCES_RECOVERABLE_FIRED_TRIGGERS = "SELECT * FROM "
@@ -1026,7 +1030,7 @@ public interface StdJDBCConstants extends Constants {
 //            + " WHERE "
 //            + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST
 //            + " AND " + COL_JOB_GROUP + " = ?";
-
+    @Deprecated
     // 删除 存储与已触发的Trigger相关的状态信息 根据应用实例/调度名称及实例名称 及 调度器实例id
     // DELETE FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND ENTRY_ID = ?
     String DELETE_FIRED_TRIGGER = "DELETE FROM {0}FIRED_TRIGGERS WHERE SCHED_NAME = {1} AND ENTRY_ID = ? AND TRIGGER_NAME = ? AND TRIGGER_TYPE = ? ";
@@ -1034,6 +1038,7 @@ public interface StdJDBCConstants extends Constants {
 //            + TABLE_PREFIX_SUBST + TABLE_FIRED_TRIGGERS + " WHERE "
 //            + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST
 //            + " AND " + COL_ENTRY_ID + " = ?";
+    @Deprecated
     // 删除 存储与已触发的Trigger相关的状态信息 根据应用实例/调度名称及实例名称
     // DELETE FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND INSTANCE_NAME = ?
     String DELETE_INSTANCES_FIRED_TRIGGERS = "DELETE FROM "
@@ -1072,7 +1077,8 @@ public interface StdJDBCConstants extends Constants {
 //    String DELETE_ALL_CALENDARS = "DELETE FROM " + TABLE_PREFIX_SUBST + "CALENDARS" + " WHERE " + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST;
     // 删除已暂停的Trigger组的信息 根据应用名称(调度名称)
     // DELETE FROM QRTZ_PAUSED_TRIGGER_GRPS WHERE SCHED_NAME = 'MEE_QUARTZ'
-    String DELETE_ALL_PAUSED_TRIGGER_GRPS = "DELETE FROM " + TABLE_PREFIX_SUBST + "PAUSED_TRIGGER_GRPS" + " WHERE " + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST;
+//    String DELETE_ALL_PAUSED_TRIGGER_GRPS = "DELETE FROM " + TABLE_PREFIX_SUBST + "PAUSED_TRIGGER_GRPS" + " WHERE " + COL_SCHEDULER_NAME + " = " + SCHED_NAME_SUBST;
+    @Deprecated
     // 查询已触发的Trigger相关的状态信息 ，只取实例名称
     // SELECT DISTINCT INSTANCE_NAME FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ'
     String SELECT_FIRED_TRIGGER_INSTANCE_NAMES = 

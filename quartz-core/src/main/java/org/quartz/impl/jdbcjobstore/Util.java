@@ -128,10 +128,12 @@ public final class Util {
     }
 
     public static void setBeanProps(Object obj, String[] propNames, Object[] propValues)  throws JobPersistenceException {
-        if(propNames == null || propNames.length == 0)
+        if(propNames == null || propNames.length == 0) {
             return;
-        if(propNames.length != propValues.length)
+        }
+        if(propNames.length != propValues.length) {
             throw new IllegalArgumentException("propNames[].lenght != propValues[].length");
+        }
         String name = null;
         try {
             BeanInfo bi = Introspector.getBeanInfo(obj.getClass());

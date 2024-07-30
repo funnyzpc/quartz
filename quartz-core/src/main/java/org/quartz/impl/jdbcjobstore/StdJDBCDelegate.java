@@ -529,6 +529,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     public int deleteFiredTriggers(Connection conn, String theInstanceId) throws SQLException {
         PreparedStatement ps = null;
         try {
+            // DELETE FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND INSTANCE_NAME = ?
             ps = conn.prepareStatement(rtp(DELETE_INSTANCES_FIRED_TRIGGERS));
             ps.setString(1, theInstanceId);
             return ps.executeUpdate();
@@ -569,7 +570,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //            ps = conn.prepareStatement(rtp(DELETE_ALL_CALENDARS));
 //            ps.executeUpdate();
 //            ps.close();
-            ps = conn.prepareStatement(rtp(DELETE_ALL_PAUSED_TRIGGER_GRPS));
+//            ps = conn.prepareStatement(rtp(DELETE_ALL_PAUSED_TRIGGER_GRPS));
             ps.executeUpdate();
         } finally {
             closeStatement(ps);
@@ -863,58 +864,59 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         }
     }
 
-    /**
-     * <p>
-     * Select the JobDetail object for a given job name / group name.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @return the populated JobDetail object
-     * @throws ClassNotFoundException
-     *           if a class found during deserialization cannot be found or if
-     *           the job class could not be found
-     * @throws IOException
-     *           if deserialization causes an error
-     */
-    @Override
-    public JobDetail selectJobDetail(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            // SELECT * FROM QRTZ_JOB_DETAILS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
-            ps = conn.prepareStatement(rtp(SELECT_JOB_DETAIL));
-            ps.setString(1, jobKey.getName());
-//            ps.setString(2, jobKey.getGroup());
-            rs = ps.executeQuery();
-            JobDetailImpl job = null;
-            if (rs.next()) {
-                job = new JobDetailImpl();
-                job.setKey(new Key(rs.getString(COL_TRIGGER_NAME),rs.getString(COL_SCHEDULER_NAME)));
-//                job.setName(rs.getString(COL_TRIGGER_NAME));
-//                job.setGroup(rs.getString(COL_JOB_GROUP));
-                job.setDescription(rs.getString(COL_DESCRIPTION));
-                job.setJobClass( loadHelper.loadClass(rs.getString(COL_JOB_CLASS), Job.class));
-//                job.setDurability(getBoolean(rs, COL_IS_DURABLE));
-                job.setRequestsRecovery(getBoolean(rs, COL_REQUESTS_RECOVERY));
-                Map<?, ?> map = null;
-                if (canUseProperties()) {
-//                    map = getMapFromProperties(rs);
-                } else {
-                    map = (Map<?, ?>) getObjectFromBlob(rs, COL_JOB_DATAMAP);
-                }
-                if (null != map) {
-                    job.setJobDataMap(new JobDataMap(map));
-                }
-                job.setJobDataMap(new JobDataMap(map));
+//    /**
+//     * <p>
+//     * Select the JobDetail object for a given job name / group name.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @return the populated JobDetail object
+//     * @throws ClassNotFoundException
+//     *           if a class found during deserialization cannot be found or if
+//     *           the job class could not be found
+//     * @throws IOException
+//     *           if deserialization causes an error
+//     */
+//    @Override
+//    public JobDetail selectJobDetail(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException {
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            // SELECT * FROM QRTZ_JOB_DETAILS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
+//            ps = conn.prepareStatement(rtp(SELECT_JOB_DETAIL));
+//            ps.setString(1, jobKey.getName());
+////            ps.setString(2, jobKey.getGroup());
+//            rs = ps.executeQuery();
+//            JobDetailImpl job = null;
+//            if (rs.next()) {
+//                job = new JobDetailImpl();
+//                job.setKey(new Key(rs.getString(COL_TRIGGER_NAME),rs.getString(COL_SCHEDULER_NAME)));
+////                job.setName(rs.getString(COL_TRIGGER_NAME));
+////                job.setGroup(rs.getString(COL_JOB_GROUP));
+//                job.setDescription(rs.getString(COL_DESCRIPTION));
+//                job.setJobClass( loadHelper.loadClass(rs.getString(COL_JOB_CLASS), Job.class));
+////                job.setDurability(getBoolean(rs, COL_IS_DURABLE));
+//                job.setRequestsRecovery(getBoolean(rs, COL_REQUESTS_RECOVERY));
+//                Map<?, ?> map = null;
+//                if (canUseProperties()) {
+////                    map = getMapFromProperties(rs);
+//                } else {
+//                    map = (Map<?, ?>) getObjectFromBlob(rs, COL_JOB_DATAMAP);
+//                }
+//                if (null != map) {
+//                    job.setJobDataMap(new JobDataMap(map));
+//                }
+//                job.setJobDataMap(new JobDataMap(map));
+//
+//            }
+//            return job;
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//        }
+//    }
 
-            }
-            return job;
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-        }
-    }
     @Override
     public JobDetail selectJobCfg(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException {
         PreparedStatement ps = null;
@@ -1370,7 +1372,8 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             // todo.. 需要补充参数
             ps.setString(12, trigger.getKey().getType());
             insertResult = ps.executeUpdate();
-            tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail);
+            // todo... 沒有必要的更新
+//            tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail);
         } catch (Exception e){
             e.printStackTrace();
         }finally {
@@ -1379,43 +1382,43 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         return insertResult;
     }
 
-    /**
-     * <p>
-     * Update the blob trigger data.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param trigger
-     *          the trigger to insert
-     * @return the number of rows updated
-     */
-    @Deprecated
-    public int updateBlobTrigger(Connection conn, OperableTrigger trigger) throws SQLException, IOException {
-        PreparedStatement ps = null;
-        ByteArrayOutputStream os = null;
-        try {
-            // update the blob
-            os = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(os);
-            oos.writeObject(trigger);
-            oos.close();
-
-            byte[] buf = os.toByteArray();
-            ByteArrayInputStream is = new ByteArrayInputStream(buf);
-            // UPDATE QRTZ_BLOB_TRIGGERS SET BLOB_DATA = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-            ps = conn.prepareStatement(rtp(UPDATE_BLOB_TRIGGER));
-            ps.setBinaryStream(1, is, buf.length);
-            ps.setString(2, trigger.getKey().getName());
-//            ps.setString(3, trigger.getKey().getGroup());
-            return ps.executeUpdate();
-        } finally {
-            closeStatement(ps);
-            if (os != null) {
-                os.close();
-            }
-        }
-    }
+//    /**
+//     * <p>
+//     * Update the blob trigger data.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param trigger
+//     *          the trigger to insert
+//     * @return the number of rows updated
+//     */
+//    @Deprecated
+//    public int updateBlobTrigger(Connection conn, OperableTrigger trigger) throws SQLException, IOException {
+//        PreparedStatement ps = null;
+//        ByteArrayOutputStream os = null;
+//        try {
+//            // update the blob
+//            os = new ByteArrayOutputStream();
+//            ObjectOutputStream oos = new ObjectOutputStream(os);
+//            oos.writeObject(trigger);
+//            oos.close();
+//
+//            byte[] buf = os.toByteArray();
+//            ByteArrayInputStream is = new ByteArrayInputStream(buf);
+//            // UPDATE QRTZ_BLOB_TRIGGERS SET BLOB_DATA = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
+//            ps = conn.prepareStatement(rtp(UPDATE_BLOB_TRIGGER));
+//            ps.setBinaryStream(1, is, buf.length);
+//            ps.setString(2, trigger.getKey().getName());
+////            ps.setString(3, trigger.getKey().getGroup());
+//            return ps.executeUpdate();
+//        } finally {
+//            closeStatement(ps);
+//            if (os != null) {
+//                os.close();
+//            }
+//        }
+//    }
 
     /**
      * <p>
@@ -1662,11 +1665,13 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         PreparedStatement ps = null;
         try {
             // UPDATE QRTZ_TRIGGERS SET TRIGGER_STATE = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ? AND TRIGGER_STATE = ?
-            ps = conn.prepareStatement(rtp(UPDATE_JOB_TRIGGER_STATES_FROM_OTHER_STATE));
+//            ps = conn.prepareStatement(rtp(UPDATE_JOB_TRIGGER_STATES_FROM_OTHER_STATE));
+            ps = conn.prepareStatement(rtp(UPDATE_JOB_CFG_STATES_FROM_OTHER_STATE));
             ps.setString(1, state);
             ps.setString(2, jobKey.getName());
+            ps.setString(3, jobKey.getType());
 //            ps.setString(3, jobKey.getGroup());
-            ps.setString(3, oldState);
+            ps.setString(4, oldState);
 
             return ps.executeUpdate();
         } finally {
@@ -2004,16 +2009,17 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         try {
             OperableTrigger trigger = null;
 //            ps = conn.prepareStatement(rtp(SELECT_TRIGGER));
+            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
             ps = conn.prepareStatement(rtp(SELECT_JOB_CFG));
             ps.setString(1, triggerKey.getName());
             ps.setString(2, triggerKey.getType());
             rs = ps.executeQuery();
             if (rs.next()) {
-                final String triggerName = rs.getString(COL_TRIGGER_NAME);
+//                final String triggerName = rs.getString(COL_TRIGGER_NAME);
                 String description = rs.getString(COL_DESCRIPTION);
                 long nextFireTime = rs.getLong(COL_NEXT_FIRE_TIME);
                 long prevFireTime = rs.getLong(COL_PREV_FIRE_TIME);
-                String triggerType = rs.getString(COL_TRIGGER_TYPE);
+                final String triggerType = rs.getString(COL_TRIGGER_TYPE);
                 long startTime = rs.getLong(COL_START_TIME);
                 long endTime = rs.getLong(COL_END_TIME);
                 String calendarName = rs.getString(COL_CALENDAR_NAME);
@@ -2025,7 +2031,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //                } else {
 //                    map = (Map<?, ?>) getObjectFromBlob(rs, COL_JOB_DATAMAP);
 //                }
-                final String jobData = rs.getString(COL_JOB_DATAMAP);
+//                final String jobData = rs.getString(COL_JOB_DATAMAP);
                 Date nft = null;
                 if (nextFireTime > 0) {
                     nft = new Date(nextFireTime);
@@ -2039,10 +2045,12 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                 if (endTime > 0) {
                     endTimeD = new Date(endTime);
                 }
+                // 获取 Trigger 类型 目前仅限: CronTriggerPersistenceDelegate or SimpleTriggerPersistenceDelegate
                 TriggerPersistenceDelegate tDel = findTriggerPersistenceDelegate(triggerType);
                 if(tDel == null){
                     throw new JobPersistenceException("No TriggerPersistenceDelegate for trigger discriminator type: " + triggerType);
                 }
+                // 获取对应执行时间配置 如果是 CRON 则是: CRON_EXPRESSION+TIME_ZONE_ID, 如果是SIMPLE则是：REPEAT_COUNT+REPEAT_INTERVAL+TIMES_TRIGGERED
                 TriggerPropertyBundle triggerProps = null;
                 try {
                     triggerProps = tDel.loadExtendedTriggerProperties(conn, triggerKey);
@@ -2778,11 +2786,11 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      * @param conn
      *          the DB Connection
      * @param noLaterThan
-     *          highest value of <code>getNextFireTime()</code> of the triggers (exclusive)
+     *          highest value of <code>getNextFireTime()</code> of the triggers (exclusive) 触发器的getNextFireTime（）的最高值（不包括）
      * @param noEarlierThan 
-     *          highest value of <code>getNextFireTime()</code> of the triggers (inclusive)
+     *          highest value of <code>getNextFireTime()</code> of the triggers (inclusive) 触发器的getNextFireTime（）的最高值（包括）
      * @param maxCount 
-     *          maximum number of trigger keys allow to acquired in the returning list.
+     *          maximum number of trigger keys allow to acquired in the returning list.  返回列表中允许获取的最大触发键数。
      *          
      * @return A (never null, possibly empty) list of the identifiers (Key objects) of the next triggers to be fired.
      */
@@ -2792,19 +2800,21 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         ResultSet rs = null;
         List<Key> nextTriggers = new LinkedList<Key>();
         try {
-            // SELECT TRIGGER_NAME, TRIGGER_GROUP, NEXT_FIRE_TIME, PRIORITY
-            // FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_STATE = ? AND NEXT_FIRE_TIME <= ?
-            // AND (MISFIRE_INSTR = -1 OR (MISFIRE_INSTR != -1 AND NEXT_FIRE_TIME >= ?)) ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC
-//            ps = conn.prepareStatement(rtp(SELECT_NEXT_TRIGGER_TO_ACQUIRE));
+            // SELECT TRIGGER_NAME, NEXT_FIRE_TIME, PRIORITY, SCHED_NAME,TRIGGER_TYPE FROM QRTZ_JOB_CFG
+            // WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_STATE = 'WAITING' AND NEXT_FIRE_TIME <= :noLaterThan
+            // AND (MISFIRE_INSTR = -1 OR (MISFIRE_INSTR != -1 AND NEXT_FIRE_TIME >= :noEarlierThan ))
+            // ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC
             ps = conn.prepareStatement(rtp(SELECT_NEXT_JOB_TO_ACQUIRE));
-            // Set max rows to retrieve
+            // Set max rows to retrieve 设置要检索的最大行数
             if (maxCount < 1){
-                maxCount = 1; // we want at least one trigger back.
+                maxCount = 1; // we want at least one trigger back. 我们至少要拿回一把扳机。
             }
             ps.setMaxRows(maxCount);
             
             // Try to give jdbc driver a hint to hopefully not pull over more than the few rows we actually need.
+            //     试着给jdbc驱动程序一个提示，希望不要超过我们实际需要的几行。
             // Note: in some jdbc drivers, such as MySQL, you must set maxRows before fetchSize, or you get exception!
+            //     注意：在某些jdbc驱动程序中，如MySQL，您必须在fetchSize之前设置maxRows，否则会出现异常！
             ps.setFetchSize(maxCount);
             
             ps.setString(1, STATE_WAITING);
@@ -3025,6 +3035,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         ResultSet rs = null;
         try {
             List<FiredTriggerRecord> lst = new LinkedList<FiredTriggerRecord>();
+            // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND INSTANCE_NAME = 'SCD2022121400041721196413141'
             ps = conn.prepareStatement(rtp(SELECT_INSTANCES_FIRED_TRIGGERS));
             ps.setString(1, instanceName);
             rs = ps.executeQuery();
@@ -3056,11 +3067,13 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     /**
      * <p>
      * Select the distinct instance names of all fired-trigger records.
+     * 选择所有触发记录的不同实例名称。
      * </p>
      * 
      * <p>
      * This is useful when trying to identify orphaned fired triggers (a 
-     * fired trigger without a scheduler state record.) 
+     * fired trigger without a scheduler state record.)
+     * 当试图识别孤立的触发触发器（没有调度程序状态记录的触发触发器）时，这很有用
      * </p>
      * 
      * @return a Set of String objects.
@@ -3145,6 +3158,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         PreparedStatement ps = null;
         try {
             // DELETE FROM QRTZ_SCHEDULER_STATE WHERE SCHED_NAME = 'QUARTZ-SPRINGBOOT' AND INSTANCE_NAME = 'SCD2022121400041719480527315'
+            // DELETE FROM QRTZ_SCHEDULER_STATE WHERE SCHED_NAME = 'MEE_QUARTZ' AND INSTANCE_NAME = ?
             ps = conn.prepareStatement(rtp(DELETE_SCHEDULER_STATE));
             ps.setString(1, theInstanceId);
             return ps.executeUpdate();
@@ -3337,73 +3351,73 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         return properties;
     }
 
-    /**
-     * <p>
-     * This method should be overridden by any delegate subclasses that need
-     * special handling for BLOBs. The default implementation uses standard
-     * JDBC <code>java.sql.Blob</code> operations.
-     * </p>
-     * 
-     * @param rs
-     *          the result set, already queued to the correct row
-     * @param colName
-     *          the column name for the BLOB
-     * @return the deserialized Object from the ResultSet BLOB
-     * @throws ClassNotFoundException
-     *           if a class found during deserialization cannot be found
-     * @throws IOException
-     *           if deserialization causes an error
-     */
-    protected Object getObjectFromBlob(ResultSet rs, String colName) throws ClassNotFoundException, IOException, SQLException {
-        Object obj = null;
-        Blob blobLocator = rs.getBlob(colName);
-        if (blobLocator != null && blobLocator.length() != 0) {
-            InputStream binaryInput = blobLocator.getBinaryStream();
-            if (null != binaryInput) {
-                if (binaryInput instanceof ByteArrayInputStream && ((ByteArrayInputStream) binaryInput).available() == 0 ) {
-                    //do nothing
-                } else {
-                    ObjectInputStream in = new ObjectInputStream(binaryInput);
-                    try {
-                        obj = in.readObject();
-                    } finally {
-                        in.close();
-                    }
-                }
-            }
-        }
-        return obj;
-    }
+//    /**
+//     * <p>
+//     * This method should be overridden by any delegate subclasses that need
+//     * special handling for BLOBs. The default implementation uses standard
+//     * JDBC <code>java.sql.Blob</code> operations.
+//     * </p>
+//     *
+//     * @param rs
+//     *          the result set, already queued to the correct row
+//     * @param colName
+//     *          the column name for the BLOB
+//     * @return the deserialized Object from the ResultSet BLOB
+//     * @throws ClassNotFoundException
+//     *           if a class found during deserialization cannot be found
+//     * @throws IOException
+//     *           if deserialization causes an error
+//     */
+//    protected Object getObjectFromBlob(ResultSet rs, String colName) throws ClassNotFoundException, IOException, SQLException {
+//        Object obj = null;
+//        Blob blobLocator = rs.getBlob(colName);
+//        if (blobLocator != null && blobLocator.length() != 0) {
+//            InputStream binaryInput = blobLocator.getBinaryStream();
+//            if (null != binaryInput) {
+//                if (binaryInput instanceof ByteArrayInputStream && ((ByteArrayInputStream) binaryInput).available() == 0 ) {
+//                    //do nothing
+//                } else {
+//                    ObjectInputStream in = new ObjectInputStream(binaryInput);
+//                    try {
+//                        obj = in.readObject();
+//                    } finally {
+//                        in.close();
+//                    }
+//                }
+//            }
+//        }
+//        return obj;
+//    }
 
-    /**
-     * <p>
-     * This method should be overridden by any delegate subclasses that need
-     * special handling for BLOBs for job details. The default implementation
-     * uses standard JDBC <code>java.sql.Blob</code> operations.
-     * </p>
-     * 
-     * @param rs
-     *          the result set, already queued to the correct row
-     * @param colName
-     *          the column name for the BLOB
-     * @return the deserialized Object from the ResultSet BLOB
-     * @throws ClassNotFoundException
-     *           if a class found during deserialization cannot be found
-     * @throws IOException
-     *           if deserialization causes an error
-     */
-    protected Object getJobDataFromBlob(ResultSet rs, String colName) throws ClassNotFoundException, IOException, SQLException {
-        if (canUseProperties()) {
-            Blob blobLocator = rs.getBlob(colName);
-            if (blobLocator != null) {
-                InputStream binaryInput = blobLocator.getBinaryStream();
-                return binaryInput;
-            } else {
-                return null;
-            }
-        }
-        return getObjectFromBlob(rs, colName);
-    }
+//    /**
+//     * <p>
+//     * This method should be overridden by any delegate subclasses that need
+//     * special handling for BLOBs for job details. The default implementation
+//     * uses standard JDBC <code>java.sql.Blob</code> operations.
+//     * </p>
+//     *
+//     * @param rs
+//     *          the result set, already queued to the correct row
+//     * @param colName
+//     *          the column name for the BLOB
+//     * @return the deserialized Object from the ResultSet BLOB
+//     * @throws ClassNotFoundException
+//     *           if a class found during deserialization cannot be found
+//     * @throws IOException
+//     *           if deserialization causes an error
+//     */
+//    protected Object getJobDataFromBlob(ResultSet rs, String colName) throws ClassNotFoundException, IOException, SQLException {
+//        if (canUseProperties()) {
+//            Blob blobLocator = rs.getBlob(colName);
+//            if (blobLocator != null) {
+//                InputStream binaryInput = blobLocator.getBinaryStream();
+//                return binaryInput;
+//            } else {
+//                return null;
+//            }
+//        }
+//        return getObjectFromBlob(rs, colName);
+//    }
 
 //    /**
 //     * @see org.quartz.impl.jdbcjobstore.DriverDelegate#selectPausedTriggerGroups(java.sql.Connection)

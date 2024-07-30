@@ -381,13 +381,15 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
      * Set the the time interval (in milliseconds) at which the <code>SimpleTrigger</code>
      * should repeat.
      * </p>
-     * 
+     *  设置SimpleTrigger应重复的时间间隔（以毫秒为单位）。
+     *
      * @exception IllegalArgumentException
-     *              if repeatInterval is <= 0
+     *              if repeatInterval is <= 0 非法论证异常-如果repeatInterval<=0
      */
     public void setRepeatInterval(long repeatInterval) {
-        if (repeatInterval < 0) {
-            throw new IllegalArgumentException("Repeat interval must be >= 0");
+        // 默认是毫秒，这里是间接的对锁的保护机制，如果
+        if (repeatInterval < 10) {
+            throw new IllegalArgumentException("Repeat interval must be >= 10");
         }
         this.repeatInterval = repeatInterval;
     }
