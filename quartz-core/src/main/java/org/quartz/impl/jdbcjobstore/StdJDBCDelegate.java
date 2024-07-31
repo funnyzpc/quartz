@@ -20,15 +20,11 @@ package org.quartz.impl.jdbcjobstore;
 import static org.quartz.TriggerBuilder.newTrigger;
 import static org.quartz.utils.Key.key;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.NotSerializableException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -43,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.quartz.Calendar;
 import org.quartz.ExecuteCfg;
@@ -1603,6 +1600,25 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         }
     }
 
+    @Override
+    public int updateJobCfgStateToAcquired(Connection conn,Key triggerKey, String newState, String[] oldStates) throws SQLException {
+        PreparedStatement ps = null;
+        try {
+            // UPDATE QRTZ_TRIGGERS SET TRIGGER_STATE = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ? AND TRIGGER_STATE = ?
+//            ps = conn.prepareStatement(rtp(UPDATE_TRIGGER_STATE_FROM_STATE));
+            String sql = rtp(UPDATE_JOB_STATE_FROM_STATE_RANGE).replace("%TRIGGER_STATE%",this.buildArrayStr(oldStates));
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, newState);
+            ps.setString(2, triggerKey.getName());
+//            ps.setString(3, triggerKey.getGroup());
+//            ps.setString(3, oldState);
+            ps.setString(3, triggerKey.getType());
+            return ps.executeUpdate();
+        } finally {
+            closeStatement(ps);
+        }
+    }
+
 //    /**
 //     * <p>
 //     * Update all of the triggers of the given group to the given new state, if
@@ -2804,7 +2820,9 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             // WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_STATE = 'WAITING' AND NEXT_FIRE_TIME <= :noLaterThan
             // AND (MISFIRE_INSTR = -1 OR (MISFIRE_INSTR != -1 AND NEXT_FIRE_TIME >= :noEarlierThan ))
             // ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC
-            ps = conn.prepareStatement(rtp(SELECT_NEXT_JOB_TO_ACQUIRE));
+            String sql = rtp(SELECT_NEXT_JOB_TO_ACQUIRE).replace("%TRIGGER_STATE%", this.buildArrayStr( new String[]{STATE_WAITING,STATE_ACQUIRED,STATE_EXECUTING,STATE_BLOCKED,STATE_ERROR} ) );
+
+            ps = conn.prepareStatement(sql);
             // Set max rows to retrieve 设置要检索的最大行数
             if (maxCount < 1){
                 maxCount = 1; // we want at least one trigger back. 我们至少要拿回一把扳机。
@@ -2816,10 +2834,10 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             // Note: in some jdbc drivers, such as MySQL, you must set maxRows before fetchSize, or you get exception!
             //     注意：在某些jdbc驱动程序中，如MySQL，您必须在fetchSize之前设置maxRows，否则会出现异常！
             ps.setFetchSize(maxCount);
-            
-            ps.setString(1, STATE_WAITING);
-            ps.setBigDecimal(2, new BigDecimal(String.valueOf(noLaterThan)));
-            ps.setBigDecimal(3, new BigDecimal(String.valueOf(noEarlierThan)));
+//            ps.setString(1, STATE_WAITING);
+            ps.setBigDecimal(1, new BigDecimal(String.valueOf(noLaterThan)));
+            ps.setBigDecimal(2, new BigDecimal(String.valueOf(noEarlierThan)));
+            ps.setBigDecimal(3, new BigDecimal(System.currentTimeMillis()));
             rs = ps.executeQuery();
             while (rs.next() && nextTriggers.size() < maxCount) {
 //                nextTriggers.add(triggerKey( rs.getString(COL_TRIGGER_NAME), rs.getString(COL_TRIGGER_GROUP)));
@@ -2832,6 +2850,14 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         }      
     }
 
+    // new String[]{STATE_WAITING,STATE_ACQUIRED,STATE_EXECUTING,STATE_BLOCKED,STATE_ERROR} to 'WAITING','ACQUIRED','EXECUTING','BLOCKED','ERROR'
+    private String buildArrayStr(String[] arr){
+        StringJoiner sj = new StringJoiner(",");
+        for(String item:arr){
+            sj.add("'"+item+"'");
+        }
+        return sj.toString();
+    }
     /**
      * <p>
      * Insert a fired trigger.
@@ -3180,33 +3206,32 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             closeStatement(ps);
         }
     }
-    @Override
-    public List<SchedulerStateRecord> selectSchedulerStateRecords(Connection conn, String theInstanceId) throws SQLException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            List<SchedulerStateRecord> lst = new LinkedList<SchedulerStateRecord>();
-            if (theInstanceId != null) {
-                ps = conn.prepareStatement(rtp(SELECT_SCHEDULER_STATE));
-                ps.setString(1, theInstanceId);
-            } else {
-                ps = conn.prepareStatement(rtp(SELECT_SCHEDULER_STATES));
-            }
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                SchedulerStateRecord rec = new SchedulerStateRecord();
-                rec.setSchedulerInstanceId(rs.getString(COL_INSTANCE_NAME));
-                rec.setCheckinTimestamp(rs.getLong(COL_LAST_CHECKIN_TIME));
-                rec.setCheckinInterval(rs.getLong(COL_CHECKIN_INTERVAL));
-                lst.add(rec);
-            }
-            return lst;
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-        }
-
-    }
+//    @Override
+//    public List<SchedulerStateRecord> selectSchedulerStateRecords(Connection conn, String theInstanceId) throws SQLException {
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            List<SchedulerStateRecord> lst = new LinkedList<SchedulerStateRecord>();
+//            if (theInstanceId != null) {
+//                ps = conn.prepareStatement(rtp(SELECT_SCHEDULER_STATE));
+//                ps.setString(1, theInstanceId);
+//            } else {
+//                ps = conn.prepareStatement(rtp(SELECT_SCHEDULER_STATES));
+//            }
+//            rs = ps.executeQuery();
+//            while (rs.next()) {
+//                SchedulerStateRecord rec = new SchedulerStateRecord();
+//                rec.setSchedulerInstanceId(rs.getString(COL_INSTANCE_NAME));
+//                rec.setCheckinTimestamp(rs.getLong(COL_LAST_CHECKIN_TIME));
+//                rec.setCheckinInterval(rs.getLong(COL_CHECKIN_INTERVAL));
+//                lst.add(rec);
+//            }
+//            return lst;
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//        }
+//    }
 
     //---------------------------------------------------------------------------
     // protected methods that can be overridden by subclasses

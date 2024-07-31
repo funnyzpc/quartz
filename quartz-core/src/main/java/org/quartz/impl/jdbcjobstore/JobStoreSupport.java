@@ -44,14 +44,12 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.Trigger.TriggerState;
-import org.quartz.impl.DefaultThreadExecutor;
 import org.quartz.impl.JobCfgImpl;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.JobStore;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.spi.SchedulerSignaler;
-import org.quartz.spi.ThreadExecutor;
 import org.quartz.spi.TriggerFiredBundle;
 import org.quartz.spi.TriggerFiredResult;
 import org.quartz.utils.DBConnectionManager;
@@ -153,7 +151,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     
     private final Logger log = LoggerFactory.getLogger(getClass());
     
-    private ThreadExecutor threadExecutor = new DefaultThreadExecutor();
+//    private ThreadExecutor threadExecutor = new DefaultThreadExecutor();
     
     private volatile boolean schedulerRunning = false;
     private volatile boolean shutdown = false;
@@ -260,13 +258,13 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         //
     }
     
-    public void setThreadExecutor(ThreadExecutor threadExecutor) {
-        this.threadExecutor = threadExecutor;
-    }
-    
-    public ThreadExecutor getThreadExecutor() {
-        return threadExecutor;
-    }
+//    public void setThreadExecutor(ThreadExecutor threadExecutor) {
+//        this.threadExecutor = threadExecutor;
+//    }
+//
+//    public ThreadExecutor getThreadExecutor() {
+//        return threadExecutor;
+//    }
     
 
     /**
@@ -2767,7 +2765,8 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                     //  我们现在有一个已获取的触发器，让我们将其添加到返回列表中。
                     //  如果我们的触发器不再处于预期状态，请尝试新的触发器。
                     //  内部执行的是:　UPDATE {0}JOB_CFG SET TRIGGER_STATE = 'ACQUIRED' WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? AND TRIGGER_STATE = ? and TRIGGER_TYPE = 'WAITING'
-                    int rowsUpdated = getDelegate().updateTriggerStateFromOtherState(conn, triggerKey, STATE_ACQUIRED, STATE_WAITING);
+//                    int rowsUpdated = getDelegate().updateTriggerStateFromOtherState(conn, triggerKey, STATE_ACQUIRED, STATE_WAITING);
+                    int rowsUpdated = getDelegate().updateJobCfgStateToAcquired(conn, triggerKey, STATE_ACQUIRED,new String[]{STATE_WAITING,STATE_ACQUIRED,STATE_EXECUTING,STATE_BLOCKED,STATE_ERROR});
                     if (rowsUpdated <= 0) {
                         // 小于0意味着状态已经发生变化需要从新循环从数据库捞数据
                         continue; // next trigger
@@ -3192,6 +3191,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
             // Before we make the potentially expensive call to acquire the 
             // trigger lock, peek ahead to see if it is likely we would find
             // misfired triggers requiring recovery.
+            // 在我们做出可能代价高昂的调用以获取触发锁之前，请提前查看我们是否可能发现需要恢复的误触发。
             int misfireCount = (getDoubleCheckLockMisfireHandler()) ?
                 getDelegate().countMisfiredTriggersInState(conn, STATE_WAITING, getMisfireTime()) :
                 Integer.MAX_VALUE;
@@ -3249,141 +3249,142 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     // Cluster management methods 集群管理方法
     //---------------------------------------------------------------------------
 
-    protected boolean firstCheckIn = true;
+//    protected boolean firstCheckIn = true;
 
     protected long lastCheckin = System.currentTimeMillis();
 
-    /**
-     * 执行checkIn
-     * @return boolean
-     * @throws JobPersistenceException
-     */
-    protected boolean doCheckin() throws JobPersistenceException {
-        // 这个变量标识的是 TRIGGER_ACCESS 是否被锁定(DB行锁)，若为true则会在finally中被释放
-        boolean transOwner = false;
-        // 这个变量标识的是 STATE_ACCESS 是否被锁定(DB行锁)，若为true则会在finally中被释放
-        boolean transStateOwner = false;
-        boolean recovered = false;
-        // 获取非管理事物连接
-        Connection conn = getNonManagedTXConnection();
-        try {
-            // Other than the first time, always checkin first to make sure there is 
-            // work to be done before we acquire the lock (since that is expensive, 
-            // and is almost never necessary).  This must be done in a separate
-            // transaction to prevent a deadlock under recovery conditions.
-            // 除了第一次，总是先签入，以确保在获得锁之前有工作要做（因为这很昂贵，而且几乎从来都不是必要的）。这必须在单独的事务中完成，以防止在恢复条件下出现死锁。
-            List<SchedulerStateRecord> failedRecords = null;
-            // 非第一次checkin进入 firstCheckIn=false
-            if (!firstCheckIn) {
-                failedRecords = clusterCheckIn(conn);
-                commitConnection(conn);
-            }
-            // 第一次checkin进入 firstCheckIn=true
-            if (firstCheckIn || (failedRecords.size() > 0)) {
-                // 获取锁有三种实现 SimpleSemaphore JTANonClusteredSemaphore DBSemaphore ，前两者为单机使用，DBSemaphore为集群使用
-                // 1.执行相应锁 1)SELECT * FROM QRTZ_LOCKS 2)UPDATE QRTZ_LOCKS
-                // 2.将 STATE_ACCESS 放入到 ThreadLocal
-                getLockHandler().obtainLock(conn, LOCK_STATE_ACCESS);
-                transStateOwner = true; // for STATE_ACCESS tag
-                // Now that we own the lock, make sure we still have work to do.
-                // The first time through, we also need to make sure we update/create our state record
-                // 既然我们拥有了锁，请确保我们还有工作要做。
-                // 第一次通过时，我们还需要确保更新/创建状态记录
-                // clusterCheckIn: 获取所有已经失效的 SCHEDULER_STATE 记录,并尝试更新当前实例的 LAST_CHECKIN_TIME ，如果更新失败则写入
-                // findFailedInstances: 从 SCHEDULER_STATE 获取所有已经失效的(last_checkin_time)记录+孤立的触发器(FIRED_TRIGGERS)
-                failedRecords = (firstCheckIn) ? clusterCheckIn(conn) : findFailedInstances(conn);
-                if (failedRecords.size() > 0) {
-                    // 只要执行了 obtainLock 就一定要 releaseLock 否则容易死锁
-                    getLockHandler().obtainLock(conn, LOCK_TRIGGER_ACCESS);
-                    //getLockHandler().obtainLock(conn, LOCK_JOB_ACCESS);
-                    transOwner = true; // for  TRIGGER_ACCESS tag
-                    // 1. 循环 failedRecords 并从 QRTZ_FIRED_TRIGGERS 获取 对应 QRTZ_FIRED_TRIGGERS 对应记录（firedTriggerRecs）
-                    // 2. 循环 firedTriggerRecs 并调整 triggers 中的记录状态(BLOCKED->WAITING,PAUSED_BLOCKED->PAUSED,ACQUIRED->WAITING)
-                    // 3. job请求恢复(jobRequestsRecovery): 构建个SIMPLE触发器，同时将其存储至JOB_CFG
-                    // 4. job不允许并发执行: 变更 triggers 中记录状态(BLOCKED->WAITING,PAUSED_BLOCKED->PAUSED)
-                    // 5. 根据 firedTriggerRecs 每一项删除 对应 QRTZ_FIRED_TRIGGERS
-                    // 6. 根据 firedTriggerRecs 循环的来的 Key's 循环获取 firedTriggers(QRTZ_FIRED_TRIGGERS) 并删除 QRTZ_TRIGGERS
-                    // 7. 根据 failedInstances 循环并匹配 QRTZ_SCHEDULER_STATE:INSTANCE_NAME，若匹配则删除对应 QRTZ_SCHEDULER_STATE 记录
-                    // 8.
-                    // todo... 先删除，后续考虑调整逻辑~
-//                    clusterRecover(conn, failedRecords);
-                    recovered = true;
-                }
-            }
-            commitConnection(conn);
-        } catch (JobPersistenceException e) {
-            rollbackConnection(conn);
-            throw e;
-        } finally {
-            try {
-                releaseLock(LOCK_TRIGGER_ACCESS, transOwner);
-            } finally {
-                try {
-                    releaseLock(LOCK_STATE_ACCESS, transStateOwner);
-                } finally {
-                    cleanupConnection(conn);
-                }
-            }
-        }
-        firstCheckIn = false;
-        return recovered;
-    }
-
-    /**
-     * Get a list of all scheduler instances in the cluster that may have failed.
-     * This includes this scheduler if it is checking in for the first time.
-     * 获取群集中可能已失败的所有计划程序实例的列表。如果是第一次签入，则包括此调度程序。
-     */
-    protected List<SchedulerStateRecord> findFailedInstances(Connection conn) throws JobPersistenceException {
-        try {
-            List<SchedulerStateRecord> failedInstances = new LinkedList<SchedulerStateRecord>();
-            boolean foundThisScheduler = false;
-            long timeNow = System.currentTimeMillis();
-            // 获取当前应用下所有 SCHEDULER_STATE 记录
-            List<SchedulerStateRecord> states = getDelegate().selectSchedulerStateRecords(conn, null);
-            for(SchedulerStateRecord rec: states) {
-                // find own record... 查找当前实例记录，一定是当前应用中的当前实例
-                if (rec.getSchedulerInstanceId().equals(getInstanceId())) {
-                    foundThisScheduler = true;
-                    // 并且是第一次checkIn的
-                    if (firstCheckIn) {
-                        failedInstances.add(rec);
-                    }
-                } else {
-                    // find failed instances... 查找失败的实例
-                    //  scheduler_state:last_checkin_time+13.5S < now
-                    if (calcFailedIfAfter(rec) < timeNow) {
-                        failedInstances.add(rec);
-                    }
-                }
-            }
-            // todo ... 是去掉了，是否还有替代方案???
-//            // The first time through, also check for orphaned fired triggers.
-//            // 第一次通过时，还要检查孤立的触发器。
-//            if (firstCheckIn) {
-//                // 1.从 FIRED_TRIGGERS 查找当前实例下所有的，并移除包含 states 的
-//                // 2.1的结果添加至 failedInstances
-//                failedInstances.addAll(findOrphanedFailedInstances(conn, states));
+//    /**
+//     * 执行checkIn
+//     * @return boolean
+//     * @throws JobPersistenceException
+//     */
+//    protected boolean doCheckin() throws JobPersistenceException {
+//        // 这个变量标识的是 TRIGGER_ACCESS 是否被锁定(DB行锁)，若为true则会在finally中被释放
+//        boolean transOwner = false;
+//        // 这个变量标识的是 STATE_ACCESS 是否被锁定(DB行锁)，若为true则会在finally中被释放
+//        boolean transStateOwner = false;
+//        boolean recovered = false;
+//        // 获取非管理事物连接
+//        Connection conn = getNonManagedTXConnection();
+//        try {
+//            // Other than the first time, always checkin first to make sure there is 
+//            // work to be done before we acquire the lock (since that is expensive, 
+//            // and is almost never necessary).  This must be done in a separate
+//            // transaction to prevent a deadlock under recovery conditions.
+//            // 除了第一次，总是先签入，以确保在获得锁之前有工作要做（因为这很昂贵，而且几乎从来都不是必要的）。这必须在单独的事务中完成，以防止在恢复条件下出现死锁。
+//            List<SchedulerStateRecord> failedRecords = null;
+//            // 非第一次checkin进入 firstCheckIn=false
+//            if (!firstCheckIn) {
+//                failedRecords = clusterCheckIn(conn);
+//                commitConnection(conn);
 //            }
-            
-            // If not the first time but we didn't find our own instance, then
-            // Someone must have done recovery for us.
-            // 如果不是第一次，但我们没有找到自己的实例，那么一定有人为我们做了恢复。
-            if ((!foundThisScheduler) && (!firstCheckIn)) {
-                // FUTURE_TODO: revisit when handle self-failed-out impl'ed (see FUTURE_TODO in clusterCheckIn() below)
-                getLog().warn(
-                    "This scheduler instance (" + getInstanceId() + ") is still " + 
-                    "active but was recovered by another instance in the cluster.  " +
-                    "This may cause inconsistent behavior.");
-            }
-            return failedInstances;
-        } catch (Exception e) {
-            e.printStackTrace();
-            lastCheckin = System.currentTimeMillis();
-            throw new JobPersistenceException("Failure identifying failed instances when checking-in: " + e.getMessage(), e);
-        }
-    }
-    
+//            // 第一次checkin进入 firstCheckIn=true
+//            if (firstCheckIn || (failedRecords.size() > 0)) {
+//                // 获取锁有三种实现 SimpleSemaphore JTANonClusteredSemaphore DBSemaphore ，前两者为单机使用，DBSemaphore为集群使用
+//                // 1.执行相应锁 1)SELECT * FROM QRTZ_LOCKS 2)UPDATE QRTZ_LOCKS
+//                // 2.将 STATE_ACCESS 放入到 ThreadLocal
+//                getLockHandler().obtainLock(conn, LOCK_STATE_ACCESS);
+//                transStateOwner = true; // for STATE_ACCESS tag
+//                // Now that we own the lock, make sure we still have work to do.
+//                // The first time through, we also need to make sure we update/create our state record
+//                // 既然我们拥有了锁，请确保我们还有工作要做。
+//                // 第一次通过时，我们还需要确保更新/创建状态记录
+//                // clusterCheckIn: 获取所有已经失效的 SCHEDULER_STATE 记录,并尝试更新当前实例的 LAST_CHECKIN_TIME ，如果更新失败则写入
+//                // findFailedInstances: 从 SCHEDULER_STATE 获取所有已经失效的(last_checkin_time)记录+孤立的触发器(FIRED_TRIGGERS)
+////                failedRecords = (firstCheckIn) ? clusterCheckIn(conn) : findFailedInstances(conn);
+//                failedRecords =  clusterCheckIn(conn);
+//                if (failedRecords.size() > 0) {
+//                    // 只要执行了 obtainLock 就一定要 releaseLock 否则容易死锁
+//                    getLockHandler().obtainLock(conn, LOCK_TRIGGER_ACCESS);
+//                    //getLockHandler().obtainLock(conn, LOCK_JOB_ACCESS);
+//                    transOwner = true; // for  TRIGGER_ACCESS tag
+//                    // 1. 循环 failedRecords 并从 QRTZ_FIRED_TRIGGERS 获取 对应 QRTZ_FIRED_TRIGGERS 对应记录（firedTriggerRecs）
+//                    // 2. 循环 firedTriggerRecs 并调整 triggers 中的记录状态(BLOCKED->WAITING,PAUSED_BLOCKED->PAUSED,ACQUIRED->WAITING)
+//                    // 3. job请求恢复(jobRequestsRecovery): 构建个SIMPLE触发器，同时将其存储至JOB_CFG
+//                    // 4. job不允许并发执行: 变更 triggers 中记录状态(BLOCKED->WAITING,PAUSED_BLOCKED->PAUSED)
+//                    // 5. 根据 firedTriggerRecs 每一项删除 对应 QRTZ_FIRED_TRIGGERS
+//                    // 6. 根据 firedTriggerRecs 循环的来的 Key's 循环获取 firedTriggers(QRTZ_FIRED_TRIGGERS) 并删除 QRTZ_TRIGGERS
+//                    // 7. 根据 failedInstances 循环并匹配 QRTZ_SCHEDULER_STATE:INSTANCE_NAME，若匹配则删除对应 QRTZ_SCHEDULER_STATE 记录
+//                    // 8.
+//                    // todo... 先删除，后续考虑调整逻辑~
+////                    clusterRecover(conn, failedRecords);
+//                    recovered = true;
+//                }
+//            }
+//            commitConnection(conn);
+//        } catch (JobPersistenceException e) {
+//            rollbackConnection(conn);
+//            throw e;
+//        } finally {
+//            try {
+//                releaseLock(LOCK_TRIGGER_ACCESS, transOwner);
+//            } finally {
+//                try {
+//                    releaseLock(LOCK_STATE_ACCESS, transStateOwner);
+//                } finally {
+//                    cleanupConnection(conn);
+//                }
+//            }
+//        }
+//        firstCheckIn = false;
+//        return recovered;
+//    }
+
+//    /**
+//     * Get a list of all scheduler instances in the cluster that may have failed.
+//     * This includes this scheduler if it is checking in for the first time.
+//     * 获取群集中可能已失败的所有计划程序实例的列表。如果是第一次签入，则包括此调度程序。
+//     */
+//    protected List<SchedulerStateRecord> findFailedInstances(Connection conn) throws JobPersistenceException {
+//        try {
+//            List<SchedulerStateRecord> failedInstances = new LinkedList<SchedulerStateRecord>();
+//            boolean foundThisScheduler = false;
+//            long timeNow = System.currentTimeMillis();
+//            // 获取当前应用下所有 SCHEDULER_STATE 记录
+//            List<SchedulerStateRecord> states = getDelegate().selectSchedulerStateRecords(conn, null);
+//            for(SchedulerStateRecord rec: states) {
+//                // find own record... 查找当前实例记录，一定是当前应用中的当前实例
+//                if (rec.getSchedulerInstanceId().equals(getInstanceId())) {
+//                    foundThisScheduler = true;
+//                    // 并且是第一次checkIn的
+//                    if (firstCheckIn) {
+//                        failedInstances.add(rec);
+//                    }
+//                } else {
+//                    // find failed instances... 查找失败的实例
+//                    //  scheduler_state:last_checkin_time+13.5S < now
+//                    if (calcFailedIfAfter(rec) < timeNow) {
+//                        failedInstances.add(rec);
+//                    }
+//                }
+//            }
+//            // todo ... 是去掉了，是否还有替代方案???
+////            // The first time through, also check for orphaned fired triggers.
+////            // 第一次通过时，还要检查孤立的触发器。
+////            if (firstCheckIn) {
+////                // 1.从 FIRED_TRIGGERS 查找当前实例下所有的，并移除包含 states 的
+////                // 2.1的结果添加至 failedInstances
+////                failedInstances.addAll(findOrphanedFailedInstances(conn, states));
+////            }
+//
+//            // If not the first time but we didn't find our own instance, then
+//            // Someone must have done recovery for us.
+//            // 如果不是第一次，但我们没有找到自己的实例，那么一定有人为我们做了恢复。
+//            if ((!foundThisScheduler) && (!firstCheckIn)) {
+//                // FUTURE_TODO: revisit when handle self-failed-out impl'ed (see FUTURE_TODO in clusterCheckIn() below)
+//                getLog().warn(
+//                    "This scheduler instance (" + getInstanceId() + ") is still " +
+//                    "active but was recovered by another instance in the cluster.  " +
+//                    "This may cause inconsistent behavior.");
+//            }
+//            return failedInstances;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            lastCheckin = System.currentTimeMillis();
+//            throw new JobPersistenceException("Failure identifying failed instances when checking-in: " + e.getMessage(), e);
+//        }
+//    }
+//
 //    /**
 //     * Create dummy <code>SchedulerStateRecord</code> objects for fired triggers
 //     * that have no scheduler state record.  Checkin timestamp and interval are
@@ -3422,30 +3423,30 @@ public abstract class JobStoreSupport implements JobStore, Constants {
             7500L;
     }
 
-    /**
-     * 获取群集中可能已失败的所有计划程序实例的列表
-     * @param conn
-     * @return
-     * @throws JobPersistenceException
-     */
-    protected List<SchedulerStateRecord> clusterCheckIn(Connection conn) throws JobPersistenceException {
-        // 获取所有已经失效的 SCHEDULER_STATE 记录
-        List<SchedulerStateRecord> failedInstances = findFailedInstances(conn);
-        try {
-            // FUTURE_TODO: handle self-failed-out
-            // check in... ( check in 就是任务之前那一刻(也可以说是前一刻)的时间 )
-            lastCheckin = System.currentTimeMillis();
-            // 数据库有实例记录则更新，否则写入 （QRTZ_SCHEDULER_STATE）
-            // UPDATE QRTZ_SCHEDULER_STATE SET LAST_CHECKIN_TIME = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND INSTANCE_NAME = ?
-            if(getDelegate().updateSchedulerState(conn, getInstanceId(), lastCheckin) == 0) {
-                // INSERT INTO {0}SCHEDULER_STATE
-                getDelegate().insertSchedulerState(conn, getInstanceId(), lastCheckin, getClusterCheckinInterval());
-            }
-        } catch (Exception e) {
-            throw new JobPersistenceException("Failure updating scheduler state when checking-in: "+ e.getMessage(), e);
-        }
-        return failedInstances;
-    }
+//    /**
+//     * 获取群集中可能已失败的所有计划程序实例的列表
+//     * @param conn
+//     * @return
+//     * @throws JobPersistenceException
+//     */
+//    protected List<SchedulerStateRecord> clusterCheckIn(Connection conn) throws JobPersistenceException {
+//        // 获取所有已经失效的 SCHEDULER_STATE 记录
+//        List<SchedulerStateRecord> failedInstances = findFailedInstances(conn);
+//        try {
+//            // FUTURE_TODO: handle self-failed-out
+//            // check in... ( check in 就是任务之前那一刻(也可以说是前一刻)的时间 )
+//            lastCheckin = System.currentTimeMillis();
+//            // 数据库有实例记录则更新，否则写入 （QRTZ_SCHEDULER_STATE）
+//            // UPDATE QRTZ_SCHEDULER_STATE SET LAST_CHECKIN_TIME = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND INSTANCE_NAME = ?
+//            if(getDelegate().updateSchedulerState(conn, getInstanceId(), lastCheckin) == 0) {
+//                // INSERT INTO {0}SCHEDULER_STATE
+//                getDelegate().insertSchedulerState(conn, getInstanceId(), lastCheckin, getClusterCheckinInterval());
+//            }
+//        } catch (Exception e) {
+//            throw new JobPersistenceException("Failure updating scheduler state when checking-in: "+ e.getMessage(), e);
+//        }
+//        return failedInstances;
+//    }
 
     // 群集恢复
     @SuppressWarnings("ConstantConditions")
@@ -3836,9 +3837,10 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         }
         // schedulerStarted -> initialize
         public void initialize() {
-            this.manage();
-            ThreadExecutor executor = getThreadExecutor();
-            executor.execute(ClusterManager.this);
+//            this.manage();
+//            ThreadExecutor executor = getThreadExecutor();
+//            executor.execute(ClusterManager.this);
+            ClusterManager.this.start();
         }
 
         public void shutdown() {
@@ -3866,30 +3868,30 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                     } catch (Exception ignore) {
                     }
                 }
-                if (!shutdown && this.manage()) {
+                if (!shutdown /*&& this.manage()*/) {
                     signalSchedulingChangeImmediately(0L);
                 }
             }//while !shutdown
         }
 
-        // schedulerStarted -> initialize -> manage
-        // run -> manage
-        private boolean manage() {
-            boolean res = false;
-            try {
-                res = doCheckin();
-                // 完成之后错误次数要重置为0
-                numFails = 0;
-                getLog().debug("ClusterManager: Check-in complete.");
-            } catch (Exception e) {
-                // 减少日志产生
-                if(numFails % 4 == 0) {
-                    getLog().error("ClusterManager: Error managing cluster: " + e.getMessage(), e);
-                }
-                numFails++;
-            }
-            return res;
-        }
+//        // schedulerStarted -> initialize -> manage
+//        // run -> manage
+//        private boolean manage() {
+//            boolean res = false;
+//            try {
+//                res = doCheckin();
+//                // 完成之后错误次数要重置为0
+//                numFails = 0;
+//                getLog().debug("ClusterManager: Check-in complete.");
+//            } catch (Exception e) {
+//                // 减少日志产生
+//                if(numFails % 4 == 0) {
+//                    getLog().error("ClusterManager: Error managing cluster: " + e.getMessage(), e);
+//                }
+//                numFails++;
+//            }
+//            return res;
+//        }
 
     }
 
@@ -3911,8 +3913,9 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         }
 
         public void initialize() {
-            ThreadExecutor executor = getThreadExecutor();
-            executor.execute(MisfireHandler.this);
+//            ThreadExecutor executor = getThreadExecutor();
+//            executor.execute(MisfireHandler.this);
+            MisfireHandler.this.start();
         }
 
         public void shutdown() {
@@ -3939,7 +3942,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         public void run() {
             while (!shutdown) {
                 long sTime = System.currentTimeMillis();
-                RecoverMisfiredJobsResult recoverMisfiredJobsResult = manage();
+                RecoverMisfiredJobsResult recoverMisfiredJobsResult = this.manage();
                 if (recoverMisfiredJobsResult.getProcessedMisfiredTriggerCount() > 0) {
                     signalSchedulingChangeImmediately(recoverMisfiredJobsResult.getEarliestNewTime());
                 }

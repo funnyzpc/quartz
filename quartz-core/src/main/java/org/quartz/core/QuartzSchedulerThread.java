@@ -532,13 +532,13 @@ public class QuartzSchedulerThread extends Thread {
     private boolean releaseIfScheduleChangedSignificantly(List<OperableTrigger> triggers, long triggerTime) {
         // 一般是:通知点火时间 < 任务点火时间
         if (isCandidateNewTimeEarlierWithinReason(triggerTime, true)) {
-            // above call does a clearSignaledSchedulingChange()
-            for (OperableTrigger trigger : triggers) {
-                // 这里面大致处理有：
-                //  1.把对应 job_cfg 中的 state in (ACQUIRED,BLOCKED) 改为 WAITING 状态
-                //  2.把对应 FIRED_TRIGGERS 删除
-                qsRsrcs.getJobStore().releaseAcquiredTrigger(trigger);
-            }
+//            // above call does a clearSignaledSchedulingChange()
+//            for (OperableTrigger trigger : triggers) {
+//                // 这里面大致处理有：
+//                //  1.把对应 job_cfg 中的 state in (ACQUIRED,BLOCKED) 改为 WAITING 状态
+//                //  2.把对应 FIRED_TRIGGERS 删除
+//                qsRsrcs.getJobStore().releaseAcquiredTrigger(trigger);
+//            }
             // 清理触发器
             triggers.clear();
             return true;
@@ -589,7 +589,8 @@ public class QuartzSchedulerThread extends Thread {
 //                earlier = true;
 //            }
             // signaledNextFireTime:发出下次点火时间的信号,这个参数一开始就是0
-            System.out.println("getSignaledNextFireTime()="+getSignaledNextFireTime()+", oldTime="+oldTime);
+//            System.out.println("getSignaledNextFireTime()="+getSignaledNextFireTime()+", oldTime="+oldTime);
+//            log.info("getSignaledNextFireTime()="+getSignaledNextFireTime()+", oldTime="+oldTime);
             boolean earlier = getSignaledNextFireTime() == 0 || getSignaledNextFireTime() < oldTime ?true:false;
             if(earlier) {
                 // so the new time is considered earlier, but is it enough earlier? 所以新的时间被认为更早，但足够早吗？

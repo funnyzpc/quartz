@@ -32,7 +32,6 @@ import org.quartz.ee.jta.UserTransactionHelper;
 import org.quartz.impl.jdbcjobstore.JobStoreSupport;
 import org.quartz.impl.jdbcjobstore.Semaphore;
 import org.quartz.impl.jdbcjobstore.TablePrefixAware;
-import org.quartz.impl.matchers.EverythingMatcher;
 import org.quartz.management.ManagementRESTServiceConfiguration;
 import org.quartz.simpl.RAMJobStore;
 import org.quartz.simpl.SimpleThreadPool;
@@ -41,7 +40,6 @@ import org.quartz.spi.InstanceIdGenerator;
 import org.quartz.spi.JobFactory;
 import org.quartz.spi.JobStore;
 import org.quartz.spi.SchedulerPlugin;
-import org.quartz.spi.ThreadExecutor;
 import org.quartz.spi.ThreadPool;
 import org.quartz.utils.ConnectionProvider;
 import org.quartz.utils.DBConnectionManager;
@@ -63,7 +61,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.security.AccessControlException;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -272,9 +269,9 @@ public class StdSchedulerFactory implements SchedulerFactory {
 
     public static final String AUTO_GENERATE_INSTANCE_ID = "AUTO";
 
-    public static final String PROP_THREAD_EXECUTOR = "org.quartz.threadExecutor";
+//    public static final String PROP_THREAD_EXECUTOR = "org.quartz.threadExecutor";
 
-    public static final String PROP_THREAD_EXECUTOR_CLASS = "org.quartz.threadExecutor.class";
+//    public static final String PROP_THREAD_EXECUTOR_CLASS = "org.quartz.threadExecutor.class";
 
     public static final String SYSTEM_PROPERTY_AS_INSTANCE_ID = "SYS_PROP";
     
@@ -592,7 +589,8 @@ public class StdSchedulerFactory implements SchedulerFactory {
         long dbFailureRetry = 15000L; // 15 secs
         String classLoadHelperClass;
         String jobFactoryClass;
-        ThreadExecutor threadExecutor;
+//        ThreadExecutor threadExecutor;
+//        Thread threadExecutor;
 
         SchedulerRepository schedRep = SchedulerRepository.getInstance();
         // Get Scheduler Properties
@@ -1037,21 +1035,22 @@ public class StdSchedulerFactory implements SchedulerFactory {
         // Get ThreadExecutor Properties 获取线程执行器属性
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        String threadExecutorClass = cfg.getStringProperty(PROP_THREAD_EXECUTOR_CLASS);
-        if (threadExecutorClass != null) {
-            tProps = cfg.getPropertyGroup(PROP_THREAD_EXECUTOR, true);
-            try {
-                threadExecutor = (ThreadExecutor) loadHelper.loadClass(threadExecutorClass).newInstance();
-                log.info("Using custom implementation for ThreadExecutor: " + threadExecutorClass);
-                setBeanProps(threadExecutor, tProps);
-            } catch (Exception e) {
-                initException = new SchedulerException("ThreadExecutor class '" + threadExecutorClass + "' could not be instantiated.", e);
-                throw initException;
-            }
-        } else {
-            log.info("Using default implementation for ThreadExecutor");
-            threadExecutor = new DefaultThreadExecutor();
-        }
+//        final String threadExecutorClass = cfg.getStringProperty(PROP_THREAD_EXECUTOR_CLASS);
+//        if (threadExecutorClass != null) {
+//            tProps = cfg.getPropertyGroup(PROP_THREAD_EXECUTOR, true);
+//            try {
+//                threadExecutor = (Thread) loadHelper.loadClass(threadExecutorClass).newInstance();
+//                log.info("Using custom implementation for ThreadExecutor: " + threadExecutorClass);
+//                setBeanProps(threadExecutor, tProps);
+//            } catch (Exception e) {
+//                initException = new SchedulerException("ThreadExecutor class '" + threadExecutorClass + "' could not be instantiated.", e);
+//                throw initException;
+//            }
+//        } else {
+//            log.info("Using default implementation for ThreadExecutor");
+////            threadExecutor = new DefaultThreadExecutor();
+//            threadExecutor = new Thread();
+//        }
 
         // Fire everything up
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1103,7 +1102,7 @@ public class StdSchedulerFactory implements SchedulerFactory {
                 if(threadsInheritInitalizersClassLoader){
                     jjs.setThreadsInheritInitializersClassLoadContext(threadsInheritInitalizersClassLoader);
                 }
-                jjs.setThreadExecutor(threadExecutor);
+//                jjs.setThreadExecutor(threadExecutor);
             }
     
             QuartzSchedulerResources rsrcs = new QuartzSchedulerResources();
@@ -1133,8 +1132,8 @@ public class StdSchedulerFactory implements SchedulerFactory {
 //                rsrcs.setRMIBindName(rmiBindName);
 //            }
             SchedulerDetailsSetter.setDetails(tp, schedName, schedInstId);
-            rsrcs.setThreadExecutor(threadExecutor);
-            threadExecutor.initialize();
+//            rsrcs.setThreadExecutor(threadExecutor);
+//            threadExecutor.initialize();
 
             rsrcs.setThreadPool(tp);
             if(tp instanceof SimpleThreadPool) {

@@ -17,10 +17,14 @@ public interface ThreadExecutor {
      *
      * @param thread the thread to execute
      */
-    void execute(Thread thread);
+    default void execute(Thread thread){
+        thread.start();
+    }
 
     /**
      * Initialize any state prior to calling {@link #execute(Thread)}
      */
-    void initialize();
+    default void initialize(){
+
+    }
 }

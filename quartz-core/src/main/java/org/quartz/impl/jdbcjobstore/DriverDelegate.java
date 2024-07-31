@@ -446,6 +446,7 @@ public interface DriverDelegate {
      * @throws SQLException
      */
     int updateTriggerStateFromOtherState(Connection conn,Key triggerKey, String newState, String oldState) throws SQLException;
+    int updateJobCfgStateToAcquired(Connection conn,Key triggerKey, String newState, String[] oldStates) throws SQLException;
 
     /**
      * <p>
@@ -1061,20 +1062,20 @@ public interface DriverDelegate {
      */
     int updateSchedulerState(Connection conn, String instanceId, long checkInTime) throws SQLException;
     
-    /**
-     * <p>
-     * A List of all current <code>SchedulerStateRecords</code>.
-     * </p>
-     * 
-     * <p>
-     * If instanceId is not null, then only the record for the identified
-     * instance will be returned.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     */
-    List<SchedulerStateRecord> selectSchedulerStateRecords(Connection conn, String instanceId) throws SQLException;
+//    /**
+//     * <p>
+//     * A List of all current <code>SchedulerStateRecords</code>.
+//     * </p>
+//     *
+//     * <p>
+//     * If instanceId is not null, then only the record for the identified
+//     * instance will be returned.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     */
+//    List<SchedulerStateRecord> selectSchedulerStateRecords(Connection conn, String instanceId) throws SQLException;
 
     /**
      * Clear (delete!) all scheduling data - all {@link Job}s, {@link Trigger}s

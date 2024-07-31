@@ -56,7 +56,6 @@ import org.quartz.spi.JobFactory;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.spi.SchedulerPlugin;
 import org.quartz.spi.SchedulerSignaler;
-import org.quartz.spi.ThreadExecutor;
 import org.quartz.utils.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,8 +194,9 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
             addInternalJobListener((JobListener)resources.getJobStore());
         }
         this.schedThread = new QuartzSchedulerThread(this, resources);
-        ThreadExecutor schedThreadExecutor = resources.getThreadExecutor();
-        schedThreadExecutor.execute(this.schedThread); // 启动
+//        ThreadExecutor schedThreadExecutor = resources.getThreadExecutor();
+//        schedThreadExecutor.execute(this.schedThread); // 启动
+        this.schedThread.start();
         // 空闲等待时间，默认是-1
         if (idleWaitTime > 0) {
             this.schedThread.setIdleWaitTime(idleWaitTime);
@@ -763,7 +763,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
         OperableTrigger trig = (OperableTrigger)trigger;
         // todo ...
-        if (trigger.getKey() == null) {
+        if (trig.getKey() == null) {
             trig.setKey(jobDetail.getKey());
         } else if (!trigger.getKey().equals(jobDetail.getKey())) {
             throw new SchedulerException("Trigger does not reference given job!");

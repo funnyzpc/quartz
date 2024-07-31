@@ -173,9 +173,12 @@ public interface Constants {
      * @deprecated Whether a trigger has misfired is no longer a state, but 
      * rather now identified dynamically by whether the trigger's next fire 
      * time is more than the misfire threshold time in the past.
+     *
+     * 触发器是否失火不再是一种状态，而是现在通过触发器的下一次点火时间是否超过过去的失火阈值时间来动态识别。
      */
+    @Deprecated
     String STATE_MISFIRED = "MISFIRED";
-
+    @Deprecated
     String ALL_GROUPS_PAUSED = "_$_ALL_GROUPS_PAUSED_$_";
 
     // TRIGGER TYPES

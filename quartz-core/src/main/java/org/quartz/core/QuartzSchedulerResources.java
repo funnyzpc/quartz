@@ -24,7 +24,6 @@ import java.util.List;
 import org.quartz.management.ManagementRESTServiceConfiguration;
 import org.quartz.spi.JobStore;
 import org.quartz.spi.SchedulerPlugin;
-import org.quartz.spi.ThreadExecutor;
 import org.quartz.spi.ThreadPool;
 
 /**
@@ -75,14 +74,15 @@ public class QuartzSchedulerResources {
 
     private boolean threadsInheritInitializersClassLoadContext = false;
 
-    @Deprecated
-    private boolean jmxExport;
-    @Deprecated
-    private String jmxObjectName;
+//    @Deprecated
+//    private boolean jmxExport;
+//    @Deprecated
+//    private String jmxObjectName;
 
     private ManagementRESTServiceConfiguration managementRESTServiceConfiguration;
 
-    private ThreadExecutor threadExecutor;
+//    private ThreadExecutor threadExecutor;
+//    private Thread threadExecutor;
 
     private long batchTimeWindow = 0;
 
@@ -495,32 +495,32 @@ public class QuartzSchedulerResources {
 //        this.jmxObjectName = jmxObjectName;
 //    }
 
-    /**
-     * Get the ThreadExecutor which runs the QuartzSchedulerThread
-     */
-    public ThreadExecutor getThreadExecutor() {
-        return threadExecutor;
-    }
+//    /**
+//     * Get the ThreadExecutor which runs the QuartzSchedulerThread
+//     */
+//    public Thread getThreadExecutor() {
+//        return threadExecutor;
+//    }
+//
+//    /**
+//     * Set the ThreadExecutor which runs the QuartzSchedulerThread
+//     */
+//    public void setThreadExecutor(Thread threadExecutor) {
+//        this.threadExecutor = threadExecutor;
+//    }
 
-    /**
-     * Set the ThreadExecutor which runs the QuartzSchedulerThread
-     */
-    public void setThreadExecutor(ThreadExecutor threadExecutor) {
-        this.threadExecutor = threadExecutor;
-    }
-
-    /**
-     * Create the name under which this scheduler should be registered in JMX.
-     * <p>
-     * The name is composed as:
-     * quartz:type=QuartzScheduler,name=<i>[schedName]</i>,instance=<i>[schedInstId]</i>
-     * </p>
-     */
-    public static String generateJMXObjectName(String schedName, String schedInstId) {
-        return "quartz:type=QuartzScheduler" + ",name="
-            + schedName.replaceAll(":|=|\n", ".")
-            + ",instance=" + schedInstId;
-    }
+//    /**
+//     * Create the name under which this scheduler should be registered in JMX.
+//     * <p>
+//     * The name is composed as:
+//     * quartz:type=QuartzScheduler,name=<i>[schedName]</i>,instance=<i>[schedInstId]</i>
+//     * </p>
+//     */
+//    public static String generateJMXObjectName(String schedName, String schedInstId) {
+//        return "quartz:type=QuartzScheduler" + ",name="
+//            + schedName.replaceAll(":|=|\n", ".")
+//            + ",instance=" + schedInstId;
+//    }
 
     /**
      * 默认是 0 ，具体参见配置: org.quartz.scheduler.batchTriggerAcquisitionFireAheadTimeWindow
