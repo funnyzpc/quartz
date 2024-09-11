@@ -141,7 +141,7 @@ public class QuartzInitializerListener implements ServletContextListener {
      *
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-
+    @Override
     public void contextInitialized(ServletContextEvent sce) {
         log.info("Quartz Initializer Servlet loaded, initializing Scheduler...");
         ServletContext servletContext = sce.getServletContext();
@@ -169,16 +169,19 @@ public class QuartzInitializerListener implements ServletContextListener {
 
             // Should the Scheduler being started now or later
             String startOnLoad = servletContext.getInitParameter("quartz:start-on-load");
-            if(startOnLoad == null)
+            if(startOnLoad == null) {
                 startOnLoad = servletContext.getInitParameter("start-scheduler-on-load");
+            }
 
             int startDelay = 0;
             String startDelayS = servletContext.getInitParameter("quartz:start-delay-seconds");
-            if(startDelayS == null)
+            if(startDelayS == null) {
                 startDelayS = servletContext.getInitParameter("start-delay-seconds");
+            }
             try {
-                if(startDelayS != null && startDelayS.trim().length() > 0)
+                if(startDelayS != null && startDelayS.trim().length() > 0) {
                     startDelay = Integer.parseInt(startDelayS);
+                }
             } catch(Exception e) {
                 log.error("Cannot parse value of 'start-delay-seconds' to an integer: " + startDelayS + ", defaulting to 5 seconds.");
                 startDelay = 5;

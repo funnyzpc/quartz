@@ -73,6 +73,7 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
     private Object result;
     
     private HashMap<Object, Object> data = new HashMap<Object, Object>();
+    private String dataStr;
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,6 +88,7 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
      * Create a JobExcecutionContext with the given context data.
      * </p>
      */
+    @Deprecated
     public JobExecutionContextImpl(Scheduler scheduler, TriggerFiredBundle firedBundle, Job job) {
         this.scheduler = scheduler;
         this.trigger = firedBundle.getTrigger();
@@ -102,6 +104,22 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
         this.jobDataMap = new JobDataMap();
         this.jobDataMap.putAll(jobDetail.getJobDataMap());
 //        this.jobDataMap.putAll(trigger.getJobDataMap());
+    }
+
+    public JobExecutionContextImpl(Scheduler scheduler,JobDetail jobDetail, Job job) {
+        this.scheduler = scheduler;
+//        this.trigger = firedBundle.getTrigger();
+//        this.calendar = firedBundle.getCalendar();
+        this.jobDetail = jobDetail;
+        this.job = job;
+        this.fireTime = jobDetail.getEJob().getFireTime();
+        this.scheduledFireTime = jobDetail.getEJob().getScheduledFireTime();
+        this.prevFireTime = new Date(jobDetail.getEJob().getPrevFireTime());
+        this.nextFireTime = new Date(jobDetail.getEJob().getNextFireTime());
+        // todo 考虑是否需要序列化
+        this.dataStr = jobDetail.getEJob().getJob().getJobData();
+        this.jobDataMap = new JobDataMap();
+        this.jobDataMap.putAll(jobDetail.getJobDataMap());
     }
 
     /*
@@ -275,6 +293,10 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
     @Override
     public String getFireInstanceId() {
         return ((OperableTrigger)trigger).getFireInstanceId();
+    }
+    @Override
+    public String getDataStr(){
+        return dataStr;
     }
 
     @Override

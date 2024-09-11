@@ -25,7 +25,8 @@ import org.quartz.spi.SchedulerSignaler;
 /**
  * An interface to be used by <code>JobStore</code> instances in order to
  * communicate signals back to the <code>QuartzScheduler</code>.
- * 
+ *  一个由JobStore实例使用的接口，用于将信号传递回QuartzScheduler。
+ *
  * @author jhouse
  */
 public class SchedulerSignalerImpl implements SchedulerSignaler {

@@ -90,7 +90,9 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
     private boolean shouldRecover = false;
 
 //    private transient JobKey key = null;
+    @Deprecated
     private transient Key key = null;
+    private transient QrtzExecute eJob;
 
     /*
     * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,8 +116,15 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
      */
     public JobDetailImpl() {
         // do nothing...
+        this.eJob=null;
     }
-
+    public JobDetailImpl(QrtzExecute eJob) {
+        this.eJob=eJob;
+        this.jobClass=eJob.getJobClazz();
+//        setName(name);
+//        this.setKey(new Key(triggerName));
+//        setJobClass(jobClass);
+    }
     /**
      * <p>
      * Create a <code>JobDetail</code> with the given name, given class, default group,
@@ -131,6 +140,7 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
 //        setName(name);
         this.setKey(new Key(triggerName));
         setJobClass(jobClass);
+        this.eJob=null;
     }
 
 //    /**
@@ -152,28 +162,28 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
 //        setGroup(group);
 //        setJobClass(jobClass);
 //    }
-
-    /**
-     * <p>
-     * Create a <code>JobDetail</code> with the given name, and group, and
-     * the given settings of all the other properties.
-     * </p>
-     * 
-     * @param group if <code>null</code>, Scheduler.DEFAULT_GROUP will be used.
-     * 
-     * @exception IllegalArgumentException
-     *              if name is null or empty, or the group is an empty string.
-     *              
-     * @deprecated use {@link JobBuilder}              
-     */
-    @Deprecated
-    public JobDetailImpl(String triggerName, /*String group, */Class<? extends Job> jobClass,/*boolean durability,*/ boolean recover) {
-        this.setKey(new Key(triggerName));
-//        setGroup(group);
-        setJobClass(jobClass);
-//        setDurability(durability);
-        setRequestsRecovery(recover);
-    }
+//
+//    /**
+//     * <p>
+//     * Create a <code>JobDetail</code> with the given name, and group, and
+//     * the given settings of all the other properties.
+//     * </p>
+//     *
+//     * @param group if <code>null</code>, Scheduler.DEFAULT_GROUP will be used.
+//     *
+//     * @exception IllegalArgumentException
+//     *              if name is null or empty, or the group is an empty string.
+//     *
+//     * @deprecated use {@link JobBuilder}
+//     */
+//    @Deprecated
+//    public JobDetailImpl(String triggerName, /*String group, */Class<? extends Job> jobClass,/*boolean durability,*/ boolean recover) {
+//        this.setKey(new Key(triggerName));
+////        setGroup(group);
+//        setJobClass(jobClass);
+////        setDurability(durability);
+//        setRequestsRecovery(recover);
+//    }
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -307,9 +317,12 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
      */
     @Override
     public Class<? extends Job> getJobClass() {
-        return jobClass;
+        return this.jobClass;
     }
-
+    @Override
+    public String getJobClassName(){
+        return eJob.getJob().getJobClass();
+    }
     /**
      * <p>
      * Set the instance of <code>Job</code> that will be executed.
@@ -439,7 +452,7 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
     public String toString() {
 //        return "JobDetail '" + getFullName() + "':  jobClass: '"
         return "JobDetail :  jobClass: '"
-                + ((getJobClass() == null) ? null : getJobClass().getName())
+                + getJobClassName()
                 + " concurrentExectionDisallowed: " + isConcurrentExectionDisallowed() 
                 + " persistJobDataAfterExecution: " + isPersistJobDataAfterExecution() 
                 + /*" isDurable: " + isDurable() +*/ " requestsRecovers: " + requestsRecovery();
@@ -491,4 +504,14 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
             .withIdentity(getKey());
         return b;
     }
+    @Override
+    public QrtzExecute getEJob() {
+        return eJob;
+    }
+    // 这个只是预留，正常都需要从构造函数传入!
+    public JobDetailImpl setEJob(QrtzExecute eJob) {
+        this.eJob=eJob;
+        return this;
+    }
+
 }

@@ -17,6 +17,7 @@
 
 package org.quartz;
 
+import org.quartz.impl.QrtzExecute;
 import org.quartz.utils.Key;
 
 import java.io.Serializable;
@@ -68,6 +69,7 @@ public interface JobDetail extends Serializable, Cloneable {
      * </p>
      */
     Class<? extends Job> getJobClass();
+    String getJobClassName();
 
     /**
      * <p>
@@ -128,5 +130,7 @@ public interface JobDetail extends Serializable, Cloneable {
      * <code>JobDetail</code> identical to this one.
      */
     JobBuilder getJobBuilder();
+
+    QrtzExecute getEJob();
 
 }

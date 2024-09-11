@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerContext;
 import org.quartz.SchedulerException;
@@ -73,7 +74,17 @@ public class PropertySettingJobFactory extends SimpleJobFactory {
         setBeanProps(job, jobDataMap);
         return job;
     }
-    
+    @Override
+    public Job newJob(Scheduler scheduler, JobDetail jobDetail) throws SchedulerException {
+        Job job = super.newJob( scheduler,jobDetail);
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.putAll(scheduler.getContext());
+        jobDataMap.putAll(jobDetail.getJobDataMap());
+//        jobDataMap.putAll(bundle.getTrigger().getJobDataMap());
+        setBeanProps(job, jobDataMap);
+        return job;
+    }
+
     protected void setBeanProps(Object obj, JobDataMap data) throws SchedulerException {
         BeanInfo bi = null;
         try {

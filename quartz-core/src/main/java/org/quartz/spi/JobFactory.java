@@ -17,6 +17,7 @@
 package org.quartz.spi;
 
 import org.quartz.Job;
+import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
@@ -62,5 +63,6 @@ public interface JobFactory {
      * @return the newly instantiated Job
      */
     Job newJob(TriggerFiredBundle bundle, Scheduler scheduler) throws SchedulerException;
+    Job newJob(Scheduler scheduler, JobDetail jobDetail) throws SchedulerException;
 
 }

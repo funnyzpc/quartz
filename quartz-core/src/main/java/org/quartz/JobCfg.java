@@ -1,7 +1,5 @@
 package org.quartz;
 
-import org.quartz.impl.JobCfgImpl;
-
 /**
  * JobCfg
  *
@@ -10,6 +8,7 @@ import org.quartz.impl.JobCfgImpl;
  * @className JobCfg
  * @date 2024/7/12 13:27
  */
+@Deprecated
 public interface JobCfg {
     String getSchedName();
     JobCfg setSchedName(String schedName);

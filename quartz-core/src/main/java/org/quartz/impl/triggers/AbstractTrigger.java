@@ -24,12 +24,10 @@ import org.quartz.Calendar;
 import org.quartz.CronTrigger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.ScheduleBuilder;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
 import org.quartz.TriggerUtils;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.utils.Key;
@@ -570,33 +568,33 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
     @Override
     public abstract Date getStartTime();
 
-    /**
-     * <p>
-     * The time at which the trigger's scheduling should start.  May or may not
-     * be the first actual fire time of the trigger, depending upon the type of
-     * trigger and the settings of the other properties of the trigger.  However
-     * the first actual first time will not be before this date.
-     * </p>
-     * <p>
-     * Setting a value in the past may cause a new trigger to compute a first
-     * fire time that is in the past, which may cause an immediate misfire
-     * of the trigger.
-     * </p>
-     */
-    @Override
-    public abstract void setStartTime(Date startTime);
+//    /**
+//     * <p>
+//     * The time at which the trigger's scheduling should start.  May or may not
+//     * be the first actual fire time of the trigger, depending upon the type of
+//     * trigger and the settings of the other properties of the trigger.  However
+//     * the first actual first time will not be before this date.
+//     * </p>
+//     * <p>
+//     * Setting a value in the past may cause a new trigger to compute a first
+//     * fire time that is in the past, which may cause an immediate misfire
+//     * of the trigger.
+//     * </p>
+//     */
+//    @Override
+//    public abstract void setStartTime(Date startTime);
 
-    /**
-     * <p>
-     * Set the time at which the <code>Trigger</code> should quit repeating -
-     * regardless of any remaining repeats (based on the trigger's particular 
-     * repeat settings). 
-     * </p>
-     * 
-     * @see TriggerUtils#computeEndTimeToAllowParticularNumberOfFirings(org.quartz.spi.OperableTrigger, org.quartz.Calendar, int)
-     */
-    @Override
-    public abstract void setEndTime(Date endTime);
+//    /**
+//     * <p>
+//     * Set the time at which the <code>Trigger</code> should quit repeating -
+//     * regardless of any remaining repeats (based on the trigger's particular
+//     * repeat settings).
+//     * </p>
+//     *
+//     * @see TriggerUtils#computeEndTimeToAllowParticularNumberOfFirings(org.quartz.spi.OperableTrigger, org.quartz.Calendar, int)
+//     */
+//    @Override
+//    public abstract void setEndTime(Date endTime);
 
     /**
      * <p>
@@ -878,19 +876,19 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
         }
         return copy;
     }
-    @Override
-    public TriggerBuilder<T> getTriggerBuilder() {
-        return TriggerBuilder.newTrigger()
-//            .forJob(getJobKey())
-            .modifiedByCalendar(getCalendarName())
-//            .usingJobData(getJobDataMap())
-            .withDescription(getDescription())
-            .endAt(getEndTime())
-            .withIdentity(getKey())
-            .withPriority(getPriority())
-            .startAt(getStartTime())
-            .withSchedule(getScheduleBuilder());
-    }
-    @Override
-    public abstract ScheduleBuilder<T> getScheduleBuilder();
+//    @Override
+//    public TriggerBuilder<T> getTriggerBuilder() {
+//        return TriggerBuilder.newTrigger()
+////            .forJob(getJobKey())
+//            .modifiedByCalendar(getCalendarName())
+////            .usingJobData(getJobDataMap())
+//            .withDescription(getDescription())
+//            .endAt(getEndTime())
+//            .withIdentity(getKey())
+//            .withPriority(getPriority())
+//            .startAt(getStartTime())
+//            .withSchedule(getScheduleBuilder());
+//    }
+//    @Override
+//    public abstract ScheduleBuilder<T> getScheduleBuilder();
 }

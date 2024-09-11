@@ -19,12 +19,13 @@
 package org.quartz.ee.jta;
 
 import org.quartz.ExecuteInJTATransaction;
+import org.quartz.Job;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerConfigException;
 import org.quartz.SchedulerException;
 import org.quartz.core.JobRunShell;
 import org.quartz.core.JobRunShellFactory;
-import org.quartz.spi.TriggerFiredBundle;
+import org.quartz.impl.QrtzExecute;
 import org.quartz.utils.ClassUtils;
 
 /**
@@ -58,6 +59,8 @@ public class JTAAnnotationAwareJobRunShellFactory implements JobRunShellFactory 
      */
 
     private Scheduler scheduler;
+
+//    private final ClassLoadHelper classLoadHelper;
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,6 +96,30 @@ public class JTAAnnotationAwareJobRunShellFactory implements JobRunShellFactory 
         this.scheduler = sched;
     }
 
+//    /**
+//     * <p>
+//     * Called by the <class>{@link org.quartz.core.QuartzSchedulerThread}
+//     * </code> to obtain instances of <code>
+//     * {@link org.quartz.core.JobRunShell}</code>.
+//     * </p>
+//     */
+//    @Deprecated
+//    @Override
+//    public JobRunShell createJobRunShell(TriggerFiredBundle bundle) throws SchedulerException {
+//        ExecuteInJTATransaction jtaAnnotation = ClassUtils.getAnnotation(bundle.getJobDetail().getJobClass(), ExecuteInJTATransaction.class);
+//        if(jtaAnnotation == null){
+//            return new JobRunShell(scheduler, bundle);
+//        }
+//        else {
+//            int timeout = jtaAnnotation.timeout();
+//            if (timeout >= 0) {
+//                return new JTAJobRunShell(scheduler, bundle, timeout);
+//            } else {
+//                return new JTAJobRunShell(scheduler, bundle);
+//            }
+//        }
+//    }
+
     /**
      * <p>
      * Called by the <class>{@link org.quartz.core.QuartzSchedulerThread}
@@ -101,20 +128,27 @@ public class JTAAnnotationAwareJobRunShellFactory implements JobRunShellFactory 
      * </p>
      */
     @Override
-    public JobRunShell createJobRunShell(TriggerFiredBundle bundle) throws SchedulerException {
-        ExecuteInJTATransaction jtaAnnotation = ClassUtils.getAnnotation(bundle.getJobDetail().getJobClass(), ExecuteInJTATransaction.class);
+    public JobRunShell createJobRunShell(QrtzExecute eJob) throws SchedulerException {
+//        Class<? extends Job> jobClass= null;
+//        try {
+//            jobClass = classLoadHelper.loadClass(eJob.getJob().getJobClass(), Job.class);
+//        } catch (ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
+        Class<? extends Job> jobClazz = eJob.getJobClazz();
+        ExecuteInJTATransaction jtaAnnotation = (jobClazz!=null)?ClassUtils.getAnnotation(jobClazz, ExecuteInJTATransaction.class):null;
         if(jtaAnnotation == null){
-            return new JobRunShell(scheduler, bundle);
+            return new JobRunShell(scheduler,eJob,null);
         }
         else {
             int timeout = jtaAnnotation.timeout();
+            // todo : 这部分可以优化 jobClazz
             if (timeout >= 0) {
-                return new JTAJobRunShell(scheduler, bundle, timeout);
+                return new JTAJobRunShell(scheduler,eJob,jobClazz,timeout);
             } else {
-                return new JTAJobRunShell(scheduler, bundle);
+                return new JTAJobRunShell(scheduler,eJob,jobClazz,null);
             }
         }
     }
-
 
 }

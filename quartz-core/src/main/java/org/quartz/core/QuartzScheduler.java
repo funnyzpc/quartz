@@ -140,7 +140,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
     
     private HashMap<String, JobListener> internalJobListeners = new HashMap<String, JobListener>(10);
 
-    private HashMap<String, TriggerListener> internalTriggerListeners = new HashMap<String, TriggerListener>(10);
+//    private HashMap<String, TriggerListener> internalTriggerListeners = new HashMap<String, TriggerListener>(10);
 
     private ArrayList<SchedulerListener> internalSchedulerListeners = new ArrayList<SchedulerListener>(10);
 
@@ -196,7 +196,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         this.schedThread = new QuartzSchedulerThread(this, resources);
 //        ThreadExecutor schedThreadExecutor = resources.getThreadExecutor();
 //        schedThreadExecutor.execute(this.schedThread); // 启动
-        this.schedThread.start();
+//        this.schedThread.start();
         // 空闲等待时间，默认是-1
         if (idleWaitTime > 0) {
             this.schedThread.setIdleWaitTime(idleWaitTime);
@@ -488,7 +488,9 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //        notifySchedulerListenersStarting();
         if (initialStart == null) {
             initialStart = new Date();
-            this.resources.getJobStore().schedulerStarted();            
+            this.resources.getJobStore().schedulerStarted();
+            // 这里是保证 clusterMisfireHandler.preProcess() 优先执行
+            this.schedThread.start();
             startPlugins();
         } else {
             resources.getJobStore().schedulerResumed();
@@ -758,7 +760,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         if (jobDetail.getKey() == null) {
             throw new SchedulerException("Job's key cannot be null");
         }
-        if (jobDetail.getJobClass() == null) {
+        if (jobDetail.getJobClassName() == null) {
             throw new SchedulerException("Job's class cannot be null");
         }
         OperableTrigger trig = (OperableTrigger)trigger;

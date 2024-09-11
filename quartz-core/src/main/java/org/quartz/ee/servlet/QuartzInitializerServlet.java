@@ -187,8 +187,9 @@ public class QuartzInitializerServlet extends HttpServlet {
             int startDelay = 0;
             String startDelayS = cfg.getInitParameter("start-delay-seconds");
             try {
-                if(startDelayS != null && startDelayS.trim().length() > 0)
+                if(startDelayS != null && startDelayS.trim().length() > 0) {
                     startDelay = Integer.parseInt(startDelayS);
+                }
             } catch(Exception e) {
                 log("Cannot parse value of 'start-delay-seconds' to an integer: " + startDelayS + ", defaulting to 5 seconds.", e);
                 startDelay = 5;
@@ -219,11 +220,9 @@ public class QuartzInitializerServlet extends HttpServlet {
                 factoryKey = QUARTZ_FACTORY_KEY;
             }
             
-            log("Storing the Quartz Scheduler Factory in the servlet context at key: "
-                    + factoryKey);
+            log("Storing the Quartz Scheduler Factory in the servlet context at key: " + factoryKey);
             cfg.getServletContext().setAttribute(factoryKey, factory);
-            
-            
+
             String servletCtxtKey = cfg.getInitParameter("scheduler-context-servlet-context-key");
             if (servletCtxtKey != null) {
                 log("Storing the ServletContext in the scheduler context at key: " + servletCtxtKey);

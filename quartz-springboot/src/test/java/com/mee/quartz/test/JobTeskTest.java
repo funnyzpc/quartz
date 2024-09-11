@@ -175,16 +175,16 @@ public class JobTeskTest {
         scheduler.deleteJob(new Key("Job02TestService::01任务"));
     }
 
-    @Test
-    public void test06() throws SchedulerException {
-        HashMap data_map = new HashMap(4,1);
-        data_map.put("_D","NO description");
-        data_map.put("_CT", System.currentTimeMillis());
-        String jsonData = JacksonUtil.toJsonString(data_map);
-        JobCfgImpl jobCfg = new JobCfgImpl("Job02TestService::task01","com.mee.quartz.job.Job02TestService","CRON","NO description",jsonData);
-        ExecuteCfgImpl executeCfg = new ExecuteCfgImpl("Job02TestService::task01","0 0/1 * * * ?");
-        Date date = scheduler.scheduleJobAndExecute(jobCfg, executeCfg);
-
-    }
+//    @Test
+//    public void test06() throws SchedulerException {
+//        HashMap data_map = new HashMap(4,1);
+//        data_map.put("_D","NO description");
+//        data_map.put("_CT", System.currentTimeMillis());
+//        String jsonData = JacksonUtil.toJsonString(data_map);
+//        JobCfgImpl jobCfg = new JobCfgImpl("Job02TestService::task01","com.mee.quartz.job.Job02TestService","CRON","NO description",jsonData);
+//        ExecuteCfgImpl executeCfg = new ExecuteCfgImpl("Job02TestService::task01","0 0/1 * * * ?");
+//        Date date = scheduler.scheduleJobAndExecute(jobCfg, executeCfg);
+//
+//    }
 
 }

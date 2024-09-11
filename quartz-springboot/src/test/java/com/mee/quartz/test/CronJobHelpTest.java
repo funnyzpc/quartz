@@ -1,7 +1,7 @@
 package com.mee.quartz.test;
 
 import org.junit.jupiter.api.Test;
-import org.quartz.impl.triggers.CronJobHelp;
+//import org.quartz.impl.triggers.CronJobHelp;
 
 /**
  * CronJobHelpTest
@@ -15,7 +15,7 @@ public class CronJobHelpTest {
 
     @Test
     public void test01(){
-        CronJobHelp cronJobHelp = new CronJobHelp();
+//        CronJobHelp cronJobHelp = new CronJobHelp();
 //        cronJobHelp.computeFirstFireTime()
     }
 }

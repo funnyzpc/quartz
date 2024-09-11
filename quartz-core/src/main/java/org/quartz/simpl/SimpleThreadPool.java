@@ -421,7 +421,6 @@ public class SimpleThreadPool implements ThreadPool {
             nextRunnableLock.notifyAll();
             handoffPending = false;
         }
-
         return true;
     }
 
@@ -556,8 +555,7 @@ public class SimpleThreadPool implements ThreadPool {
                     }
                 } catch (Throwable exceptionInRunnable) {
                     try {
-                        getLog().error("Error while executing the Runnable: ",
-                            exceptionInRunnable);
+                        getLog().error("Error while executing the Runnable: ", exceptionInRunnable);
                     } catch(Exception e) {
                         // ignore to help with a tomcat glitch
                     }

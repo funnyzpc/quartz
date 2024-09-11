@@ -1,21 +1,4 @@
 
-/* 
- * All content copyright Terracotta, Inc., unless otherwise indicated. All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not 
- * use this file except in compliance with the License. You may obtain a copy 
- * of the License at 
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0 
- *   
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
- * License for the specific language governing permissions and limitations 
- * under the License.
- * 
- */
-
 package org.quartz.impl.triggers;
 
 import java.util.Date;
@@ -24,10 +7,8 @@ import org.quartz.Calendar;
 import org.quartz.CronTrigger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.ScheduleBuilder;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SimpleScheduleBuilder;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerUtils;
@@ -110,74 +91,6 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
 
     /**
      * <p>
-     * Create a <code>SimpleTrigger</code> that will occur immediately, and
-     * not repeat.
-     * </p>
-     * 
-     * @deprecated use a TriggerBuilder instead
-     */
-    @Deprecated
-    public SimpleTriggerImpl(String name) {
-//        this(name, (String)null);
-        this(name, new Date(), null, 0, 0);
-
-    }
-    
-//    /**
-//     * <p>
-//     * Create a <code>SimpleTrigger</code> that will occur immediately, and
-//     * not repeat.
-//     * </p>
-//     *
-//     * @deprecated use a TriggerBuilder instead
-//     */
-//    @Deprecated
-//    public SimpleTriggerImpl(String name, String group) {
-//        this(name, group, new Date(), null, 0, 0);
-//    }
-
-//    /**
-//     * <p>
-//     * Create a <code>SimpleTrigger</code> that will occur immediately, and
-//     * repeat at the the given interval the given number of times.
-//     * </p>
-//     *
-//     * @deprecated use a TriggerBuilder instead
-//     */
-//    @Deprecated
-//    public SimpleTriggerImpl(String name, int repeatCount, long repeatInterval) {
-//        this(name, null, repeatCount, repeatInterval);
-//    }
-
-//    /**
-//     * <p>
-//     * Create a <code>SimpleTrigger</code> that will occur immediately, and
-//     * repeat at the the given interval the given number of times.
-//     * </p>
-//     *
-//     * @deprecated use a TriggerBuilder instead
-//     */
-//    @Deprecated
-//    public SimpleTriggerImpl(String name, String group, int repeatCount,
-//            long repeatInterval) {
-//        this(name, group, new Date(), null, repeatCount, repeatInterval);
-//    }
-
-//    /**
-//     * <p>
-//     * Create a <code>SimpleTrigger</code> that will occur at the given time,
-//     * and not repeat.
-//     * </p>
-//     *
-//     * @deprecated use a TriggerBuilder instead
-//     */
-//    @Deprecated
-//    public SimpleTriggerImpl(String name, Date startTime) {
-//        this(name, null, startTime);
-//    }
-
-    /**
-     * <p>
      * Create a <code>SimpleTrigger</code> that will occur at the given time,
      * and not repeat.
      * </p>
@@ -187,33 +100,6 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
     public SimpleTriggerImpl(String name, Date startTime) {
         this(name, startTime, null, 0, 0);
     }
-    
-//    /**
-//     * <p>
-//     * Create a <code>SimpleTrigger</code> that will occur at the given time,
-//     * and repeat at the the given interval the given number of times, or until
-//     * the given end time.
-//     * </p>
-//     *
-//     * @param startTime
-//     *          A <code>Date</code> set to the time for the <code>Trigger</code>
-//     *          to fire.
-//     * @param endTime
-//     *          A <code>Date</code> set to the time for the <code>Trigger</code>
-//     *          to quit repeat firing.
-//     * @param repeatCount
-//     *          The number of times for the <code>Trigger</code> to repeat
-//     *          firing, use {@link #REPEAT_INDEFINITELY} for unlimited times.
-//     * @param repeatInterval
-//     *          The number of milliseconds to pause between the repeat firing.
-//     *
-//     * @deprecated use a TriggerBuilder instead
-//     */
-//    @Deprecated
-//    public SimpleTriggerImpl(String name, Date startTime,
-//            Date endTime, int repeatCount, long repeatInterval) {
-//        this(name, null, startTime, endTime, repeatCount, repeatInterval);
-//    }
     
     /**
      * <p>
@@ -244,36 +130,6 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
         setRepeatInterval(repeatInterval);
     }
 
-//    /**
-//     * <p>
-//     * Create a <code>SimpleTrigger</code> that will occur at the given time,
-//     * fire the identified <code>Job</code> and repeat at the the given
-//     * interval the given number of times, or until the given end time.
-//     * </p>
-//     *
-//     * @param startTime
-//     *          A <code>Date</code> set to the time for the <code>Trigger</code>
-//     *          to fire.
-//     * @param endTime
-//     *          A <code>Date</code> set to the time for the <code>Trigger</code>
-//     *          to quit repeat firing.
-//     * @param repeatCount
-//     *          The number of times for the <code>Trigger</code> to repeat
-//     *          firing, use {@link #REPEAT_INDEFINITELY}for unlimitted times.
-//     * @param repeatInterval
-//     *          The number of milliseconds to pause between the repeat firing.
-//     *
-//     * @deprecated use a TriggerBuilder instead
-//     */
-//    @Deprecated
-//    public SimpleTriggerImpl(String name, /*String group, String jobName, String jobGroup, */Date startTime, Date endTime, int repeatCount,long repeatInterval) {
-//        super(name/* group, jobName, jobGroup*/);
-//        setStartTime(startTime);
-//        setEndTime(endTime);
-//        setRepeatCount(repeatCount);
-//        setRepeatInterval(repeatInterval);
-//    }
-
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      * 
@@ -301,7 +157,7 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
      *              if startTime is <code>null</code>.
      */
     @Override
-    public void setStartTime(Date startTime) {
+    public SimpleTriggerImpl setStartTime(Date startTime) {
         if (startTime == null) {
             throw new IllegalArgumentException("Start time cannot be null");
         }
@@ -310,6 +166,7 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
             throw new IllegalArgumentException("End time cannot be before start time");
         }
         this.startTime = startTime;
+        return this;
     }
 
     /**
@@ -335,12 +192,16 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
      *              if endTime is before start time.
      */
     @Override
-    public void setEndTime(Date endTime) {
+    public SimpleTriggerImpl setEndTime(Date endTime) {
+        if( null==endTime || endTime.getTime()<1 ){
+            return this;
+        }
         Date sTime = getStartTime();
         if (sTime != null && endTime != null && sTime.after(endTime)) {
             throw new IllegalArgumentException("End time cannot be before start time");
         }
         this.endTime = endTime;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -361,11 +222,12 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
      * @exception IllegalArgumentException
      *              if repeatCount is < 0
      */
-    public void setRepeatCount(int repeatCount) {
+    public SimpleTriggerImpl setRepeatCount(int repeatCount) {
         if (repeatCount < 0 && repeatCount != REPEAT_INDEFINITELY) {
             throw new IllegalArgumentException("Repeat count must be >= 0, use the " + "constant REPEAT_INDEFINITELY for infinite.");
         }
         this.repeatCount = repeatCount;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -386,12 +248,16 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
      * @exception IllegalArgumentException
      *              if repeatInterval is <= 0 非法论证异常-如果repeatInterval<=0
      */
-    public void setRepeatInterval(long repeatInterval) {
-        // 默认是毫秒，这里是间接的对锁的保护机制，如果
-        if (repeatInterval < 10) {
+    public SimpleTriggerImpl setRepeatInterval(long repeatInterval) {
+//        // 默认是毫秒，这里是间接的对锁的保护机制，如果
+//        if (repeatInterval < 10) {
+//            throw new IllegalArgumentException("Repeat interval must be >= 10");
+//        }
+        if (repeatInterval < 0 ){
             throw new IllegalArgumentException("Repeat interval must be >= 10");
         }
         this.repeatInterval = repeatInterval;
+        return this;
     }
 
     /**
@@ -411,8 +277,9 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
      * fired.
      * </p>
      */
-    public void setTimesTriggered(int timesTriggered) {
+    public SimpleTriggerImpl setTimesTriggered(int timesTriggered) {
         this.timesTriggered = timesTriggered;
+        return this;
     }
 
     @Override
@@ -825,31 +692,31 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
 //    public boolean hasAdditionalProperties() {
 //        return false;
 //    }
-
-    /**
-     * Get a {@link ScheduleBuilder} that is configured to produce a 
-     * schedule identical to this trigger's schedule.
-     * 
-     * @see #getTriggerBuilder()
-     */
-    @Override
-    public ScheduleBuilder<SimpleTrigger> getScheduleBuilder() {
-        SimpleScheduleBuilder sb = SimpleScheduleBuilder.simpleSchedule()
-        .withIntervalInMilliseconds(getRepeatInterval())
-        .withRepeatCount(getRepeatCount());
-        switch(getMisfireInstruction()) {
-            case MISFIRE_INSTRUCTION_FIRE_NOW : sb.withMisfireHandlingInstructionFireNow();
-            break;
-            case MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_EXISTING_COUNT : sb.withMisfireHandlingInstructionNextWithExistingCount();
-            break;
-            case MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_REMAINING_COUNT : sb.withMisfireHandlingInstructionNextWithRemainingCount();
-            break;
-            case MISFIRE_INSTRUCTION_RESCHEDULE_NOW_WITH_EXISTING_REPEAT_COUNT : sb.withMisfireHandlingInstructionNowWithExistingCount();
-            break;
-            case MISFIRE_INSTRUCTION_RESCHEDULE_NOW_WITH_REMAINING_REPEAT_COUNT : sb.withMisfireHandlingInstructionNowWithRemainingCount();
-            break;
-        }
-        return sb;
-    }
+//
+//    /**
+//     * Get a {@link ScheduleBuilder} that is configured to produce a
+//     * schedule identical to this trigger's schedule.
+//     *
+//     * @see #getTriggerBuilder()
+//     */
+//    @Override
+//    public ScheduleBuilder<SimpleTrigger> getScheduleBuilder() {
+//        SimpleScheduleBuilder sb = SimpleScheduleBuilder.simpleSchedule()
+//        .withIntervalInMilliseconds(getRepeatInterval())
+//        .withRepeatCount(getRepeatCount());
+//        switch(getMisfireInstruction()) {
+//            case MISFIRE_INSTRUCTION_FIRE_NOW : sb.withMisfireHandlingInstructionFireNow();
+//            break;
+//            case MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_EXISTING_COUNT : sb.withMisfireHandlingInstructionNextWithExistingCount();
+//            break;
+//            case MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_REMAINING_COUNT : sb.withMisfireHandlingInstructionNextWithRemainingCount();
+//            break;
+//            case MISFIRE_INSTRUCTION_RESCHEDULE_NOW_WITH_EXISTING_REPEAT_COUNT : sb.withMisfireHandlingInstructionNowWithExistingCount();
+//            break;
+//            case MISFIRE_INSTRUCTION_RESCHEDULE_NOW_WITH_REMAINING_REPEAT_COUNT : sb.withMisfireHandlingInstructionNowWithRemainingCount();
+//            break;
+//        }
+//        return sb;
+//    }
 
 }

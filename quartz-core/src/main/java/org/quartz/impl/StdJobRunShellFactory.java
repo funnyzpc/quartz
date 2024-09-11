@@ -21,7 +21,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.core.JobRunShell;
 import org.quartz.core.JobRunShellFactory;
-import org.quartz.spi.TriggerFiredBundle;
 
 /**
  * <p>
@@ -71,8 +70,14 @@ public class StdJobRunShellFactory implements JobRunShellFactory {
      * {@link org.quartz.core.JobRunShell}</code>.
      * </p>
      */
+//    @Deprecated
+//    @Override
+//    public JobRunShell createJobRunShell(TriggerFiredBundle bndle) throws SchedulerException {
+//        return new JobRunShell(scheduler, bndle);
+//    }
     @Override
-    public JobRunShell createJobRunShell(TriggerFiredBundle bndle) throws SchedulerException {
-        return new JobRunShell(scheduler, bndle);
+    public JobRunShell createJobRunShell(QrtzExecute eJob) throws SchedulerException {
+        return new JobRunShell(scheduler,eJob,null);
     }
+
 }

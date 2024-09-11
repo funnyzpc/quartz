@@ -170,11 +170,11 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <!-- 包含必要的第三方模块散装代码 -->
+<!--            <plugin>
+                &lt;!&ndash; 包含必要的第三方模块散装代码 &ndash;&gt;
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <!--                <version>1.9.1</version>-->
+                &lt;!&ndash;                <version>1.9.1</version>&ndash;&gt;
                 <version>3.5.0</version>
                 <executions>
                     <execution>
@@ -190,7 +190,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
 
         </plugins>
 

@@ -163,10 +163,11 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
      * in fact typically result in an <code>IllegalStateException</code>.
      * </p>
      *  有与 SpringBeanJobFactory 的存在，为减少工作量，故将此方法定位default
+     *  ###仅用于springboot starter接入用，不做逻辑处理###
      */
     @Deprecated
     default JobDataMap getJobDataMap(){
-        return null;
+        return new JobDataMap();
     }
 
     /**
@@ -270,7 +271,10 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
      * 
      * @see #getScheduleBuilder()
      */
-    TriggerBuilder<? extends Trigger> getTriggerBuilder();
+    default TriggerBuilder<? extends Trigger> getTriggerBuilder(){
+        System.out.println("method getTriggerBuilder is not defined!");
+        return null;
+    }
     
     /**
      * Get a {@link ScheduleBuilder} that is configured to produce a 
@@ -278,7 +282,10 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
      * 
      * @see #getTriggerBuilder()
      */
-    ScheduleBuilder<? extends Trigger> getScheduleBuilder();
+    default ScheduleBuilder<? extends Trigger> getScheduleBuilder(){
+        System.out.println("method getScheduleBuilder is not defined!");
+        return null;
+    }
 
 
     /**

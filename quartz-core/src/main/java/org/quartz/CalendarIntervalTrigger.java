@@ -153,7 +153,6 @@ public interface CalendarIntervalTrigger extends Trigger {
      * @see #isPreserveHourOfDayAcrossDaylightSavings()
      */
     public boolean isSkipDayIfHourDoesNotExist();
-    
-    
-    TriggerBuilder<CalendarIntervalTrigger> getTriggerBuilder();
+
+
 }

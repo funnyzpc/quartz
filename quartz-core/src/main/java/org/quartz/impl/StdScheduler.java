@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.quartz.ExecuteCfg;
-import org.quartz.JobCfg;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
@@ -258,10 +256,10 @@ public class StdScheduler implements Scheduler {
     public Date scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException {
         return sched.scheduleJob(jobDetail, trigger);
     }
-    @Override
-    public Date scheduleJobAndExecute(JobCfg jobCfg, ExecuteCfg executeCfg) throws SchedulerException {
-        return sched.scheduleJob(jobCfg,executeCfg);
-    }
+//    @Override
+//    public Date scheduleJobAndExecute(JobCfg jobCfg, ExecuteCfg executeCfg) throws SchedulerException {
+//        return sched.scheduleJob(jobCfg,executeCfg);
+//    }
 
     /**
      * <p>

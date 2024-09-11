@@ -160,5 +160,9 @@ public interface SimpleTrigger extends Trigger {
      */
     public int getTimesTriggered();
 
-    TriggerBuilder<SimpleTrigger> getTriggerBuilder();
+//    default TriggerBuilder<SimpleTrigger> getTriggerBuilder(){
+//        System.out.println("method getTriggerBuilder not defined! ");
+//        return null;
+//    }
+
 }

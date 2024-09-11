@@ -67,6 +67,9 @@ public class UpdateLockRowSemaphore extends DBSemaphore {
     public UpdateLockRowSemaphore() {
         super(DEFAULT_TABLE_PREFIX, null, UPDATE_FOR_LOCK, INSERT_LOCK);
     }
+    public UpdateLockRowSemaphore(String tablePrefix,String schedName, String defaultSelectSQL ) {
+        super(tablePrefix, schedName, null==defaultSelectSQL?UPDATE_FOR_LOCK:defaultSelectSQL, INSERT_LOCK);
+    }
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

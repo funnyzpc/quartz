@@ -177,6 +177,7 @@ public  interface CronTrigger extends Trigger {
      * situation, the <code>{@link CronTrigger}</code> wants to be fired now
      * by <code>Scheduler</code>.
      * </p>
+     * 指示调度器在发生误触发情况时，CronTrigger现在希望由调度器触发。
      */
     public static final int MISFIRE_INSTRUCTION_FIRE_ONCE_NOW = 1;
     
@@ -188,6 +189,7 @@ public  interface CronTrigger extends Trigger {
      * current time (taking into account any associated <code>{@link Calendar}</code>,
      * but it does not want to be fired now.
      * </p>
+     * 指示调度器，在发生误触发情况时，CronTrigger希望将其下一次触发时间更新为当前时间之后的计划中的下一个时间（考虑到任何相关的日历，但它现在不想被触发。
      */
     public static final int MISFIRE_INSTRUCTION_DO_NOTHING = 2;
 
@@ -202,6 +204,6 @@ public  interface CronTrigger extends Trigger {
     TimeZone getTimeZone();
 
     String getExpressionSummary();
-    @Override
-    TriggerBuilder<CronTrigger> getTriggerBuilder();
+//    @Override
+//    TriggerBuilder<CronTrigger> getTriggerBuilder();
 }

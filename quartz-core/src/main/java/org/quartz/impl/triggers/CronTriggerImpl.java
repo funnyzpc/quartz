@@ -323,10 +323,11 @@ public class CronTriggerImpl extends AbstractTrigger<CronTrigger> implements Cro
         return copy;
     }
 
-    public void setCronExpression(String cronExpression) throws ParseException {
+    public CronTriggerImpl setCronExpression(String cronExpression) throws ParseException {
         TimeZone origTz = getTimeZone();
         this.cronEx = new CronExpression(cronExpression);
         this.cronEx.setTimeZone(origTz);
+        return this;
     }
 
     /* (non-Javadoc)
@@ -357,7 +358,7 @@ public class CronTriggerImpl extends AbstractTrigger<CronTrigger> implements Cro
     }
 
     @Override
-    public void setStartTime(Date startTime) {
+    public CronTriggerImpl setStartTime(Date startTime) {
         if (startTime == null) {
             throw new IllegalArgumentException("Start time cannot be null");
         }
@@ -374,6 +375,7 @@ public class CronTriggerImpl extends AbstractTrigger<CronTrigger> implements Cro
         cl.setTime(startTime);
         cl.set(Calendar.MILLISECOND, 0);
         this.startTime = cl.getTime();
+        return this;
     }
 
     /**
@@ -390,12 +392,16 @@ public class CronTriggerImpl extends AbstractTrigger<CronTrigger> implements Cro
     }
 
     @Override
-    public void setEndTime(Date endTime) {
+    public CronTriggerImpl setEndTime(Date endTime) {
+        if( null==endTime || endTime.getTime()<1 ){
+            return this;
+        }
         Date sTime = getStartTime();
         if (sTime != null && endTime != null && sTime.after(endTime)) {
             throw new IllegalArgumentException("End time cannot be before start time");
         }
         this.endTime = endTime;
+        return this;
     }
 
     /**
@@ -481,11 +487,12 @@ public class CronTriggerImpl extends AbstractTrigger<CronTrigger> implements Cro
      * time zone applied by this method will remain in effect, since the 
      * String cron expression does not carry a time zone!
      */
-    public void setTimeZone(TimeZone timeZone) {
+    public CronTriggerImpl setTimeZone(TimeZone timeZone) {
         if(cronEx != null) {
             cronEx.setTimeZone(timeZone);
         }
         this.timeZone = timeZone;
+        return this;
     }
 
     /**
@@ -566,13 +573,16 @@ public class CronTriggerImpl extends AbstractTrigger<CronTrigger> implements Cro
      * Updates the <code>CronTrigger</code>'s state based on the
      * MISFIRE_INSTRUCTION_XXX that was selected when the <code>CronTrigger</code>
      * was created.
+     * 根据创建CronTrigger时选择的MISFIRE_INSTRUCTION_XXX更新CronTrigger的状态。
      * </p>
      * 
      * <p>
      * If the misfire instruction is set to MISFIRE_INSTRUCTION_SMART_POLICY,
      * then the following scheme will be used: <br>
+     * 如果失火指令设置为misfire_instruction_SMART_POLICY，则将使用以下方案：
      * <ul>
      * <li>The instruction will be interpreted as <code>MISFIRE_INSTRUCTION_FIRE_ONCE_NOW</code>
+     * 该指令将被解释为MISFIRE_instruction_FIRE_ONCE_NOW
      * </ul>
      * </p>
      */

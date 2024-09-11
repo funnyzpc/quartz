@@ -30,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,6 +55,10 @@ import org.quartz.TriggerBuilder;
 import org.quartz.impl.ExecuteCfgImpl;
 import org.quartz.impl.JobCfgImpl;
 import org.quartz.impl.JobDetailImpl;
+import org.quartz.impl.QrtzApp;
+import org.quartz.impl.QrtzExecute;
+import org.quartz.impl.QrtzJob;
+import org.quartz.impl.QrtzNode;
 import org.quartz.impl.jdbcjobstore.TriggerPersistenceDelegate.TriggerPropertyBundle;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.quartz.spi.ClassLoadHelper;
@@ -349,6 +354,10 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         try {
             // SELECT TRIGGER_NAME, TRIGGER_GROUP FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND NOT (MISFIRE_INSTR = -1) AND NEXT_FIRE_TIME < ? AND TRIGGER_STATE = 'WAITING' ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC
 //            ps = conn.prepareStatement(rtp(SELECT_HAS_MISFIRED_TRIGGERS_IN_STATE));
+            // SELECT TRIGGER_NAME,SCHED_NAME,TRIGGER_TYPE FROM QRTZ_JOB_CFG
+            // WHERE SCHED_NAME = 'QUARTZ-SPRINGBOOT' AND NOT (MISFIRE_INSTR = -1)
+            // AND NEXT_FIRE_TIME < (20 || -1) AND TRIGGER_STATE = 'WAITING'
+            // ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC
             ps = conn.prepareStatement(rtp(SELECT_HAS_MISFIRED_JOB_TRIGGERS_IN_STATE));
             ps.setBigDecimal(1, new BigDecimal(String.valueOf(ts)));
             ps.setString(2, state1);
@@ -377,6 +386,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      * <p>
      * Get the number of triggers in the given states that have
      * misfired - according to the given timestamp.
+     * 根据给定的时间戳，获取给定状态下发生故障的触发器数量。
      * </p>
      * 
      * @param conn the DB Connection
@@ -389,7 +399,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //            ps = conn.prepareStatement(rtp(COUNT_MISFIRED_TRIGGERS_IN_STATE));
             ps = conn.prepareStatement(rtp(COUNT_MISFIRED_JOB_IN_STATE));
             ps.setBigDecimal(1, new BigDecimal(String.valueOf(ts)));
-            ps.setString(2, state1);
+            ps.setString(2, state1); // WAITING
             rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1);
@@ -639,7 +649,6 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         return insertResult;
     }
 
-
     //---------------------------------------------------------------------------
     // jobs
     //---------------------------------------------------------------------------
@@ -667,7 +676,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             ps.setString(1, job.getKey().getName());
 //            ps.setString(2, job.getKey().getGroup());
             ps.setString(2, job.getDescription());
-            ps.setString(3, job.getJobClass().getName());
+            ps.setString(3, job.getJobClassName());
 //            setBoolean(ps, 4, job.isDurable());
             setBoolean(ps, 4, job.isConcurrentExectionDisallowed());
             setBoolean(ps, 5, job.isPersistJobDataAfterExecution());
@@ -702,7 +711,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             // UPDATE QRTZ_JOB_DETAILS SET DESCRIPTION = ?, JOB_CLASS_NAME = ?, IS_DURABLE = ?, IS_NONCONCURRENT = ?, IS_UPDATE_DATA = ?, REQUESTS_RECOVERY = ?, JOB_DATA = ?  WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
             ps = conn.prepareStatement(rtp(UPDATE_JOB_DETAIL));
             ps.setString(1, job.getDescription());
-            ps.setString(2, job.getJobClass().getName());
+            ps.setString(2, job.getJobClassName());
 //            setBoolean(ps, 3, job.isDurable());
             setBoolean(ps, 3, job.isConcurrentExectionDisallowed());
             setBoolean(ps, 4, job.isPersistJobDataAfterExecution());
@@ -2096,7 +2105,8 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                 trigger.setMisfireInstruction(misFireInstr);
                 trigger.setNextFireTime(nft);
                 trigger.setPreviousFireTime(pft);
-                setTriggerStateProperties(trigger, triggerProps);
+                // todo ...
+//                setTriggerStateProperties(trigger, triggerProps);
             }
             return trigger;
         } finally {
@@ -2272,466 +2282,6 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         }
     }
 
-//    /**
-//     * <p>
-//     * Select all of the trigger group names that are stored.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @return an array of <code>String</code> group names
-//     */
-//    public List<String> selectTriggerGroups(Connection conn) throws SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//
-//        try {
-//            ps = conn.prepareStatement(rtp(SELECT_TRIGGER_GROUPS));
-//            rs = ps.executeQuery();
-//
-//            LinkedList<String> list = new LinkedList<String>();
-//            while (rs.next()) {
-//                list.add(rs.getString(1));
-//            }
-//
-//            return list;
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
-//    public List<String> selectTriggerGroups(Connection conn, GroupMatcher<TriggerKey> matcher) throws SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//
-//        try {
-//            ps = conn.prepareStatement(rtp(SELECT_TRIGGER_GROUPS_FILTERED));
-//            ps.setString(1, toSqlLikeClause(matcher));
-//            rs = ps.executeQuery();
-//
-//            LinkedList<String> list = new LinkedList<String>();
-//            while (rs.next()) {
-//                list.add(rs.getString(1));
-//            }
-//
-//            return list;
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Select all of the triggers contained in a given group.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @param matcher
-//     *          to evaluate against known triggers
-//     * @return a Set of <code>TriggerKey</code>s
-//     */
-//    @Deprecated
-//    @Override
-//    public Set<Key> selectTriggersInGroup(Connection conn, GroupMatcher<Key<?>> matcher) throws SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//        try {
-//            if(isMatcherEquals(matcher)) {
-//                // SELECT TRIGGER_NAME, TRIGGER_GROUP FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP = ?
-//                ps = conn.prepareStatement(rtp(SELECT_TRIGGERS_IN_GROUP));
-//                ps.setString(1, toSqlEqualsClause(matcher));
-//            }
-//            else {
-//                // SELECT TRIGGER_NAME, TRIGGER_GROUP FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ?
-//                ps = conn.prepareStatement(rtp(SELECT_TRIGGERS_IN_GROUP_LIKE));
-//                ps.setString(1, toSqlLikeClause(matcher));
-//            }
-//            rs = ps.executeQuery();
-//            Set<Key> keys = new HashSet();
-//            while (rs.next()) {
-////                keys.add(triggerKey(rs.getString(1), rs.getString(2)));
-//                keys.add(key(rs.getString(1),rs.getString(2)));
-//            }
-//            return keys;
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
-//    public int insertPausedTriggerGroup(Connection conn, String groupName)
-//        throws SQLException {
-//        PreparedStatement ps = null;
-//
-//        try {
-//            ps = conn.prepareStatement(rtp(INSERT_PAUSED_TRIGGER_GROUP));
-//            ps.setString(1, groupName);
-//            int rows = ps.executeUpdate();
-//
-//            return rows;
-//        } finally {
-//            closeStatement(ps);
-//        }
-//    }
-
-//    public int deletePausedTriggerGroup(Connection conn, String groupName)
-//        throws SQLException {
-//        PreparedStatement ps = null;
-//        try {
-//            // DELETE FROM QRTZ_PAUSED_TRIGGER_GRPS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ?
-//            ps = conn.prepareStatement(rtp(DELETE_PAUSED_TRIGGER_GROUP));
-//            ps.setString(1, groupName);
-//            int rows = ps.executeUpdate();
-//            return rows;
-//        } finally {
-//            closeStatement(ps);
-//        }
-//    }
-
-//    @Deprecated
-//    public int deletePausedTriggerGroup(Connection conn, GroupMatcher<TriggerKey> matcher)
-//        throws SQLException {
-//        PreparedStatement ps = null;
-//        try {
-//            // DELETE FROM QRTZ_PAUSED_TRIGGER_GRPS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ?
-//            ps = conn.prepareStatement(rtp(DELETE_PAUSED_TRIGGER_GROUP));
-//            ps.setString(1, toSqlLikeClause(matcher));
-//            int rows = ps.executeUpdate();
-//
-//            return rows;
-//        } finally {
-//            closeStatement(ps);
-//        }
-//    }
-//    @Deprecated
-//    public int deleteAllPausedTriggerGroups(Connection conn)
-//        throws SQLException {
-//        PreparedStatement ps = null;
-//        try {
-//            ps = conn.prepareStatement(rtp(DELETE_PAUSED_TRIGGER_GROUPS));
-//            int rows = ps.executeUpdate();
-//            return rows;
-//        } finally {
-//            closeStatement(ps);
-//        }
-//    }
-
-//    @Deprecated
-//    @Override
-//    public boolean isTriggerGroupPaused(Connection conn, String groupName)
-//        throws SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//
-//        try {
-//            ps = conn.prepareStatement(rtp(SELECT_PAUSED_TRIGGER_GROUP));
-//            ps.setString(1, groupName);
-//            rs = ps.executeQuery();
-//
-//            return rs.next();
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
-//    @Override
-//    public boolean isExistingTriggerGroup(Connection conn, String groupName)throws SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//        try {
-//            ps = conn.prepareStatement(rtp(SELECT_NUM_TRIGGERS_IN_GROUP));
-////            ps.setString(1, groupName);
-//            rs = ps.executeQuery();
-//            if (!rs.next()) {
-//                return false;
-//            }
-//            return (rs.getInt(1) > 0);
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
-    //---------------------------------------------------------------------------
-    // calendars
-    //---------------------------------------------------------------------------
-
-//    /**
-//     * <p>
-//     * Insert a new calendar.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @param calendarName
-//     *          the name for the new calendar
-//     * @param calendar
-//     *          the calendar
-//     * @return the number of rows inserted
-//     * @throws IOException
-//     *           if there were problems serializing the calendar
-//     */
-//    @Override
-//    public int insertCalendar(Connection conn, String calendarName, Calendar calendar) throws IOException, SQLException {
-//        ByteArrayOutputStream baos = serializeObject(calendar);
-//        PreparedStatement ps = null;
-//        try {
-//            ps = conn.prepareStatement(rtp(INSERT_CALENDAR));
-//            ps.setString(1, calendarName);
-//            setBytes(ps, 2, baos);
-//            return ps.executeUpdate();
-//        } finally {
-//            closeStatement(ps);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Update a calendar.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @param calendarName
-//     *          the name for the new calendar
-//     * @param calendar
-//     *          the calendar
-//     * @return the number of rows updated
-//     * @throws IOException
-//     *           if there were problems serializing the calendar
-//     */
-//    @Override
-//    public int updateCalendar(Connection conn, String calendarName, Calendar calendar) throws IOException, SQLException {
-//        ByteArrayOutputStream baos = serializeObject(calendar);
-//        PreparedStatement ps = null;
-//        try {
-//            ps = conn.prepareStatement(rtp(UPDATE_CALENDAR));
-//            setBytes(ps, 1, baos);
-//            ps.setString(2, calendarName);
-//            return ps.executeUpdate();
-//        } finally {
-//            closeStatement(ps);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Check whether or not a calendar exists.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @param calendarName
-//     *          the name of the calendar
-//     * @return true if the trigger exists, false otherwise
-//     */
-//    @Override
-//    public boolean calendarExists(Connection conn, String calendarName) throws SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//        try {
-//            // SELECT CALENDAR_NAME FROM QRTZ_CALENDARS WHERE SCHED_NAME = 'MEE_QUARTZ' AND CALENDAR_NAME = ?
-//            ps = conn.prepareStatement(rtp(SELECT_CALENDAR_EXISTENCE));
-//            ps.setString(1, calendarName);
-//            rs = ps.executeQuery();
-//            if (rs.next()) {
-//                return true;
-//            } else {
-//                return false;
-//            }
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Select a calendar.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @param calendarName
-//     *          the name of the calendar
-//     * @return the Calendar
-//     * @throws ClassNotFoundException
-//     *           if a class found during deserialization cannot be found be
-//     *           found
-//     * @throws IOException
-//     *           if there were problems deserializing the calendar
-//     */
-//    @Override
-//    public Calendar selectCalendar(Connection conn, String calendarName) throws ClassNotFoundException, IOException, SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//        try {
-//            String selCal = rtp(SELECT_CALENDAR);
-//            ps = conn.prepareStatement(selCal);
-//            ps.setString(1, calendarName);
-//            rs = ps.executeQuery();
-//
-//            Calendar cal = null;
-//            if (rs.next()) {
-//                cal = (Calendar) getObjectFromBlob(rs, COL_CALENDAR);
-//            }
-//            if (null == cal) {
-//                logger.warn("Couldn't find calendar with name '" + calendarName + "'.");
-//            }
-//            return cal;
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Check whether or not a calendar is referenced by any triggers.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @param calendarName
-//     *          the name of the calendar
-//     * @return true if any triggers reference the calendar, false otherwise
-//     */
-//    @Override
-//    public boolean calendarIsReferenced(Connection conn, String calendarName) throws SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//        try {
-//            ps = conn.prepareStatement(rtp(SELECT_REFERENCED_CALENDAR));
-//            ps.setString(1, calendarName);
-//            rs = ps.executeQuery();
-//
-//            if (rs.next()) {
-//                return true;
-//            } else {
-//                return false;
-//            }
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Delete a calendar.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @param calendarName
-//     *          the name of the trigger
-//     * @return the number of rows deleted
-//     */
-//    @Override
-//    public int deleteCalendar(Connection conn, String calendarName) throws SQLException {
-//        PreparedStatement ps = null;
-//        try {
-//            ps = conn.prepareStatement(rtp(DELETE_CALENDAR));
-//            ps.setString(1, calendarName);
-//            return ps.executeUpdate();
-//        } finally {
-//            closeStatement(ps);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Select the total number of calendars stored.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @return the total number of calendars stored
-//     */
-//    @Override
-//    public int selectNumCalendars(Connection conn) throws SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//        try {
-//            int count = 0;
-//            // SELECT COUNT(CALENDAR_NAME)  FROM QRTZ_CALENDARS WHERE SCHED_NAME = 'MEE_QUARTZ'
-//            ps = conn.prepareStatement(rtp(SELECT_NUM_CALENDARS));
-//            rs = ps.executeQuery();
-//            if (rs.next()) {
-//                count = rs.getInt(1);
-//            }
-//            return count;
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Select all of the stored calendars.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @return an array of <code>String</code> calendar names
-//     */
-//    @Override
-//    public List<String> selectCalendars(Connection conn) throws SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//        try {
-//            ps = conn.prepareStatement(rtp(SELECT_CALENDARS));
-//            rs = ps.executeQuery();
-//            LinkedList<String> list = new LinkedList<String>();
-//            while (rs.next()) {
-//                list.add(rs.getString(1));
-//            }
-//            return list;
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
-    //---------------------------------------------------------------------------
-    // trigger firing
-    //---------------------------------------------------------------------------
-
-//    /**
-//     * <p>
-//     * Select the next time that a trigger will be fired.
-//     * </p>
-//     *
-//     * @param conn
-//     *          the DB Connection
-//     * @return the next fire time, or 0 if no trigger will be fired
-//     *
-//     * @deprecated Does not account for misfires.
-//     */
-//    @Override
-//    public long selectNextFireTime(Connection conn) throws SQLException {
-//        PreparedStatement ps = null;
-//        ResultSet rs = null;
-//        try {
-//            ps = conn.prepareStatement(rtp(SELECT_NEXT_FIRE_TIME));
-//            ps.setString(1, STATE_WAITING);
-//            rs = ps.executeQuery();
-//            if (rs.next()) {
-//                return rs.getLong(ALIAS_COL_NEXT_FIRE_TIME);
-//            } else {
-//                return 0L;
-//            }
-//        } finally {
-//            closeResultSet(rs);
-//            closeStatement(ps);
-//        }
-//    }
-
     /**
      * <p>
      * Select the trigger that will be fired at the given fire time.
@@ -2820,9 +2370,9 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             // WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_STATE = 'WAITING' AND NEXT_FIRE_TIME <= :noLaterThan
             // AND (MISFIRE_INSTR = -1 OR (MISFIRE_INSTR != -1 AND NEXT_FIRE_TIME >= :noEarlierThan ))
             // ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC
-            String sql = rtp(SELECT_NEXT_JOB_TO_ACQUIRE).replace("%TRIGGER_STATE%", this.buildArrayStr( new String[]{STATE_WAITING,STATE_ACQUIRED,STATE_EXECUTING,STATE_BLOCKED,STATE_ERROR} ) );
+//            String sql = rtp(SELECT_NEXT_JOB_TO_ACQUIRE).replace("%TRIGGER_STATE%", this.buildArrayStr( new String[]{STATE_WAITING,STATE_ACQUIRED,STATE_EXECUTING,STATE_BLOCKED,STATE_ERROR} ) );
 
-            ps = conn.prepareStatement(sql);
+            ps = conn.prepareStatement(rtp(SELECT_NEXT_JOB_TO_ACQUIRE));
             // Set max rows to retrieve 设置要检索的最大行数
             if (maxCount < 1){
                 maxCount = 1; // we want at least one trigger back. 我们至少要拿回一把扳机。
@@ -2834,10 +2384,10 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             // Note: in some jdbc drivers, such as MySQL, you must set maxRows before fetchSize, or you get exception!
             //     注意：在某些jdbc驱动程序中，如MySQL，您必须在fetchSize之前设置maxRows，否则会出现异常！
             ps.setFetchSize(maxCount);
-//            ps.setString(1, STATE_WAITING);
-            ps.setBigDecimal(1, new BigDecimal(String.valueOf(noLaterThan)));
-            ps.setBigDecimal(2, new BigDecimal(String.valueOf(noEarlierThan)));
-            ps.setBigDecimal(3, new BigDecimal(System.currentTimeMillis()));
+            ps.setString(1, STATE_WAITING);
+            ps.setBigDecimal(2, new BigDecimal(String.valueOf(noLaterThan)));
+            ps.setBigDecimal(3, new BigDecimal(String.valueOf(noEarlierThan)));
+            ps.setBigDecimal(4, new BigDecimal(System.currentTimeMillis()));
             rs = ps.executeQuery();
             while (rs.next() && nextTriggers.size() < maxCount) {
 //                nextTriggers.add(triggerKey( rs.getString(COL_TRIGGER_NAME), rs.getString(COL_TRIGGER_GROUP)));
@@ -3539,6 +3089,663 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     protected void setBytes(PreparedStatement ps, int index, ByteArrayOutputStream baos) throws SQLException {
         ps.setBytes(index, (baos == null) ? new byte[0] : baos.toByteArray());
     }
+
+
+    @Override
+    public int insertQrtzApp(Connection conn,QrtzApp app) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        final String application = app.getApplication();
+        try {
+            // 查询
+            ps = conn.prepareStatement(rtp("SELECT APPLICATION FROM {0}APP WHERE APPLICATION=? "));
+            ps.setString(1,application);
+            rs = ps.executeQuery();
+            while( rs.next() ) {
+                rs.close();
+                // 默认有就不需要插入了
+                return 1;
+            }
+            // 一定要关闭
+            rs.close();
+            ps.close();
+            // 写入
+            ps = conn.prepareStatement(rtp("INSERT INTO {0}APP (APPLICATION,STATE,TIME_PRE,TIME_NEXT,TIME_INTERVAL) VALUES ( ?,?,?,?,? )"));
+            ps.setString(1,application);// APPLICATION
+            ps.setString(2,app.getState());// STATE
+            ps.setBigDecimal(3,new BigDecimal(app.getTimePre()));// TIME_PRE
+            ps.setBigDecimal(4,new BigDecimal(app.getTimeNext()));// TIME_NEXT
+            ps.setBigDecimal(5,new BigDecimal(app.getTimeInterval()));// TIME_INTERVAL
+            int ct = ps.executeUpdate();
+            conn.commit();
+            return ct;
+        } catch (Exception e){
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+            return 0;
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
+    @Override
+    public int insertQrtzNode(Connection conn,QrtzNode node) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        final String application = node.getApplication();
+        try {
+            // 查询
+            ps = conn.prepareStatement(rtp("SELECT APPLICATION,HOST_IP  FROM {0}NODE WHERE APPLICATION=? AND HOST_IP=?"));
+            ps.setString(1,application);
+            ps.setString(2,node.getHostIp());
+            rs = ps.executeQuery();
+            while( rs.next() ) {
+                rs.close();
+                // 默认有就不需要插入了
+                return 1;
+            }
+            // 一定要关闭
+            rs.close();
+            ps.close();
+            // 写入
+            ps = conn.prepareStatement(rtp("INSERT INTO {0}NODE (APPLICATION,HOST_IP,HOST_NAME,STATE,TIME_CHECK) VALUES ( ?,?,?,?,? )"));
+            ps.setString(1,application);// APPLICATION
+            ps.setString(2,node.getHostIp());// HOST_IP
+            ps.setString(3,node.getHostName());// HOST_NAME
+            ps.setString(4,node.getState());// STATE
+            ps.setBigDecimal(5,new BigDecimal(node.getTimeCheck()));// TIME_CHECK
+            int ct = ps.executeUpdate();
+            conn.commit();
+            return ct;
+        } catch (Exception e){
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+            return 0;
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
+    @Override
+    public QrtzApp findQrtzAppByApp(Connection conn,final String application){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+//            conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            // 查询
+//            ps = conn.prepareStatement(rtp("SELECT * FROM {0}APP WHERE APPLICATION=? FOR UPDATE"));
+            ps = conn.prepareStatement(rtp("SELECT * FROM {0}APP WHERE APPLICATION=?"));
+            ps.setString(1,application);
+            rs = ps.executeQuery();
+            while( rs.next() ) {
+                String _application = rs.getString("APPLICATION");
+                String state = rs.getString("STATE");
+                Long timePre = rs.getLong("TIME_PRE");
+                Long timeNext = rs.getLong("TIME_NEXT");
+                Long timeInterval = rs.getLong("TIME_INTERVAL");
+                rs.close();
+                return new QrtzApp(_application,state,timePre,timeNext,timeInterval);
+            }
+            return null;
+        } catch (Exception e){
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+            return null;
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
+    @Override
+    public void clearHistoryData(Connection conn,Long timeLimit) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            // 思路:
+            // 获取qrtz_app数据(by time_next>now()+timeLimit)
+            // 获取qrtz_job数据(by qrtz_job:applicaiton=qrtz_app:application)
+            // 删除qrtz_execute数据(by pid=qrtz_job:id)
+            // 删除qrtz_job数据(by qrtz_job:applicaiton=qrtz_app:application)
+            // 删除qrtz_node数据(by qrtz_job:applicaiton=qrtz_app:application)
+            // 删除qrtz_app数据(by qrtz_app:applicaiton=qrtz_app:application)
+
+            long limitTime = System.currentTimeMillis()-timeLimit;
+            List<String> appList = new ArrayList<String>();
+            ps = conn.prepareStatement(rtp("SELECT APPLICATION,STATE FROM {0}APP WHERE TIME_NEXT < ? "));
+            ps.setBigDecimal(1,new BigDecimal(limitTime));
+            rs = ps.executeQuery();
+            while( rs.next() ) {
+                // todo 这里需要考虑是否要做限制 ...
+//                String state = rs.getString("STATE");
+//                if("N".equals(state)){
+//                    continue;
+//                }
+                String application = rs.getString("APPLICATION");
+                appList.add(application);
+            }
+            // 一定要关闭
+            rs.close();
+            ps.close();
+            if( appList.isEmpty() ){
+                logger.info("clearData is empty! {}",limitTime);
+                return;
+            }
+
+            // 获取qrtz_job数据(by qrtz_job:applicaiton=qrtz_app:application)
+            List<BigDecimal> jobIdList = new ArrayList<BigDecimal>();
+            for(String application:appList ){
+                ps = conn.prepareStatement(rtp(" SELECT ID FROM {0}JOB WHERE APPLICATION =? "));
+                ps.setString(1,application);
+                rs = ps.executeQuery();
+                while( rs.next() ) {
+                   jobIdList.add(rs.getBigDecimal("ID"));
+                }
+                // 一定要关闭
+                rs.close();
+                ps.close();
+            }
+
+            // 删除qrtz_execute数据(by pid=qrtz_job:id)
+            for( BigDecimal id:jobIdList ){
+                ps = conn.prepareStatement(rtp(" DELETE FROM {0}EXECUTE WHERE PID=? "));
+                ps.setBigDecimal(1,id);
+                ps.executeUpdate();
+                conn.commit();
+                // 一定要关闭
+                ps.close();
+            }
+            // 删除qrtz_job数据(by qrtz_job:applicaiton=qrtz_app:application)
+            for( BigDecimal id:jobIdList ){
+                ps = conn.prepareStatement(rtp(" DELETE FROM {0}JOB WHERE ID=? "));
+                ps.setBigDecimal(1,id);
+                ps.executeUpdate();
+                conn.commit();
+                // 一定要关闭
+                ps.close();
+            }
+            // 删除qrtz_node数据(by qrtz_job:applicaiton=qrtz_app:application)
+            for(String application:appList){
+                ps = conn.prepareStatement(rtp(" DELETE FROM {0}NODE WHERE APPLICAITON=? "));
+                ps.setString(1,application);
+                ps.executeUpdate();
+                conn.commit();
+                // 一定要关闭
+                ps.close();
+            }
+            // 删除qrtz_app数据(by qrtz_app:applicaiton=qrtz_app:application)
+            for(String application:appList){
+                ps = conn.prepareStatement(rtp(" DELETE FROM {0}APP WHERE APPLICAITON=? "));
+                ps.setString(1,application);
+                ps.executeUpdate();
+                conn.commit();
+                // 一定要关闭
+                ps.close();
+            }
+            // 修正执行信息
+            //针对中途停止的异常熄火的
+            //1.状态
+            //2.下一次执行时间
+
+
+            // conn.commit();
+        } catch (Exception e){
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
+    @Override
+    public int updateQrtzAppByApp(Connection conn, QrtzApp app/*,long wNow,String wState2*/){
+        PreparedStatement ps = null;
+        try {
+//            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            // 写入
+//            ps = conn.prepareStatement(rtp(" UPDATE {0}APP SET STATE=?,TIME_PRE=?,TIME_NEXT=?,TIME_INTERVAL=? WHERE APPLICATION=? AND TIME_NEXT<=? AND STATE=? "));
+//            ps = conn.prepareStatement(rtp(" UPDATE {0}APP SET STATE=?,TIME_PRE=?,TIME_NEXT=?,TIME_INTERVAL=? WHERE APPLICATION=? AND TIME_NEXT=? AND STATE=? "));
+            ps = conn.prepareStatement(rtp(" UPDATE {0}APP SET STATE=?,TIME_PRE=?,TIME_NEXT=?,TIME_INTERVAL=? WHERE APPLICATION=? AND TIME_NEXT=? "));
+            ps.setString(1,app.getState());
+            ps.setBigDecimal(2,new BigDecimal(app.getTimePre()));
+            ps.setBigDecimal(3,new BigDecimal(app.getTimeNext()));
+            ps.setBigDecimal(4,new BigDecimal(app.getTimeInterval()));
+            // WHERE
+            ps.setString(5,app.getApplication());
+            ps.setBigDecimal(6,new BigDecimal(app.getTimePre()));
+//            ps.setString(7,wState);
+            int ct = ps.executeUpdate();
+//            System.out.println(ct+":"+ LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS) +":"+wNow+"=>"+ps);
+            conn.commit();
+            return ct;
+        } catch (Exception e){
+            logger.error("异常:{}",app,e);
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+            return 0;
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+    @Override
+    public QrtzNode findQrtzNodeByAppHost(Connection conn, String app, String hostIP){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            // 查询
+            ps = conn.prepareStatement(rtp("SELECT * FROM {0}NODE WHERE APPLICATION=? AND HOST_IP=? "));
+            ps.setString(1,app);
+            ps.setString(2,hostIP);
+            rs = ps.executeQuery();
+            while( rs.next() ) {
+                String _application = rs.getString("APPLICATION");
+                String _hostIP = rs.getString("HOST_IP");
+                String hostName = rs.getString("HOST_NAME");
+                String state = rs.getString("STATE");
+                Long timeCheck = rs.getLong("TIME_CHECK");
+                rs.close();
+                return new QrtzNode(_application,_hostIP,hostName,state,timeCheck);
+            }
+            return null;
+        } catch (Exception e){
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+            return null;
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
+    @Override
+    public void updateQrtzNodeOfState(Connection conn, QrtzNode node){
+        PreparedStatement ps = null;
+        try {
+            // 查询
+            ps = conn.prepareStatement(rtp(" UPDATE {0}NODE SET STATE=?,TIME_CHECK=? WHERE APPLICATION=? AND HOST_IP=? "));
+            ps.setString(1,node.getState());
+            ps.setBigDecimal(2,new BigDecimal(node.getTimeCheck()));
+            ps.setString(3,node.getApplication());
+            ps.setString(4,node.getHostIp());
+            if( ps.executeUpdate() < 1){
+                logger.error("更新失败:{}",node);
+            }
+            conn.commit();
+        } catch (Exception e){
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+    @Override
+    public void updateQrtzNodeOfTimeCheck(Connection conn, QrtzNode node){
+        PreparedStatement ps = null;
+        try {
+            // 查询
+            ps = conn.prepareStatement(rtp(" UPDATE {0}NODE SET TIME_CHECK=? WHERE APPLICATION=? AND HOST_IP=? "));
+            ps.setBigDecimal(1,new BigDecimal(node.getTimeCheck()));
+            ps.setString(2,node.getApplication());
+            ps.setString(3,node.getHostIp());
+            if( ps.executeUpdate() < 1){
+                logger.error("updateQrtzNodeOfTimeCheck更新失败:{}",node);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+    @Override
+    public int clearAllExecuteData(Connection conn, long timeLimit){
+        PreparedStatement ps = null;
+        try {
+            long t = System.currentTimeMillis()-timeLimit;
+            // 2. 清理 state=COMPLETE && next_fire_time >1年的清理(删除),按频度执行逻辑
+            ps = conn.prepareStatement(rtp("DELETE FROM {0}EXECUTE WHERE STATE=? AND NEXT_FIRE_TIME IS NOT NULL AND NEXT_FIRE_TIME<? "));
+            ps.setString(1,"COMPLETE");
+            ps.setBigDecimal(2,new BigDecimal(t));
+            return ps.executeUpdate();
+        } catch (Exception e){
+            e.printStackTrace();
+            return 0;
+//            throw new SQLException("No misfired trigger count returned.");
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
+    @Override
+    public List<QrtzJob> findQrtzJobByAppForRecover(Connection conn, String applicaton){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<QrtzJob> resultList = new ArrayList<QrtzJob>(8);
+        try {
+            //0.获取节点下异常执行项 (start_time>now and end_time>0 end_time is not null and next_fire_time<now and state!=(COMPLETE,INIT,PAUSED) )
+            //0.获取节点下异常执行项 ( DELETE FROM {0}JOB WHERE START_TIME>? AND NEXT_FIRE_TIME>0 AND NEXT_FIRE_TIME<? AND STATE!=COMPLETE AND STATE!=INIT AND STATE!=PAUSED )
+            ps = conn.prepareStatement(rtp("SELECT * FROM {0}JOB WHERE APPLICATION=? AND STATE!=? AND STATE!=? AND STATE!=? "));
+            ps.setString(1,applicaton);
+            ps.setString(2,"COMPLETE");
+            ps.setString(3,"INIT");
+            ps.setString(4,"PAUSED");
+            rs = ps.executeQuery();
+            while( rs.next() ) {
+                Long id = rs.getLong("ID");
+                String _application = rs.getString("APPLICATION");
+                String state = rs.getString("STATE");
+                Integer jobIdx = rs.getInt("JOB_IDX");
+                String jobClass = rs.getString("JOB_CLASS");
+                String jobData = rs.getString("JOB_DATA");
+                String jobDescription = rs.getString("JOB_DESCRIPTION");
+                Long updateTime = rs.getLong("UPDATE_TIME");
+                resultList.add( new QrtzJob(id,_application,state,jobIdx,jobClass,jobData,jobDescription,updateTime) );
+            }
+            rs.close();
+            return resultList;
+        } catch (Exception e){
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+            return resultList;
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
+    @Override
+    public List<QrtzExecute> findQrtzExecuteForRecover(Connection conn, List<QrtzJob> jobs,long now){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<QrtzExecute> resultList = new ArrayList<QrtzExecute>(8);
+//        final long now = System.currentTimeMillis();
+        for(QrtzJob job:jobs) {
+            try {
+                //0.获取节点下异常执行项 (start_time>now and end_time>0 end_time is not null and next_fire_time<now and state!=(COMPLETE,INIT,PAUSED) )
+                //0.获取节点下异常执行项 ( DELETE FROM {0}JOB WHERE START_TIME>? AND NEXT_FIRE_TIME>0 AND NEXT_FIRE_TIME<? AND STATE!=COMPLETE AND STATE!=INIT AND STATE!=PAUSED )
+                ps = conn.prepareStatement(rtp("SELECT * FROM {0}EXECUTE WHERE PID=? AND NEXT_FIRE_TIME<? AND STATE!=? AND STATE!=? AND STATE!=? "));
+                ps.setBigDecimal(1, new BigDecimal(job.getId()));
+                ps.setBigDecimal(2,new BigDecimal(now));
+                ps.setString(3, "COMPLETE");
+                ps.setString(4, "INIT");
+                ps.setString(5, "PAUSED");
+                rs = ps.executeQuery();
+                while (rs.next()) {
+                    Long id = rs.getLong("ID");
+                    Long pid = rs.getLong("PID");
+                    Integer executeIdx = rs.getInt("EXECUTE_IDX");
+                    String jobType = rs.getString("JOB_TYPE");
+                    String state = rs.getString("STATE");
+                    String cron = rs.getString("CRON");
+                    String zoneId = rs.getString("ZONE_ID");
+                    Integer repeatCount = rs.getInt("REPEAT_COUNT");
+                    Integer repeatInterval = rs.getInt("REPEAT_INTERVAL");
+                    Integer timeTriggered = rs.getInt("TIME_TRIGGERED");
+                    Long prevFireTime = rs.getLong("PREV_FIRE_TIME");
+                    Long nextFireTime = rs.getLong("NEXT_FIRE_TIME");
+                    String hostIp = rs.getString("HOST_IP");
+                    String hostName = rs.getString("HOST_NAME");
+                    Long startTime = rs.getLong("START_TIME");
+                    Long endTime = rs.getLong("END_TIME");
+                    resultList.add(new QrtzExecute(id,pid,executeIdx,jobType,state,cron,zoneId,repeatCount,repeatInterval,timeTriggered,prevFireTime,nextFireTime,hostIp,hostName,startTime,endTime));
+                }
+                rs.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+            } finally {
+                // 由于实在同一个connection下，所以不可关闭Connection
+                closeStatement(ps);
+            }
+        }
+        return resultList;
+    }
+
+    @Override
+    public int updateRecoverExecute(Connection conn, QrtzExecute execute){
+        PreparedStatement ps = null;
+        try {
+            // 查询
+            ps = conn.prepareStatement(rtp(" UPDATE {0}EXECUTE SET HOST_IP=?, HOST_NAME=?, STATE=?, NEXT_FIRE_TIME=? WHERE ID=? "));
+            ps.setString(1,execute.getHostIp());
+            ps.setString(2,execute.getHostName());
+            ps.setString(3,execute.getState());
+            ps.setBigDecimal(4,new BigDecimal(execute.getNextFireTime()));
+            ps.setBigDecimal(5,new BigDecimal(execute.getId()));
+            return ps.executeUpdate();
+        } catch (Exception e){
+            logger.error("updateRecoverExecute error:{}",execute,e);
+            e.printStackTrace();
+            return 0;
+//            throw new SQLException("No misfired trigger count returned.");
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
+    @Override
+    public int clearAllJobData(Connection conn, long timeLimit){
+        PreparedStatement ps = null;
+        try {
+            //2. 清理 state=COMPLETE && update_time >1年的清理(删除),按频度执行逻辑
+            long t = System.currentTimeMillis()-timeLimit;
+            ps = conn.prepareStatement(rtp("DELETE FROM {0}JOB WHERE STATE=? AND UPDATE_TIME<? "));
+            ps.setString(1,"COMPLETE");
+            ps.setBigDecimal(2,new BigDecimal(t));
+            return ps.executeUpdate();
+        } catch (Exception e){
+            e.printStackTrace();
+            return 0;
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
+    @Override
+    public int updateRecoverJob(Connection conn, QrtzJob job){
+        PreparedStatement ps = null;
+        try {
+            // 查询
+            ps = conn.prepareStatement(rtp(" UPDATE {0}JOB SET STATE=?, UPDATE_TIME=? WHERE ID=?"));
+            ps.setString(1,job.getState());
+            ps.setBigDecimal(2,new BigDecimal(job.getUpdateTime()));
+            ps.setBigDecimal(3,new BigDecimal(job.getId()));
+            return ps.executeUpdate();
+        } catch (Exception e){
+            logger.error("updateRecoverJob error:{}",job,e);
+            e.printStackTrace();
+            return 0;
+//            throw new SQLException("No misfired trigger count returned.");
+        }finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
+    @Override
+    public List<QrtzExecute> findAllQrtzExecuteByPID(Connection conn, Long pid){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<QrtzExecute> resultList = new ArrayList<QrtzExecute>(4);
+        try {
+            ps = conn.prepareStatement(rtp("SELECT * FROM {0}EXECUTE WHERE PID=? "));
+            ps.setBigDecimal(1, new BigDecimal(pid));
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Long id = rs.getLong("ID");
+                Long _pid = rs.getLong("PID");
+                Integer executeIdx = rs.getInt("EXECUTE_IDX");
+                String jobType = rs.getString("JOB_TYPE");
+                String state = rs.getString("STATE");
+                String cron = rs.getString("CRON");
+                String zoneId = rs.getString("ZONE_ID");
+                Integer repeatCount = rs.getInt("REPEAT_COUNT");
+                Integer repeatInterval = rs.getInt("REPEAT_INTERVAL");
+                Integer timeTriggered = rs.getInt("TIME_TRIGGERED");
+                Long prevFireTime = rs.getLong("PREV_FIRE_TIME");
+                Long nextFireTime = rs.getLong("NEXT_FIRE_TIME");
+                String hostIp = rs.getString("HOST_IP");
+                String hostName = rs.getString("HOST_NAME");
+                Long startTime = rs.getLong("START_TIME");
+                Long endTime = rs.getLong("END_TIME");
+                resultList.add(new QrtzExecute(id,_pid,executeIdx,jobType,state,cron,zoneId,repeatCount,repeatInterval,timeTriggered,prevFireTime,nextFireTime,hostIp,hostName,startTime,endTime));
+            }
+            rs.close();
+            return resultList;
+        } catch (Exception e) {
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+        } finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+        return resultList;
+    }
+
+    @Override
+    public String findNodeStateByPK(Connection conn,String application, String hostIP){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+//            ps = conn.prepareStatement(rtp("SELECT STATE FROM {0}NODE WHERE APPLICATION =? AND HOST_IP =? "));
+            ps = conn.prepareStatement(rtp("SELECT A.STATE AS A_STATE,N.STATE AS N_STATE FROM QRTZ_APP A LEFT JOIN QRTZ_NODE N ON A.APPLICATION=N.APPLICATION  WHERE A.APPLICATION=? AND N.APPLICATION=? AND N.HOST_IP=? "));
+            ps.setString(1, application);
+            ps.setString(2, application);
+            ps.setString(3, hostIP);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                String aState = rs.getString("A_STATE");
+                String nState = rs.getString("N_STATE");
+                rs.close();
+                if("Y".equals(aState) && "Y".equals(nState)){
+                    return  "Y";
+                }
+                return "N";
+            }
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+        } finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+        return null;
+    }
+
+    @Override
+    public List<QrtzExecute> selectExecuteAndJobToAcquire(Connection conn, String application,long _tsw,long _tew,String state){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<QrtzExecute> resultList = new ArrayList<>(8);
+        try {
+            final String sql = "SELECT \n" +
+                    "J.ID AS J_ID,J.APPLICATION AS J_APPLICATION,J.STATE AS J_STATE,J.JOB_IDX AS J_JOB_IDX,J.JOB_CLASS AS J_JOB_CLASS,\n" +
+                    "J.JOB_DATA AS J_JOB_DATA,J.JOB_DESCRIPTION AS J_JOB_DESCRIPTION,J.UPDATE_TIME AS J_UPDATE_TIME,\n" +
+                    "E.*\n" +
+                    "FROM {0}JOB J LEFT JOIN {0}EXECUTE E ON J.ID = E.PID  " +
+                    "WHERE J.APPLICATION =? AND E.STATE = ? AND E.NEXT_FIRE_TIME>=? AND E.NEXT_FIRE_TIME<=? ";
+            ps = conn.prepareStatement(rtp(sql));
+            ps.setString(1,application);
+            ps.setString(2, state);
+            ps.setBigDecimal(3, new BigDecimal(_tsw));
+            ps.setBigDecimal(4, new BigDecimal(_tew));
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                // JOB
+                Long _id = rs.getLong("J_ID");
+                String _application = rs.getString("J_APPLICATION");
+                String _state = rs.getString("J_STATE");
+                Integer _job_idx = rs.getInt("J_JOB_IDX");
+                String _job_class = rs.getString("J_JOB_CLASS");
+                String _job_data = rs.getString("J_JOB_DATA");
+                String _job_description = rs.getString("J_JOB_DESCRIPTION");
+                Long _update_time = rs.getLong("J_UPDATE_TIME");
+                // EXECTUE
+                Long id = rs.getLong("ID");
+                Long pid = rs.getLong("PID");
+                Integer execute_idx = rs.getInt("EXECUTE_IDX");
+                String job_type = rs.getString("JOB_TYPE");
+                String state_ = rs.getString("STATE");
+                String cron = rs.getString("CRON");
+                String zone_id = rs.getString("ZONE_ID");
+                Integer repeat_count = rs.getInt("REPEAT_COUNT");
+                Integer repeat_interval = rs.getInt("REPEAT_INTERVAL");
+                Integer time_triggered = rs.getInt("TIME_TRIGGERED");
+                Long prev_fire_time = rs.getLong("PREV_FIRE_TIME");
+                Long next_fire_time = rs.getLong("NEXT_FIRE_TIME");
+                String host_ip = rs.getString("HOST_IP");
+                String host_name = rs.getString("HOST_NAME");
+                Long start_time = rs.getLong("START_TIME");
+                Long end_time = rs.getLong("END_TIME");
+                QrtzJob job = new QrtzJob(_id,_application,_state,_job_idx,_job_class,_job_data,_job_description,_update_time);
+                QrtzExecute execute = new QrtzExecute(id,pid,execute_idx,job_type,state_,cron,zone_id,repeat_count,repeat_interval,time_triggered,prev_fire_time,next_fire_time,host_ip,host_name,start_time,end_time);
+                execute.setJob(job);
+                resultList.add(execute);
+            }
+            rs.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+        } finally {
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+        return resultList;
+    }
+
+
+    @Override
+    public int toLockAndUpdate(Connection conn, QrtzExecute newCe, String oldState, long oldPrevTime, long oldNextTime){
+        PreparedStatement ps = null;
+        try {
+            final String sql = "UPDATE  {0}EXECUTE SET \n" +
+                    "PREV_FIRE_TIME =? ,NEXT_FIRE_TIME = ?,\n" + // #1,2
+                    "TIME_TRIGGERED =?,STATE =?,HOST_IP=?,HOST_NAME=?,END_TIME=? \n" + // #3,4,5,6,7
+                    "WHERE ID = ? \n" + // #8
+                    "AND STATE = ? \n" + // #9
+                    "AND PREV_FIRE_TIME = ?\n" +// #10
+                    "AND NEXT_FIRE_TIME = ?";// #11
+            ps = conn.prepareStatement(rtp(sql));
+            ps.setBigDecimal(1,new BigDecimal(newCe.getPrevFireTime()));
+            ps.setBigDecimal(2,new BigDecimal(newCe.getNextFireTime()));
+            ps.setInt(3,newCe.getTimeTriggered());
+            ps.setString(4,newCe.getState());
+            ps.setString(5,newCe.getHostIp());
+            ps.setString(6,newCe.getHostName());
+            ps.setBigDecimal(7,new BigDecimal(newCe.getEndTime()));
+            // WHERE
+            ps.setBigDecimal(8,new BigDecimal(newCe.getId()));
+            ps.setString(9,oldState);
+            ps.setBigDecimal(10,new BigDecimal(oldPrevTime));
+            ps.setBigDecimal(11,new BigDecimal(oldNextTime));
+            return ps.executeUpdate();
+        } catch (Exception e){
+            logger.error("updateRecoverJob error:{},{}",newCe,oldState);
+            e.printStackTrace();
+            return 0;
+//            throw new SQLException("No misfired trigger count returned.");
+        }finally {
+//            if(null!=conn){
+//                try {
+//                    conn.commit();
+//                } catch (SQLException e) {
+//                }
+//            }
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+    }
+
 }
 
 // EOF

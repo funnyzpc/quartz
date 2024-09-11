@@ -30,6 +30,10 @@ import org.quartz.JobCfg;
 import org.quartz.JobDetail;
 import org.quartz.JobPersistenceException;
 import org.quartz.Trigger;
+import org.quartz.impl.QrtzApp;
+import org.quartz.impl.QrtzExecute;
+import org.quartz.impl.QrtzJob;
+import org.quartz.impl.QrtzNode;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.utils.Key;
@@ -1087,6 +1091,43 @@ public interface DriverDelegate {
 
     int insertJobCfg(Connection conn, JobCfg jobCfg) throws SQLException, IOException;
     int insertExecuteCfg(Connection conn, ExecuteCfg jobCfg) throws SQLException, IOException;
+
+    // 写入 qrtz_app 应用信息
+    int insertQrtzApp(Connection conn, QrtzApp app);
+
+    // 写入 qrtz_node 节点信息
+    int insertQrtzNode(Connection conn, QrtzNode node);
+    QrtzApp findQrtzAppByApp(Connection conn,String application);
+
+    // 清理历史数据
+    void clearHistoryData(Connection conn,Long timeLimit);
+
+    int updateQrtzAppByApp(Connection conn, QrtzApp app/*,long now,String wState*/);
+
+    QrtzNode findQrtzNodeByAppHost(Connection conn,final String app, final String hostIP);
+
+    void updateQrtzNodeOfState(Connection conn, QrtzNode node);
+
+    void updateQrtzNodeOfTimeCheck(Connection conn, QrtzNode node);
+
+    int clearAllExecuteData(Connection conn, long timeLimit);
+
+    List<QrtzJob> findQrtzJobByAppForRecover(Connection conn, String applicaton);
+
+    List<QrtzExecute> findQrtzExecuteForRecover(Connection conn, List<QrtzJob> jobs,long now);
+    int updateRecoverExecute(Connection conn, QrtzExecute execute);
+
+    int clearAllJobData(Connection conn, long timeLimit);
+
+    int updateRecoverJob(Connection conn, QrtzJob job);
+
+    List<QrtzExecute> findAllQrtzExecuteByPID(Connection conn, Long id);
+
+    String findNodeStateByPK(Connection conn,String application, String hostIP);
+
+    List<QrtzExecute> selectExecuteAndJobToAcquire(Connection conn, String application, long _tsw,long _tew,String state);
+
+    int toLockAndUpdate(Connection conn, QrtzExecute newCe, String oldState, long oldPrevTime, long oldNextTime);
 
 }
 

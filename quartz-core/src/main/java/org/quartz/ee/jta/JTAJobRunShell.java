@@ -22,10 +22,11 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
+import org.quartz.Job;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.core.JobRunShell;
-import org.quartz.spi.TriggerFiredBundle;
+import org.quartz.impl.QrtzExecute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,8 +69,13 @@ public class JTAJobRunShell extends JobRunShell {
      * Create a JTAJobRunShell instance with the given settings.
      * </p>
      */
-    public JTAJobRunShell(Scheduler scheduler, TriggerFiredBundle bndle) {
-        super(scheduler, bndle);
+//    @Deprecated
+//    public JTAJobRunShell(Scheduler scheduler, TriggerFiredBundle bndle) {
+//        super(scheduler, bndle);
+//        this.transactionTimeout = null;
+//    }
+    public JTAJobRunShell(Scheduler scheduler, QrtzExecute eJob) {
+        super(scheduler,eJob,null);
         this.transactionTimeout = null;
     }
 
@@ -78,8 +84,13 @@ public class JTAJobRunShell extends JobRunShell {
      * Create a JTAJobRunShell instance with the given settings.
      * </p>
      */
-    public JTAJobRunShell(Scheduler scheduler, TriggerFiredBundle bndle, int timeout) {
-        super(scheduler, bndle);
+//    @Deprecated
+//    public JTAJobRunShell(Scheduler scheduler, TriggerFiredBundle bndle, int timeout) {
+//        super(scheduler, bndle);
+//        this.transactionTimeout = timeout;
+//    }
+    public JTAJobRunShell(Scheduler scheduler,QrtzExecute eJob,Class<? extends Job> jobClass,Integer timeout) {
+        super(scheduler,eJob,jobClass);
         this.transactionTimeout = timeout;
     }
     

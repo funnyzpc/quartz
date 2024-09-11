@@ -67,12 +67,12 @@ public abstract class DBSemaphore implements Semaphore, Constants,StdJDBCConstan
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    public DBSemaphore(String tablePrefix, String schedName, String defaultSQL, String defaultInsertSQL) {
+    public DBSemaphore(String tablePrefix, String schedName, String defaultSelectSQL, String defaultInsertSQL) {
         this.tablePrefix = tablePrefix; // QRTZ_
         this.schedName = schedName; // spring.quartz.properties.org.quartz.scheduler.instanceName
 //        setSQL(defaultSQL); // StdRowLockSemaphore.SELECT_FOR_LOCK
 //        setInsertSQL(defaultInsertSQL); //  // StdRowLockSemaphore.INSERT_LOCK
-        setAllSQL(defaultSQL,defaultInsertSQL);
+        setAllSQL(defaultSelectSQL,defaultInsertSQL);
     }
 
     /*

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.quartz.Trigger.TriggerState;
+import org.quartz.core.ListenerManagerImpl;
 import org.quartz.spi.JobFactory;
 import org.quartz.utils.Key;
 
@@ -379,19 +380,24 @@ public interface Scheduler {
      */
     void setJobFactory(JobFactory factory) throws SchedulerException;
     
-//    /**
-//     * Get a reference to the scheduler's <code>ListenerManager</code>,
-//     * through which listeners may be registered.
-//     *   获取调度程序的ListenerManager的引用，通过它可以注册侦听器。
-//     *
-//     * @return the scheduler's <code>ListenerManager</code>
-//     * @throws SchedulerException if the scheduler is not local
-//     * @see ListenerManager
-//     * @see JobListener
-//     * @see TriggerListener
-//     * @see SchedulerListener
-//     */
-//    ListenerManager getListenerManager()  throws SchedulerException;
+    /**
+     * Get a reference to the scheduler's <code>ListenerManager</code>,
+     * through which listeners may be registered.
+     *   获取调度程序的ListenerManager的引用，通过它可以注册侦听器。
+     *
+     * @return the scheduler's <code>ListenerManager</code>
+     * @throws SchedulerException if the scheduler is not local
+     * @see ListenerManager
+     * @see JobListener
+     * @see TriggerListener
+     * @see SchedulerListener
+     *  ###仅用于springboot starter接入用，不做逻辑处理###
+     */
+    @Deprecated
+    default ListenerManager getListenerManager()  throws SchedulerException{
+        System.out.println("org.quartz.Scheduler::getListenerManager method is not defined...");
+        return new ListenerManagerImpl();
+    }
     
     ///////////////////////////////////////////////////////////////////////////
     ///
@@ -414,9 +420,9 @@ public interface Scheduler {
      *           there is an internal Scheduler error.
      */
     Date scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException;
-    default Date scheduleJobAndExecute(JobCfg jobCfg, ExecuteCfg executeCfg) throws SchedulerException{
-        throw new SchedulerException("Undefined logic!");
-    }
+//    default Date scheduleJobAndExecute(JobCfg jobCfg, ExecuteCfg executeCfg) throws SchedulerException{
+//        throw new SchedulerException("Undefined logic!");
+//    }
 
     /**
      * Schedule the given <code>{@link org.quartz.Trigger}</code> with the
@@ -825,20 +831,24 @@ public interface Scheduler {
 //     */
 //    void resetTriggerFromErrorState(TriggerKey triggerKey) throws SchedulerException;
 
-//    /**
-//     * Add (register) the given <code>Calendar</code> to the Scheduler.
-//     *
-//     * @param updateTriggers whether or not to update existing triggers that
-//     * referenced the already existing calendar so that they are 'correct'
-//     * based on the new trigger.
-//     *
-//     *
-//     * @throws SchedulerException
-//     *           if there is an internal Scheduler error, or a Calendar with
-//     *           the same name already exists, and <code>replace</code> is
-//     *           <code>false</code>.
-//     */
-//    void addCalendar(String calName, Calendar calendar, boolean replace, boolean updateTriggers) throws SchedulerException;
+    /**
+     * Add (register) the given <code>Calendar</code> to the Scheduler.
+     *
+     * @param updateTriggers whether or not to update existing triggers that
+     * referenced the already existing calendar so that they are 'correct'
+     * based on the new trigger.
+     *
+     *
+     * @throws SchedulerException
+     *           if there is an internal Scheduler error, or a Calendar with
+     *           the same name already exists, and <code>replace</code> is
+     *           <code>false</code>.
+     *  ##为springboot starter接入而保留##
+     */
+    @Deprecated
+    default void addCalendar(String calName, Calendar calendar, boolean replace, boolean updateTriggers) throws SchedulerException{
+        System.out.println("org.quartz.Scheduler::addCalendar method is not defined...");
+    }
 
 //    /**
 //     * Delete the identified <code>Calendar</code> from the Scheduler.

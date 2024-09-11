@@ -250,5 +250,6 @@ public interface JobExecutionContext {
      * @param key the key for the desired value
      */
     Object get(Object key);
+    String getDataStr();
 
 }

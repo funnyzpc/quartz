@@ -40,10 +40,17 @@ import javax.transaction.UserTransaction;
  * to <code>true</code> - except that it only affects the job that has
  * the annotation, rather than all jobs (as the property does).  If the
  * property is set to <code>true</code> and the annotation is also set,
- * then of course the annotation becomes redundant.</p> 
- * 
+ * then of course the annotation becomes redundant.</p>
+ *
+ *  一个注释，将一个作业类标记为将由JTA事务包装其执行。
+ * 如果存在此注释，Quartz将在调用execute()方法之前启动一个JTA事务，如果该方法没有抛出异常并且没有对它调用setRollbackOnly()，则将提交事务（否则事务将被Quartz回滚）。
+ * 这与将配置属性org.quartz.scheduler.wrapJobExecutionInUserTransaction设置为true的行为基本相同，只是它只影响具有注释的作业，而不是所有作业（如属性所做的那样）。如果属性设置为true，并且注释也设置，那么注释当然就变得多余了。
+ *
  * @author jhouse
+ *
+ *
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

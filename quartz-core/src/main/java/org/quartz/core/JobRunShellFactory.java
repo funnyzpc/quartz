@@ -21,6 +21,7 @@ package org.quartz.core;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerConfigException;
 import org.quartz.SchedulerException;
+import org.quartz.impl.QrtzExecute;
 import org.quartz.spi.TriggerFiredBundle;
 
 /**
@@ -48,8 +49,7 @@ public interface JobRunShellFactory {
      * the <code>JobExecutionContext</code> s within it.
      * </p>
      */
-    void initialize(Scheduler scheduler)
-        throws SchedulerConfigException;
+    void initialize(Scheduler scheduler) throws SchedulerConfigException;
 
     /**
      * <p>
@@ -57,5 +57,10 @@ public interface JobRunShellFactory {
      * to obtain instances of <code>{@link JobRunShell}</code>.
      * </p>
      */
-    JobRunShell createJobRunShell(TriggerFiredBundle bundle) throws SchedulerException;
+    @Deprecated
+    default JobRunShell createJobRunShell(TriggerFiredBundle bundle) throws SchedulerException{
+        System.out.println("org.quartz.core.JobRunShellFactory::createJobRunShell method is not defined...");
+        return null;
+    }
+    JobRunShell createJobRunShell(QrtzExecute eJob) throws SchedulerException;
 }

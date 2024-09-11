@@ -17,19 +17,22 @@
 
 package org.quartz.impl.jdbcjobstore;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import org.quartz.Calendar;
 import org.quartz.ExecuteCfg;
@@ -45,7 +48,13 @@ import org.quartz.Trigger;
 import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.impl.JobCfgImpl;
+import org.quartz.impl.QrtzApp;
+import org.quartz.impl.QrtzExecute;
+import org.quartz.impl.QrtzJob;
+import org.quartz.impl.QrtzNode;
+import org.quartz.impl.triggers.CronTriggerImpl;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
+import org.quartz.simpl.SystemPropGenerator;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.JobStore;
 import org.quartz.spi.OperableTrigger;
@@ -126,9 +135,10 @@ public abstract class JobStoreSupport implements JobStore, Constants {
      */
     private long clusterCheckinInterval = 7500L;
 
-    private ClusterManager clusterManagementThread = null;
+//    private ClusterManager clusterManagementThread = null;
+    private ClusterMisfireHandler clusterMisfireHandler = null;
 
-    private MisfireHandler misfireHandler = null;
+//    private MisfireHandler misfireHandler = null;
 
     private ClassLoadHelper classLoadHelper;
 
@@ -149,8 +159,9 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     
     private boolean doubleCheckLockMisfireHandler = true;
     
-    private final Logger log = LoggerFactory.getLogger(getClass());
-    
+//    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(JobStoreSupport.class);
+
 //    private ThreadExecutor threadExecutor = new DefaultThreadExecutor();
     
     private volatile boolean schedulerRunning = false;
@@ -554,7 +565,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         selectWithLockSQL = string;
     }
 
-    protected ClassLoadHelper getClassLoadHelper() {
+    private ClassLoadHelper getClassLoadHelper() {
         return classLoadHelper;
     }
 
@@ -627,6 +638,41 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     public long getAcquireRetryDelay(int failureCount) {
         return dbRetryInterval;
     }
+    @Override
+    public String findNodeStateByPK(String application, String hostIP) {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            return getDelegate().findNodeStateByPK(conn,application,hostIP);
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }finally {
+            cleanupConnection(conn);
+        }
+    }
+    @Override
+    public int toLockAndUpdate(QrtzExecute newCe, String oldState, long oldPrevTime, long oldNextTime) {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            int ct = getDelegate().toLockAndUpdate(conn, newCe, oldState, oldPrevTime, oldNextTime);
+//            log.info("写入:{},{}",ct,newCe);
+            return ct;
+        }catch (Exception e){
+            e.printStackTrace();
+            return 0;
+        }finally {
+            try {
+                if (null != conn && !conn.getAutoCommit()) {
+                    conn.commit();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            cleanupConnection(conn);
+        }
+    }
 
     //---------------------------------------------------------------------------
     // interface methods
@@ -672,6 +718,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                 }
                 getLog().info("Using db table-based data access locking (synchronization).");
                 setLockHandler(new StdRowLockSemaphore(getTablePrefix(), getInstanceName(), getSelectWithLockSQL()));
+//                setLockHandler(new UpdateLockRowSemaphore(getTablePrefix(), getInstanceName(), getSelectWithLockSQL()));
             } else {
                 getLog().info("Using thread monitor-based data access locking (synchronization).");
                 setLockHandler(new SimpleSemaphore());
@@ -685,27 +732,37 @@ public abstract class JobStoreSupport implements JobStore, Constants {
      */
     @Override
     public void schedulerStarted() throws SchedulerException {
-        if (isClustered()) {
-            clusterManagementThread = new ClusterManager();
-            if(initializersLoader != null){
-                clusterManagementThread.setContextClassLoader(initializersLoader);
-            }
-            clusterManagementThread.initialize();
-        } else {
-            try {
-                recoverJobs();
-            } catch (SchedulerException se) {
-                throw new SchedulerConfigException("Failure occured during job recovery.", se);
-            }
-        }
+//        if (isClustered()) {
+//            clusterManagementThread = new ClusterManager();
+//            if(initializersLoader != null){
+//                clusterManagementThread.setContextClassLoader(initializersLoader);
+//            }
+//            clusterManagementThread.initialize();
+//        } else {
+//            try {
+//                recoverJobs();
+//            } catch (SchedulerException se) {
+//                throw new SchedulerConfigException("Failure occured during job recovery.", se);
+//            }
+//        }
+//
+//        misfireHandler = new MisfireHandler();
+//        if(initializersLoader != null){
+//            misfireHandler.setContextClassLoader(initializersLoader);
+//        }
+//        misfireHandler.initialize();
 
-        misfireHandler = new MisfireHandler();
+        clusterMisfireHandler = new ClusterMisfireHandler();
         if(initializersLoader != null){
-            misfireHandler.setContextClassLoader(initializersLoader);
+            clusterMisfireHandler.setContextClassLoader(initializersLoader);
         }
-        misfireHandler.initialize();
+        // 前置处理(仅启动时一次)
+        clusterMisfireHandler.preProcess(); // 清理
+        clusterMisfireHandler.recoverJob(); // 恢复job
+        clusterMisfireHandler.recoverExecute(System.currentTimeMillis()/1000*1000); // 恢复execute
+        FIRST_CHECK=false;
+        clusterMisfireHandler.start();
         schedulerRunning = true;
-        
         getLog().debug("JobStore background threads started (as scheduler was started).");
     }
     @Override
@@ -727,17 +784,24 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     @Override
     public void shutdown() {
         shutdown = true;
-        if (misfireHandler != null) {
-            misfireHandler.shutdown();
+//        if (misfireHandler != null) {
+//            misfireHandler.shutdown();
+//            try {
+//                misfireHandler.join();
+//            } catch (InterruptedException ignore) {
+//            }
+//        }
+//        if (clusterManagementThread != null) {
+//            clusterManagementThread.shutdown();
+//            try {
+//                clusterManagementThread.join();
+//            } catch (InterruptedException ignore) {
+//            }
+//        }
+        if (clusterMisfireHandler != null) {
+            clusterMisfireHandler.shutdown();
             try {
-                misfireHandler.join();
-            } catch (InterruptedException ignore) {
-            }
-        }
-        if (clusterManagementThread != null) {
-            clusterManagementThread.shutdown();
-            try {
-                clusterManagementThread.join();
+                clusterMisfireHandler.join();
             } catch (InterruptedException ignore) {
             }
         }
@@ -876,6 +940,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         }
     }
 
+    // return : now - 60s
     protected long getMisfireTime() {
         long misfireTime = System.currentTimeMillis();
         // misfireThreshold: 60000L
@@ -891,9 +956,9 @@ public abstract class JobStoreSupport implements JobStore, Constants {
      */
     protected static class RecoverMisfiredJobsResult {
         public static final RecoverMisfiredJobsResult NO_OP =new RecoverMisfiredJobsResult(false, 0, Long.MAX_VALUE);
-        private boolean _hasMoreMisfiredTriggers;
-        private int _processedMisfiredTriggerCount;
-        private long _earliestNewTime;
+        private final boolean _hasMoreMisfiredTriggers; // _有更多误触发
+        private final int _processedMisfiredTriggerCount; //_已处理的误触发计数
+        private final long _earliestNewTime; // _最早的新时间
         
         public RecoverMisfiredJobsResult(boolean hasMoreMisfiredTriggers, int processedMisfiredTriggerCount, long earliestNewTime) {
             _hasMoreMisfiredTriggers = hasMoreMisfiredTriggers;
@@ -915,6 +980,8 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     protected RecoverMisfiredJobsResult recoverMisfiredJobs(Connection conn, boolean recovering) throws JobPersistenceException, SQLException {
         // If recovering, we want to handle all of the misfired triggers right away.
         // 如果恢复，我们希望立即处理所有不匹配的触发器。
+        // recovering=false => getMaxMisfiresToHandleAtATime() = 20
+        // recovering=true =>  getMaxMisfiresToHandleAtATime() = -1
         int maxMisfiresToHandleAtATime = (recovering) ? -1 : getMaxMisfiresToHandleAtATime();
         
         List<Key> misfiredTriggers = new LinkedList<Key>();
@@ -922,6 +989,10 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         // We must still look for the MISFIRED state in case triggers were left 
         // in this state when upgrading to this version that does not support it.
         // 我们仍然必须寻找MISFIRED状态，以防在升级到不支持它的版本时触发器处于这种状态。
+        // SELECT TRIGGER_NAME,SCHED_NAME,TRIGGER_TYPE FROM QRTZ_JOB_CFG
+        // WHERE SCHED_NAME = 'QUARTZ-SPRINGBOOT' AND NOT (MISFIRE_INSTR = -1)
+        // AND NEXT_FIRE_TIME < (20 || -1) AND TRIGGER_STATE = 'WAITING'
+        // ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC
         boolean hasMoreMisfiredTriggers =
             getDelegate().hasMisfiredTriggersInState(conn, STATE_WAITING, getMisfireTime(), maxMisfiresToHandleAtATime, misfiredTriggers);
 
@@ -933,14 +1004,20 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         } else if (misfiredTriggers.size() > 0) { 
             getLog().info("Handling " + misfiredTriggers.size() + " trigger(s) that missed their scheduled fire-time.");
         } else {
+            // 没有直接结束当前逻辑
             getLog().debug("Found 0 triggers that missed their scheduled fire-time.");
             return RecoverMisfiredJobsResult.NO_OP; 
         }
         for (Key triggerKey: misfiredTriggers) {
+            // SELECT * FROM QRTZ_JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
             OperableTrigger trig = retrieveTrigger(conn, triggerKey);
             if (trig == null) {
                 continue;
             }
+            // UPDATE QRTZ_JOB_CFG SET DESCRIPTION = ?, NEXT_FIRE_TIME = ?, PREV_FIRE_TIME = ?,
+            // TRIGGER_STATE =('WAITING' || 'COMPLETE'), TRIGGER_TYPE = ?,
+            // START_TIME = ?, END_TIME = ?, CALENDAR_NAME = ?, MISFIRE_INSTR = ?, PRIORITY = ?
+            // WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
             doUpdateOfMisfiredTrigger(conn, trig, false, STATE_WAITING, recovering);
             if(trig.getNextFireTime() != null && trig.getNextFireTime().getTime() < earliestNewTime){
                 earliestNewTime = trig.getNextFireTime().getTime();
@@ -972,8 +1049,10 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //            cal = retrieveCalendar(conn, trig.getCalendarName());
 //        }
 //        schedSignaler.notifyTriggerListenersMisfired(trig);
+        // 主要做：setNextFireTime
         trig.updateAfterMisfire(cal);
         if (trig.getNextFireTime() == null) {
+            // 设置为完成
             storeTrigger(conn, trig,null, true, STATE_COMPLETE, forceState, recovering);
 //            schedSignaler.notifySchedulerListenersFinalized(trig);
         } else {
@@ -1152,6 +1231,9 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                 throw new JobPersistenceException("The job ("+ newTrigger.getKey()+ ") referenced by the trigger does not exist.");
             }
             // UPDATE {0}JOB_CFG SET ... WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
+            // UPDATE QRTZ_JOB_CFG SET DESCRIPTION = ?, NEXT_FIRE_TIME = ?, PREV_FIRE_TIME = ?, TRIGGER_STATE ='WAITING', TRIGGER_TYPE = ?,
+            // START_TIME = ?, END_TIME = ?, CALENDAR_NAME = ?, MISFIRE_INSTR = ?, PRIORITY = ?
+            // WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
             getDelegate().updateJobCfg(conn, newTrigger, state, job);
         } catch (Exception e) {
             e.printStackTrace();
@@ -1260,8 +1342,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                         for(JobDetail job: triggersAndJobs.keySet()) {
                             storeJob(conn, job, replace);
                             for(Trigger trigger: triggersAndJobs.get(job)) {
-                                storeTrigger(conn, (OperableTrigger) trigger, job, replace,
-                                        Constants.STATE_WAITING, false, false);
+                                storeTrigger(conn, (OperableTrigger) trigger, job, replace,Constants.STATE_WAITING, false, false);
                             }
                         }
                     }
@@ -1512,207 +1593,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         }
     }
 
-//    /**
-//     * Reset the current state of the identified <code>{@link Trigger}</code>
-//     * from {@link TriggerState#ERROR} to {@link TriggerState#NORMAL} or
-//     * {@link TriggerState#PAUSED} as appropriate.
-//     *
-//     * <p>Only affects triggers that are in ERROR state - if identified trigger is not
-//     * in that state then the result is a no-op.</p>
-//     *
-//     * <p>The result will be the trigger returning to the normal, waiting to
-//     * be fired state, unless the trigger's group has been paused, in which
-//     * case it will go into the PAUSED state.</p>
-//     */
-//    @Override
-//    public void resetTriggerFromErrorState(final TriggerKey triggerKey) throws JobPersistenceException {
-//        executeInLock(
-//                LOCK_TRIGGER_ACCESS,
-//                new VoidTransactionCallback() {
-//                    @Override
-//                    public void executeVoid(Connection conn) throws JobPersistenceException {
-//                        resetTriggerFromErrorState(conn, triggerKey);
-//                    }
-//                });
-//    }
-//
-//    void resetTriggerFromErrorState(Connection conn, final TriggerKey triggerKey) throws JobPersistenceException {
-//        try {
-//            String newState = STATE_WAITING;
-//            // SELECT TRIGGER_GROUP FROM QRTZ_PAUSED_TRIGGER_GRPS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP = ?
-//            if(getDelegate().isTriggerGroupPaused(conn, triggerKey.getGroup())) {
-//                newState = STATE_PAUSED;
-//            }
-//            getDelegate().updateTriggerStateFromOtherState(conn, triggerKey, newState, STATE_ERROR);
-//            getLog().info("Trigger " + triggerKey + " reset from ERROR state to: " + newState);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't reset from error state of trigger (" + triggerKey + "): " + e.getMessage(), e);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Store the given <code>{@link org.quartz.Calendar}</code>.
-//     * 存储给定的日历。
-//     * </p>
-//     *
-//     * @param calName
-//     *          The name of the calendar.
-//     * @param calendar
-//     *          The <code>Calendar</code> to be stored.
-//     * @param replaceExisting
-//     *          If <code>true</code>, any <code>Calendar</code> existing
-//     *          in the <code>JobStore</code> with the same name & group
-//     *          should be over-written.
-//     * @throws ObjectAlreadyExistsException
-//     *           if a <code>Calendar</code> with the same name already
-//     *           exists, and replaceExisting is set to false.
-//     */
-//    @Override
-//    public void storeCalendar(final String calName,final Calendar calendar, final boolean replaceExisting, final boolean updateTriggers) throws JobPersistenceException {
-//        executeInLock(
-//            (isLockOnInsert() || updateTriggers) ? LOCK_TRIGGER_ACCESS : null,
-//            new VoidTransactionCallback() {
-//                @Override
-//                public void executeVoid(Connection conn) throws JobPersistenceException {
-//                    storeCalendar(conn, calName, calendar, replaceExisting, updateTriggers);
-//                }
-//            });
-//    }
-    
-//    protected void storeCalendar(Connection conn,String calName, Calendar calendar, boolean replaceExisting, boolean updateTriggers) throws JobPersistenceException {
-//        try {
-//            boolean existingCal = calendarExists(conn, calName);
-//            if (existingCal && !replaceExisting) {
-//                throw new ObjectAlreadyExistsException("Calendar with name '" + calName + "' already exists.");
-//            }
-//            if (existingCal) {
-//                if (getDelegate().updateCalendar(conn, calName, calendar) < 1) {
-//                    throw new JobPersistenceException("Couldn't store calendar.  Update failed.");
-//                }
-//                if(updateTriggers) {
-//                    List<OperableTrigger> trigs = getDelegate().selectTriggersForCalendar(conn, calName);
-//                    for(OperableTrigger trigger: trigs) {
-//                        trigger.updateWithNewCalendar(calendar, getMisfireThreshold());
-//                        storeTrigger(conn, trigger, null, true, STATE_WAITING, false, false);
-//                    }
-//                }
-//            } else {
-//                if (getDelegate().insertCalendar(conn, calName, calendar) < 1) {
-//                    throw new JobPersistenceException("Couldn't store calendar.  Insert failed.");
-//                }
-//            }
-//            if (!isClustered) {
-//                calendarCache.put(calName, calendar); // lazy-cache
-//            }
-//        } catch (IOException e) {
-//            throw new JobPersistenceException("Couldn't store calendar because the BLOB couldn't be serialized: "+ e.getMessage(), e);
-//        } catch (ClassNotFoundException e) {
-//            throw new JobPersistenceException("Couldn't store calendar: " + e.getMessage(), e);
-//        }catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't store calendar: " + e.getMessage(), e);
-//        }
-//    }
-    
-//    protected boolean calendarExists(Connection conn, String calName) throws JobPersistenceException {
-//        try {
-//            return getDelegate().calendarExists(conn, calName);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't determine calendar existence (" + calName + "): " + e.getMessage(), e);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Remove (delete) the <code>{@link org.quartz.Calendar}</code> with the
-//     * given name.
-//     * 移除（删除）具有给定名称的日历。
-//     * </p>
-//     *
-//     * <p>
-//     * If removal of the <code>Calendar</code> would result in
-//     * <code>Trigger</code>s pointing to non-existent calendars, then a
-//     * <code>JobPersistenceException</code> will be thrown.
-//     * 如果删除日历会导致触发器指向不存在的日历，则会引发JobPersistenceException。
-//     * </p>
-//     *       *
-//     * @param calName The name of the <code>Calendar</code> to be removed.
-//     * @return <code>true</code> if a <code>Calendar</code> with the given name
-//     * was found and removed from the store.
-//     */
-//    @Override
-//    public boolean removeCalendar(final String calName) throws JobPersistenceException {
-//        return (Boolean) executeInLock(
-//                LOCK_TRIGGER_ACCESS,
-//                new TransactionCallback() {
-//                    @Override
-//                    public Object execute(Connection conn) throws JobPersistenceException {
-//                        return removeCalendar(conn, calName) ?
-//                                Boolean.TRUE : Boolean.FALSE;
-//                    }
-//                });
-//    }
-    
-//    protected boolean removeCalendar(Connection conn,String calName) throws JobPersistenceException {
-//        try {
-//            if (getDelegate().calendarIsReferenced(conn, calName)) {
-//                throw new JobPersistenceException("Calender cannot be removed if it referenced by a trigger!");
-//            }
-//            if (!isClustered) {
-//                calendarCache.remove(calName);
-//            }
-//            return (getDelegate().deleteCalendar(conn, calName) > 0);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't remove calendar: " + e.getMessage(), e);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Retrieve the given <code>{@link org.quartz.Trigger}</code>.
-//     * 检索给定的触发器。
-//     * </p>
-//     *
-//     * @param calName
-//     *          The name of the <code>Calendar</code> to be retrieved.
-//     * @return The desired <code>Calendar</code>, or null if there is no
-//     *         match.
-//     */
-//    @Override
-//    public Calendar retrieveCalendar(final String calName) throws JobPersistenceException {
-//        return (Calendar)executeWithoutLock( // no locks necessary for read... 没有读取所需的锁。。。
-//            new TransactionCallback() {
-//                @Override
-//                public Object execute(Connection conn) throws JobPersistenceException {
-//                    return retrieveCalendar(conn, calName);
-//                }
-//            });
-//    }
-
-//    // 检索日历
-//    protected Calendar retrieveCalendar(Connection conn,String calName) throws JobPersistenceException {
-//        // all calendars are persistent, but we can lazy-cache them during run
-//        // time as long as we aren't running clustered.
-//        // 所有日历都是持久的，但只要我们没有集群运行，我们就可以在运行时延迟缓存它们。
-//        Calendar cal = (isClustered) ? null : calendarCache.get(calName);
-//        if (cal != null) {
-//            return cal;
-//        }
-//        try {
-//            cal = getDelegate().selectCalendar(conn, calName);
-//            if (!isClustered) {
-//                calendarCache.put(calName, cal); // lazy-cache...
-//            }
-//            return cal;
-//        } catch (ClassNotFoundException e) {
-//            throw new JobPersistenceException("Couldn't retrieve calendar because a required class was not found: " + e.getMessage(), e);
-//        } catch (IOException e) {
-//            throw new JobPersistenceException("Couldn't retrieve calendar because the BLOB couldn't be deserialized: " + e.getMessage(), e);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't retrieve calendar: " + e.getMessage(), e);
-//        }
-//    }
-
     /**
      * <p>
      * Get the number of <code>{@link org.quartz.Job}</code> s that are
@@ -1907,167 +1787,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                     }
                 });
     }
-    
-//    protected void clearAllSchedulingData(Connection conn) throws JobPersistenceException {
-//        try {
-//            getDelegate().clearData(conn);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Error clearing scheduling data: " + e.getMessage(), e);
-//        }
-//    }
-//
-//    /**
-//     * <p>
-//     * Get the names of all of the <code>{@link org.quartz.Trigger}</code> s
-//     * that match the given group Matcher.
-//     * 获取与给定组Matcher匹配的所有触发器的名称。
-//     * </p>
-//     *
-//     * <p>
-//     * If there are no triggers in the given group name, the result should be a
-//     * an empty Set (not <code>null</code>).
-//     *  如果给定的组名称中没有触发器，则结果应该是一个空的Set（而不是null）。
-//     * </p>
-//     */
-//    @Override
-//    @SuppressWarnings("unchecked")
-//    public Set<Key> getTriggerKeys(final GroupMatcher<TriggerKey> matcher) throws JobPersistenceException {
-//        return (Set<Key>)executeWithoutLock( // no locks necessary for read...
-//            new TransactionCallback() {
-//                @Override
-//                public Object execute(Connection conn) throws JobPersistenceException {
-////                    return getTriggerNames(conn, matcher);
-//                    try {
-//                        return getDelegate().selectTriggersInGroup(conn, matcher);
-//                    } catch (SQLException e) {
-//                        throw new JobPersistenceException("Couldn't obtain trigger names: "+ e.getMessage(), e);
-//                    }
-//                }
-//            });
-//    }
-    
-//    protected Set<TriggerKey> getTriggerNames(Connection conn,GroupMatcher<TriggerKey> matcher) throws JobPersistenceException {
-//        Set<TriggerKey> trigNames;
-//        try {
-//            trigNames = getDelegate().selectTriggersInGroup(conn, matcher);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't obtain trigger names: "+ e.getMessage(), e);
-//        }
-//        return trigNames;
-//    }
-//
-//    /**
-//     * <p>
-//     * Get the names of all of the <code>{@link org.quartz.Job}</code>
-//     * groups.
-//     *  获取所有作业组的名称。
-//     * </p>
-//     *
-//     * <p>
-//     * If there are no known group names, the result should be a zero-length
-//     * array (not <code>null</code>).
-//     *  如果没有已知的组名，结果应该是一个零长度的数组（不是null）。
-//     * </p>
-//     */
-//    @Deprecated
-//    @Override
-//    @SuppressWarnings("unchecked")
-//    public List<String> getJobGroupNames() throws JobPersistenceException {
-//        return (List<String>)executeWithoutLock( // no locks necessary for read...
-//            new TransactionCallback() {
-//                @Override
-//                public Object execute(Connection conn) throws JobPersistenceException {
-//                    // return getJobGroupNames(conn);
-//                    try {
-//                        return getDelegate().selectJobGroups(conn);
-//                    } catch (SQLException e) {
-//                        throw new JobPersistenceException("Couldn't obtain job groups: " + e.getMessage(), e);
-//                    }
-//                }
-//            });
-//    }
-//    @Deprecated
-//    protected List<String> getJobGroupNames(Connection conn) throws JobPersistenceException {
-//        List<String> groupNames;
-//        try {
-//            groupNames = getDelegate().selectJobGroups(conn);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't obtain job groups: " + e.getMessage(), e);
-//        }
-//        return groupNames;
-//    }
-
-//    /**
-//     * <p>
-//     * Get the names of all of the <code>{@link org.quartz.Trigger}</code> groups.
-//     * 获取所有触发器组的名称。
-//     * </p>
-//     *
-//     * <p>
-//     * If there are no known group names, the result should be a zero-length
-//     * array (not <code>null</code>).
-//     * </p>
-//     */
-//    @SuppressWarnings("unchecked")
-//    public List<String> getTriggerGroupNames()
-//        throws JobPersistenceException {
-//        return (List<String>)executeWithoutLock( // no locks necessary for read...
-//            new TransactionCallback() {
-//                public Object execute(Connection conn) throws JobPersistenceException {
-//                    return getTriggerGroupNames(conn);
-//                }
-//            });
-//    }
-    
-//    protected List<String> getTriggerGroupNames(Connection conn) throws JobPersistenceException {
-//        List<String> groupNames;
-//        try {
-//            groupNames = getDelegate().selectTriggerGroups(conn);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException(
-//                    "Couldn't obtain trigger groups: " + e.getMessage(), e);
-//        }
-//
-//        return groupNames;
-//    }
-
-//    /**
-//     * <p>
-//     * Get the names of all of the <code>{@link org.quartz.Calendar}</code> s
-//     * in the <code>JobStore</code>.
-//     * 获取JobStore中所有日历的名称。
-//     * </p>
-//     *
-//     * <p>
-//     * If there are no Calendars in the given group name, the result should be
-//     * a zero-length array (not <code>null</code>).
-//     *  如果给定的组名称中没有Calendar，则结果应为零长度数组（不为null）。
-//     * </p>
-//     */
-//    @Override
-//    @SuppressWarnings("unchecked")
-//    public List<String> getCalendarNames() throws JobPersistenceException {
-//        return (List<String>)executeWithoutLock( // no locks necessary for read...
-//            new TransactionCallback() {
-//                @Override
-//                public Object execute(Connection conn) throws JobPersistenceException {
-////                    return getCalendarNames(conn);
-//                    try {
-//                        return getDelegate().selectCalendars(conn);
-//                    } catch (SQLException e) {
-//                        throw new JobPersistenceException("Couldn't obtain trigger groups: " + e.getMessage(), e);
-//                    }
-//                }
-//            });
-//    }
-    
-//    protected List<String> getCalendarNames(Connection conn) throws JobPersistenceException {
-//        try {
-//            return getDelegate().selectCalendars(conn);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't obtain trigger groups: " + e.getMessage(), e);
-//        }
-//    }
 
     /**
      * <p>
@@ -2371,297 +2090,12 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                 }
             });
     }
-//
-//    /**
-//     * <p>
-//     * Pause all of the <code>{@link org.quartz.Trigger}s</code> matching the
-//     * given groupMatcher.
-//     *  暂停所有与给定groupMatcher匹配的触发器。
-//     * </p>
-//     *
-//     * @see #resumeTriggerGroup(java.sql.Connection, org.quartz.impl.matchers.GroupMatcher)
-//     */
-//    @Override
-//    @SuppressWarnings("unchecked")
-//    public Set<String> pauseTriggers(final GroupMatcher<TriggerKey> matcher) throws JobPersistenceException {
-//        return (Set<String>) executeInLock(
-//            LOCK_TRIGGER_ACCESS,
-//            new TransactionCallback() {
-//                @Override
-//                public Set<String> execute(Connection conn) throws JobPersistenceException {
-//                    return pauseTriggerGroup(conn, matcher);
-//                }
-//            });
-//    }
-    
-//    /**
-//     * <p>
-//     * Pause all of the <code>{@link org.quartz.Trigger}s</code> matching the
-//     * given groupMatcher.
-//     *  暂停所有与给定groupMatcher匹配的触发器。
-//     * </p>
-//     *
-//     * @see #resumeTriggerGroup(java.sql.Connection, org.quartz.impl.matchers.GroupMatcher)
-//     */
-//    @Deprecated
-//    public Set<String> pauseTriggerGroup(Connection conn,GroupMatcher<TriggerKey> matcher) throws JobPersistenceException {
-//        try {
-//            // UPDATE QRTZ_TRIGGERS SET TRIGGER_STATE = 'PAUSED' WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ? AND (TRIGGER_STATE = 'ACQUIRED' OR TRIGGER_STATE = 'WAITING' OR TRIGGER_STATE = 'WAITING')
-//            getDelegate().updateTriggerGroupStateFromOtherStates(conn, matcher, STATE_PAUSED, STATE_ACQUIRED,STATE_WAITING, STATE_WAITING);
-//            // UPDATE QRTZ_TRIGGERS SET TRIGGER_STATE = 'PAUSED_BLOCKED' WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ? AND TRIGGER_STATE = 'BLOCKED'
-//            getDelegate().updateTriggerGroupStateFromOtherState(conn, matcher, STATE_PAUSED_BLOCKED, STATE_BLOCKED);
-////            // SELECT DISTINCT(TRIGGER_GROUP) FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_GROUP LIKE ?
-////            List<String> groups2 = getDelegate().selectTriggerGroups(conn, matcher);
-////            // make sure to account for an exact group match for a group that doesn't yet exist
-////            StringMatcher.StringOperatorName operator = matcher.getCompareWithOperator();
-////            if (operator.equals(StringOperatorName.EQUALS) && !groups.contains(matcher.getCompareToValue())) {
-////              groups.add(matcher.getCompareToValue());
-////            }
-////            for (String group : groups) {
-////                if (!getDelegate().isTriggerGroupPaused(conn, group)) {
-////                    // INSERT INTO QRTZ_PAUSED_TRIGGER_GRPS (SCHED_NAME, TRIGGER_GROUP) VALUES('MEE_QUARTZ', ?)
-////                    getDelegate().insertPausedTriggerGroup(conn, group);
-////                }
-////            }
-////            return new HashSet<String>(groups);
-//            HashSet<String> hashSet = new HashSet();
-////            hashSet.add(Scheduler.DEFAULT_GROUP);
-//            return hashSet;
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't pause trigger group '" + matcher + "': " + e.getMessage(), e);
-//        }
-//    }
 
-//    @SuppressWarnings("unchecked")
-//    public Set<String> getPausedTriggerGroups()
-//        throws JobPersistenceException {
-//        return (Set<String>)executeWithoutLock( // no locks necessary for read...
-//            new TransactionCallback() {
-//                public Object execute(Connection conn) throws JobPersistenceException {
-//                    return getPausedTriggerGroups(conn);
-//                }
-//            });
-//    }
+//    private static long ftrCtr = System.currentTimeMillis();
 //
-//    /**
-//     * <p>
-//     * Pause all of the <code>{@link org.quartz.Trigger}s</code> in the
-//     * given group.
-//     * </p>
-//     *
-//     * @see #resumeTriggers(org.quartz.impl.matchers.GroupMatcher)
-//     */
-//    public Set<String> getPausedTriggerGroups(Connection conn)
-//        throws JobPersistenceException {
-//
-//        try {
-//            return getDelegate().selectPausedTriggerGroups(conn);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException(
-//                    "Couldn't determine paused trigger groups: " + e.getMessage(), e);
-//        }
+//    protected synchronized String getFiredTriggerRecordId() {
+//        return getInstanceId() + ftrCtr++;
 //    }
-    
-//    /**
-//     * <p>
-//     * Resume (un-pause) all of the <code>{@link org.quartz.Trigger}s</code>
-//     * matching the given groupMatcher.
-//     *  恢复（取消暂停）与给定groupMatcher匹配的所有触发器。
-//     * </p>
-//     *
-//     * <p>
-//     * If any <code>Trigger</code> missed one or more fire-times, then the
-//     * <code>Trigger</code>'s misfire instruction will be applied.
-//     *  如果任何触发器错过了一次或多次点火，则将应用触发器的失火指令。
-//     * </p>
-//     *
-//     * @see #pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
-//     */
-//    @Override
-//    @SuppressWarnings("unchecked")
-//    public Set<String> resumeTriggers(Key key) throws JobPersistenceException {
-//        return (Set<String>) executeInLock(
-//            LOCK_TRIGGER_ACCESS,
-//            new TransactionCallback() {
-//                @Override
-//                public Set<String> execute(Connection conn) throws JobPersistenceException {
-//                    return resumeTriggerGroup(conn, matcher);
-//                }
-//            });
-//    }
-    
-//    /**
-//     * <p>
-//     * Resume (un-pause) all of the <code>{@link org.quartz.Trigger}s</code>
-//     * matching the given groupMatcher.
-//     *  恢复（取消暂停）与给定groupMatcher匹配的所有触发器。
-//     * </p>
-//     *
-//     * <p>
-//     * If any <code>Trigger</code> missed one or more fire-times, then the
-//     * <code>Trigger</code>'s misfire instruction will be applied.
-//     *  如果任何触发器错过了一次或多次点火，则将应用触发器的失火指令。
-//     * </p>
-//     *
-//     * @see # pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
-//     */
-//    public Set<String> resumeTriggerGroup(Connection conn,GroupMatcher<Key<?>> matcher) throws JobPersistenceException {
-//        try {
-////            getDelegate().deletePausedTriggerGroup(conn, matcher);
-//            HashSet<String> triggerNames = new HashSet<String>();
-//            Set<Key> keys = getDelegate().selectTriggersInGroup(conn, matcher);
-//            for (Key key: keys) {
-//                resumeTrigger(conn, key);
-//                triggerNames.add(key.getName());
-//            }
-//            return triggerNames;
-//            // FUTURE_TODO: find an efficient way to resume triggers (better than the
-//            // above)... logic below is broken because of
-//            // findTriggersToBeBlocked()
-//            /*
-//             * int res =
-//             * getDelegate().updateTriggerGroupStateFromOtherState(conn,
-//             * groupName, STATE_WAITING, PAUSED);
-//             *
-//             * if(res > 0) {
-//             *
-//             * long misfireTime = System.currentTimeMillis();
-//             * if(getMisfireThreshold() > 0) misfireTime -=
-//             * getMisfireThreshold();
-//             *
-//             * Key[] misfires =
-//             * getDelegate().selectMisfiredTriggersInGroupInState(conn,
-//             * groupName, STATE_WAITING, misfireTime);
-//             *
-//             * List blockedTriggers = findTriggersToBeBlocked(conn,
-//             * groupName);
-//             *
-//             * Iterator itr = blockedTriggers.iterator(); while(itr.hasNext()) {
-//             * Key key = (Key)itr.next();
-//             * getDelegate().updateTriggerState(conn, key.getName(),
-//             * key.getGroup(), BLOCKED); }
-//             *
-//             * for(int i=0; i < misfires.length; i++) {               String
-//             * newState = STATE_WAITING;
-//             * if(blockedTriggers.contains(misfires[i])) newState =
-//             * BLOCKED; updateMisfiredTrigger(conn,
-//             * misfires[i].getName(), misfires[i].getGroup(), newState, true); } }
-//             */
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't pause trigger group '"+ matcher + "': " + e.getMessage(), e);
-//        }
-//    }
-
-//    /**
-//     * <p>
-//     * Pause all triggers - equivalent of calling <code>pauseTriggerGroup(group)</code>
-//     * on every group.
-//     * </p>
-//     *
-//     * <p>
-//     * When <code>resumeAll()</code> is called (to un-pause), trigger misfire
-//     * instructions WILL be applied.
-//     * </p>
-//     *
-//     * @see #resumeAll()
-//     * @see #pauseTriggerGroup(java.sql.Connection, org.quartz.impl.matchers.GroupMatcher)
-//     */
-//    @Override
-//    public void pauseAll() throws JobPersistenceException {
-//        executeInLock(
-//            LOCK_TRIGGER_ACCESS,
-//            new VoidTransactionCallback() {
-//                @Override
-//                public void executeVoid(Connection conn) throws JobPersistenceException {
-//                    pauseAll(conn);
-//                }
-//            });
-//    }
-    
-//    /**
-//     * <p>
-//     * Pause all triggers - equivalent of calling <code>pauseTriggerGroup(group)</code>
-//     * on every group.
-//     * </p>
-//     *
-//     * <p>
-//     * When <code>resumeAll()</code> is called (to un-pause), trigger misfire
-//     * instructions WILL be applied.
-//     * </p>
-//     *
-//     * @see #resumeAll(Connection)
-//     * @see #pauseTriggerGroup(java.sql.Connection, org.quartz.impl.matchers.GroupMatcher)
-//     */
-//    public void pauseAll(Connection conn) throws JobPersistenceException {
-//        List<String> names = getTriggerGroupNames(conn);
-//
-//        for (String name: names) {
-//            pauseTriggerGroup(conn, GroupMatcher.triggerGroupEquals(name));
-//        }
-//
-//        try {
-//            if (!getDelegate().isTriggerGroupPaused(conn, ALL_GROUPS_PAUSED)) {
-//                getDelegate().insertPausedTriggerGroup(conn, ALL_GROUPS_PAUSED);
-//            }
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't pause all trigger groups: " + e.getMessage(), e);
-//        }
-//    }
-//
-//    /**
-//     * <p>
-//     * Resume (un-pause) all triggers - equivalent of calling <code>resumeTriggerGroup(group)</code>
-//     * on every group.
-//     * </p>
-//     *
-//     * <p>
-//     * If any <code>Trigger</code> missed one or more fire-times, then the
-//     * <code>Trigger</code>'s misfire instruction will be applied.
-//     * </p>
-//     *
-//     * @see #pauseAll()
-//     */
-//    public void resumeAll() throws JobPersistenceException {
-//        executeInLock(
-//            LOCK_TRIGGER_ACCESS,
-//            new VoidTransactionCallback() {
-//                public void executeVoid(Connection conn) throws JobPersistenceException {
-//                    resumeAll(conn);
-//                }
-//            });
-//    }
-    
-//    /**
-//     * protected
-//     * <p>
-//     * Resume (un-pause) all triggers - equivalent of calling <code>resumeTriggerGroup(group)</code>
-//     * on every group.
-//     * </p>
-//     *
-//     * <p>
-//     * If any <code>Trigger</code> missed one or more fire-times, then the
-//     * <code>Trigger</code>'s misfire instruction will be applied.
-//     * </p>
-//     *
-//     * @see #pauseAll(Connection)
-//     */
-//    public void resumeAll(Connection conn) throws JobPersistenceException {
-//        List<String> names = getTriggerGroupNames(conn);
-//        for (String name: names) {
-//            resumeTriggerGroup(conn, GroupMatcher.triggerGroupEquals(name));
-//        }
-//        try {
-//            getDelegate().deletePausedTriggerGroup(conn, ALL_GROUPS_PAUSED);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't resume all trigger groups: " + e.getMessage(), e);
-//        }
-//    }
-
-    private static long ftrCtr = System.currentTimeMillis();
-
-    protected synchronized String getFiredTriggerRecordId() {
-        return getInstanceId() + ftrCtr++;
-    }
 
     /**
      * <p>
@@ -2800,7 +2234,190 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         // Return the acquired trigger list
         return acquiredTriggers;
     }
-    
+    @Override
+    public List<QrtzExecute> acquireNextTriggers(final String application,final long _tsw,final long _tew) throws JobPersistenceException {
+        long scheduledFireTime = -1;
+        if ((scheduledFireTime=System.currentTimeMillis()) > _tew) {
+            throw new IllegalArgumentException();
+        }
+        final String hostIP = SystemPropGenerator.hostIP();
+        final String hostName = SystemPropGenerator.hostName();
+        List<QrtzExecute> executeList = new ArrayList<QrtzExecute>(8);
+        final int MAX_DO_LOOP_RETRY = 3;
+        int currentLoopCount = 0;
+        do {
+            currentLoopCount ++;
+            Connection conn=null;
+            try {
+                conn = getConnection();
+                // 1. 获取窗口内的执行任务
+                // 2. 根据任务时间配置计算膨胀任务
+                // 3. 返回记录
+//                List<Key> keys = getDelegate().selectTriggerToAcquire(conn, noLaterThan + timeWindow, getMisfireTime(), maxCount);
+                List<QrtzExecute> dataList = getDelegate().selectExecuteAndJobToAcquire(conn,application,_tsw,_tew,STATE_EXECUTING);
+                // No trigger is ready to fire yet. 触发器还没有准备好点火
+                if (dataList == null || dataList.isEmpty()){
+                    return executeList;
+                }
+                // 打乱顺序可能在集群环境下有执行优势
+                Collections.shuffle(dataList);
+                for( QrtzExecute item:dataList){
+                    final String jobType = item.getJobType(); // SIMPLE、CRON
+                    final Long endTime = item.getEndTime();
+                    item.setHostIp(hostIP);
+                    item.setHostName(hostName);
+                    item.setTimeTriggered( ("SIMPLE".equals(jobType))? (item.getTimeTriggered()+1) : item.getTimeTriggered());
+                    item.setScheduledFireTime(scheduledFireTime);
+                    // 类加载
+                    final String jobClass = item.getJob().getJobClass();
+                    if( !"".equals(jobClass.trim()) && null!=getClassLoadHelper() ){
+                        Class<? extends Job> jobClazz = null;
+                        try {
+                            jobClazz = getClassLoadHelper().loadClass(jobClass, Job.class);
+                        }catch (Exception e){
+                            log.error("类不存在：{}",jobClass,e);
+                        }
+                        if(null==jobClazz){
+                            continue;
+                        }
+                        item.setJobClazz(jobClazz);
+                    }else{
+                        // 不是任务
+                        continue;
+                    }
+                    executeList.add(item);
+                    if( null!=endTime && (endTime<=0 || endTime<=_tew ) ){
+                        List<Date> dateList = null;
+                        if("CRON".equals(jobType)){
+                            final String cron = item.getCron();
+                            Long nextFireTime = item.getNextFireTime();
+                            Long startTime = item.getStartTime();
+                            Long _endTime = endTime<=0?_tew:(endTime>_tew?null:endTime);
+                            String _zoneId = item.getZoneId();
+                            if(!( _endTime!=null
+                                    && (dateList=this.getExecuteCronTimes(cron,nextFireTime,startTime,_endTime,_zoneId)) !=null && !dateList.isEmpty()
+                            )){
+                                continue;
+                            }
+                        }else if("SIMPLE".equals(jobType)){
+                            Long nextFireTime = item.getNextFireTime();
+                            Long startTime = item.getStartTime();
+                            Long _endTime = endTime<=0?_tew:(endTime>_tew?null:endTime);
+                            Integer repeatCount = item.getRepeatCount();
+                            Integer timeTriggered = item.getTimeTriggered();
+                            Integer repeatInterval = item.getRepeatInterval();
+                            if(!( _endTime!=null && timeTriggered<repeatCount
+                                    && nextFireTime+repeatInterval <=  _tew
+                                    && (dateList=this.getExecuteSimpleTimes(nextFireTime,startTime,_endTime,repeatCount,(long)repeatInterval,timeTriggered )) !=null && !dateList.isEmpty()
+                            )){
+                                continue;
+                            }
+                        }else{
+                            log.error("not support jobType! {}",item);
+                        }
+                        // 遍历处理
+                        final QrtzJob job = item.getJob();
+                        for( int i =0;i<dateList.size();i++ ){
+                            Date date = dateList.get(i);
+                            QrtzExecute _execute = new QrtzExecute(
+                                    item.getId(),
+                                    item.getPid(),
+                                    item.getExecuteIdx(),
+                                    item.getJobType(),
+                                    item.getState(),
+                                    item.getCron(),
+                                    item.getZoneId(),
+                                    item.getRepeatCount(),
+                                    item.getRepeatInterval(),
+                                    item.getTimeTriggered()+i+1,
+//                                    i==0?item.getPrevFireTime():dateList.get(i-1).getTime(),// prevFireTime
+                                    i==0?item.getNextFireTime():dateList.get(i-1).getTime(),// prevFireTime
+                                    date.getTime(), // nextFireTime
+                                    item.getHostIp(),
+                                    item.getHostName(),
+                                    item.getStartTime(),
+                                    item.getEndTime());
+                            _execute.setJobClazz(item.getJobClazz());
+                            _execute.setJob(job);
+                            executeList.add(_execute);
+                        }
+                    }
+                }
+                return executeList;
+            } catch (Exception ee) {
+//                throw new JobPersistenceException("Couldn't acquire next trigger: ", ee);
+                log.error("Couldn't acquire next trigger: {},{}",application,hostIP, ee);
+            }finally {
+                cleanupConnection(conn);
+            }
+        } while (currentLoopCount<=MAX_DO_LOOP_RETRY);
+        // Return the acquired trigger list
+        return executeList;
+    }
+
+    private List<Date> getExecuteCronTimes(String cron, Long execTime, Long startTime, Long endTime,String zoneId){
+        List<Date> resultList = new ArrayList<>();
+        Date nextFireTime = new Date(execTime);
+        CronTriggerImpl cronTrigger=null;
+        try {
+            cronTrigger = new CronTriggerImpl()
+                    .setCronExpression(cron)
+                    .setStartTime(new Date(startTime))
+                    .setEndTime(new Date(endTime))
+                    .setTimeZone(TimeZone.getTimeZone(zoneId));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        if(null==cronTrigger){
+            return resultList;
+        }
+        do {
+            try {
+                nextFireTime = cronTrigger.getFireTimeAfter(nextFireTime);
+                if(null==nextFireTime || nextFireTime.getTime()>endTime ){
+                    break;
+                }
+                resultList.add(nextFireTime);
+            }catch (Exception e){
+                e.printStackTrace();
+                return resultList;
+            }
+        }while (nextFireTime!=null && nextFireTime.getTime()<=endTime);
+        return resultList;
+    }
+
+    private List<Date> getExecuteSimpleTimes(Long execTime,Long startTime,Long endTime,Integer repeatCount,Long repeatInterval,Integer timesTriggered){
+        List<Date> resultList = new ArrayList<>();
+        Date nextFireTime = new Date(execTime);
+        SimpleTriggerImpl simpleTrigger=null;
+        try {
+            simpleTrigger = new SimpleTriggerImpl()
+                    .setStartTime(new Date(startTime))
+                    .setEndTime(new Date(endTime))
+                    .setRepeatCount(repeatCount)
+                    .setRepeatInterval(repeatInterval)
+                    .setTimesTriggered(timesTriggered);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        if(null==simpleTrigger){
+            return resultList;
+        }
+        do {
+            try {
+                nextFireTime = simpleTrigger.getFireTimeAfter(nextFireTime);
+                if(null==nextFireTime || nextFireTime.getTime()>endTime ){
+                    break;
+                }
+                resultList.add(nextFireTime);
+            }catch (Exception e){
+                e.printStackTrace();
+                return resultList;
+            }
+        }while (nextFireTime!=null && nextFireTime.getTime()<=endTime);
+        return resultList;
+    }
+
     /**
      * <p>
      * Inform the <code>JobStore</code> that the scheduler no longer plans to
@@ -2970,90 +2587,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         );
     }
 
-//    protected TriggerFiredBundle triggerFired(Connection conn, OperableTrigger trigger) throws JobPersistenceException {
-//        JobDetail jobDetail;
-//        Calendar cal = null;
-//        // TODO ... 考虑是否需要合并
-//        // Make sure trigger wasn't deleted, paused, or completed... 确保触发器未被删除、暂停或完成。。。
-//        try {
-//            // if trigger was deleted, state will be STATE_DELETED 如果触发器被删除，状态将为STATE_DELETED
-//            // SELECT TRIGGER_STATE FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE= ?
-//            String state = getDelegate().selectTriggerState(conn,trigger.getKey());
-//            // 必须是正常执行中的状态
-//            // todo ... 考虑是否调整
-//            if (!state.equals(STATE_ACQUIRED)) {
-//                return null;
-//            }
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't select trigger state: " + e.getMessage(), e);
-//        }catch (Exception e2){
-//            e2.printStackTrace();
-//        }
-//
-//        try {
-////            job = retrieveJob(conn, trigger.getJobKey());
-//            //  SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ?
-//            jobDetail = retrieveJob(conn, trigger.getKey());
-//            if (jobDetail == null) { return null; }
-//        } catch (JobPersistenceException jpe) {
-//            try {
-//                getLog().error("Error retrieving job, setting trigger state to ERROR.", jpe);
-//                getDelegate().updateTriggerState(conn, trigger.getKey(), STATE_ERROR);
-//            } catch (SQLException sqle) {
-//                getLog().error("Unable to set trigger state to ERROR.", sqle);
-//            }
-//            throw jpe;
-//        }
-////        if (trigger.getCalendarName() != null) {
-////            cal = retrieveCalendar(conn, trigger.getCalendarName());
-////            if (cal == null) { return null; }
-////        }
-//        try {
-//            // UPDATE QRTZ_FIRED_TRIGGERS SET INSTANCE_NAME = 'SCD2022121400041721629530668', FIRED_TIME = 1721632890871, SCHED_TIME = now(), STATE = 'EXECUTING', IS_NONCONCURRENT = false, REQUESTS_RECOVERY = false
-//            //       WHERE SCHED_NAME ='QUARTZ-SPRINGBOOT' AND ENTRY_ID = 'SCD20221214000417216295306681721629530802' AND TRIGGER_NAME = 'Job02TestService::task01' AND TRIGGER_TYPE = 'CRON'
-//            getDelegate().updateFiredTrigger(conn, trigger, STATE_EXECUTING,jobDetail);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't insert fired trigger: " + e.getMessage(), e);
-//        }
-//        Date prevFireTime = trigger.getPreviousFireTime();
-//        // call triggered - to update the trigger's next-fire-time state...
-//        trigger.triggered(cal);
-//        String state = STATE_WAITING;
-//        boolean force = true;
-//        // 不允许并发执行时 (job含有@DisallowConcurrentExecution注解)
-//        // todo ... 确认是否需要移除？
-//        if (jobDetail.isConcurrentExectionDisallowed()) {
-//            state = STATE_BLOCKED;
-//            force = false;
-//            try {
-//                // UPDATE QRTZ_TRIGGERS SET TRIGGER_STATE = 'BLOCKED' WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_STATE = 'WAITING'
-//                getDelegate().updateTriggerStatesForJobFromOtherState(conn, jobDetail.getKey(), STATE_BLOCKED, STATE_WAITING);
-//                getDelegate().updateTriggerStatesForJobFromOtherState(conn, jobDetail.getKey(), STATE_BLOCKED, STATE_ACQUIRED);
-//                getDelegate().updateTriggerStatesForJobFromOtherState(conn, jobDetail.getKey(), STATE_PAUSED_BLOCKED, STATE_PAUSED);
-//            } catch (SQLException e) {
-//                throw new JobPersistenceException("Couldn't update states of blocked triggers: " + e.getMessage(), e);
-//            }
-//        }
-//        if (trigger.getNextFireTime() == null) {
-//            state = STATE_COMPLETE;
-//            force = true;
-//        }
-//        // UPDATE {0}JOB_CFG SET TRIGGER_STATE='WAITING'  ....
-//        storeTrigger(conn, trigger, jobDetail, true, state, force, false);
-//        jobDetail.getJobDataMap().clearDirtyFlag();
-//        // 触发器点火管束 ?
-//        return new TriggerFiredBundle(
-//                jobDetail,
-//                trigger,
-//                cal,
-////                trigger.getKey().getGroup().equals(Scheduler.DEFAULT_RECOVERY_GROUP),
-//                new Date(),
-//                trigger.getPreviousFireTime(),
-//                prevFireTime,
-//                trigger.getNextFireTime()
-//        );
-//    }
-
     /**
      * <p>
      * Inform the <code>JobStore</code> that the scheduler has completed the
@@ -3075,7 +2608,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                 }
             });    
     }
-    
+    @Deprecated
     protected void triggeredJobComplete(Connection conn, OperableTrigger trigger, JobDetail jobDetail,CompletedExecutionInstruction triggerInstCode) throws JobPersistenceException {
         try {
             if (triggerInstCode == CompletedExecutionInstruction.DELETE_TRIGGER) {
@@ -3183,8 +2716,10 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     // Management methods
     //---------------------------------------------------------------------------
     // 恢复熄火
+    // 将已熄火的任务恢复或置为完成
     protected RecoverMisfiredJobsResult doRecoverMisfires() throws JobPersistenceException {
         boolean transOwner = false;
+        // 获取连接
         Connection conn = getNonManagedTXConnection();
         try {
             RecoverMisfiredJobsResult result = RecoverMisfiredJobsResult.NO_OP;
@@ -3192,6 +2727,10 @@ public abstract class JobStoreSupport implements JobStore, Constants {
             // trigger lock, peek ahead to see if it is likely we would find
             // misfired triggers requiring recovery.
             // 在我们做出可能代价高昂的调用以获取触发锁之前，请提前查看我们是否可能发现需要恢复的误触发。
+            // #getDoubleCheckLockMisfireHandler() 总是返回true
+            // SELECT COUNT(TRIGGER_NAME) FROM QRTZ_JOB_CFG
+            // WHERE SCHED_NAME ='QUARTZ-SPRINGBOOT' AND NOT (MISFIRE_INSTR = -1)
+            // AND NEXT_FIRE_TIME < (now()-60s) AND TRIGGER_STATE = 'WAITING'
             int misfireCount = (getDoubleCheckLockMisfireHandler()) ?
                 getDelegate().countMisfiredTriggersInState(conn, STATE_WAITING, getMisfireTime()) :
                 Integer.MAX_VALUE;
@@ -3199,6 +2738,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
             if (misfireCount == 0) {
                 getLog().debug("Found 0 triggers that missed their scheduled fire-time.");
             } else {
+                // 加锁+
                 transOwner = getLockHandler().obtainLock(conn, LOCK_TRIGGER_ACCESS);
                 result = recoverMisfiredJobs(conn, false);
             }
@@ -3251,202 +2791,9 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 
 //    protected boolean firstCheckIn = true;
 
-    protected long lastCheckin = System.currentTimeMillis();
+//    protected long lastCheckin = System.currentTimeMillis();
 
-//    /**
-//     * 执行checkIn
-//     * @return boolean
-//     * @throws JobPersistenceException
-//     */
-//    protected boolean doCheckin() throws JobPersistenceException {
-//        // 这个变量标识的是 TRIGGER_ACCESS 是否被锁定(DB行锁)，若为true则会在finally中被释放
-//        boolean transOwner = false;
-//        // 这个变量标识的是 STATE_ACCESS 是否被锁定(DB行锁)，若为true则会在finally中被释放
-//        boolean transStateOwner = false;
-//        boolean recovered = false;
-//        // 获取非管理事物连接
-//        Connection conn = getNonManagedTXConnection();
-//        try {
-//            // Other than the first time, always checkin first to make sure there is 
-//            // work to be done before we acquire the lock (since that is expensive, 
-//            // and is almost never necessary).  This must be done in a separate
-//            // transaction to prevent a deadlock under recovery conditions.
-//            // 除了第一次，总是先签入，以确保在获得锁之前有工作要做（因为这很昂贵，而且几乎从来都不是必要的）。这必须在单独的事务中完成，以防止在恢复条件下出现死锁。
-//            List<SchedulerStateRecord> failedRecords = null;
-//            // 非第一次checkin进入 firstCheckIn=false
-//            if (!firstCheckIn) {
-//                failedRecords = clusterCheckIn(conn);
-//                commitConnection(conn);
-//            }
-//            // 第一次checkin进入 firstCheckIn=true
-//            if (firstCheckIn || (failedRecords.size() > 0)) {
-//                // 获取锁有三种实现 SimpleSemaphore JTANonClusteredSemaphore DBSemaphore ，前两者为单机使用，DBSemaphore为集群使用
-//                // 1.执行相应锁 1)SELECT * FROM QRTZ_LOCKS 2)UPDATE QRTZ_LOCKS
-//                // 2.将 STATE_ACCESS 放入到 ThreadLocal
-//                getLockHandler().obtainLock(conn, LOCK_STATE_ACCESS);
-//                transStateOwner = true; // for STATE_ACCESS tag
-//                // Now that we own the lock, make sure we still have work to do.
-//                // The first time through, we also need to make sure we update/create our state record
-//                // 既然我们拥有了锁，请确保我们还有工作要做。
-//                // 第一次通过时，我们还需要确保更新/创建状态记录
-//                // clusterCheckIn: 获取所有已经失效的 SCHEDULER_STATE 记录,并尝试更新当前实例的 LAST_CHECKIN_TIME ，如果更新失败则写入
-//                // findFailedInstances: 从 SCHEDULER_STATE 获取所有已经失效的(last_checkin_time)记录+孤立的触发器(FIRED_TRIGGERS)
-////                failedRecords = (firstCheckIn) ? clusterCheckIn(conn) : findFailedInstances(conn);
-//                failedRecords =  clusterCheckIn(conn);
-//                if (failedRecords.size() > 0) {
-//                    // 只要执行了 obtainLock 就一定要 releaseLock 否则容易死锁
-//                    getLockHandler().obtainLock(conn, LOCK_TRIGGER_ACCESS);
-//                    //getLockHandler().obtainLock(conn, LOCK_JOB_ACCESS);
-//                    transOwner = true; // for  TRIGGER_ACCESS tag
-//                    // 1. 循环 failedRecords 并从 QRTZ_FIRED_TRIGGERS 获取 对应 QRTZ_FIRED_TRIGGERS 对应记录（firedTriggerRecs）
-//                    // 2. 循环 firedTriggerRecs 并调整 triggers 中的记录状态(BLOCKED->WAITING,PAUSED_BLOCKED->PAUSED,ACQUIRED->WAITING)
-//                    // 3. job请求恢复(jobRequestsRecovery): 构建个SIMPLE触发器，同时将其存储至JOB_CFG
-//                    // 4. job不允许并发执行: 变更 triggers 中记录状态(BLOCKED->WAITING,PAUSED_BLOCKED->PAUSED)
-//                    // 5. 根据 firedTriggerRecs 每一项删除 对应 QRTZ_FIRED_TRIGGERS
-//                    // 6. 根据 firedTriggerRecs 循环的来的 Key's 循环获取 firedTriggers(QRTZ_FIRED_TRIGGERS) 并删除 QRTZ_TRIGGERS
-//                    // 7. 根据 failedInstances 循环并匹配 QRTZ_SCHEDULER_STATE:INSTANCE_NAME，若匹配则删除对应 QRTZ_SCHEDULER_STATE 记录
-//                    // 8.
-//                    // todo... 先删除，后续考虑调整逻辑~
-////                    clusterRecover(conn, failedRecords);
-//                    recovered = true;
-//                }
-//            }
-//            commitConnection(conn);
-//        } catch (JobPersistenceException e) {
-//            rollbackConnection(conn);
-//            throw e;
-//        } finally {
-//            try {
-//                releaseLock(LOCK_TRIGGER_ACCESS, transOwner);
-//            } finally {
-//                try {
-//                    releaseLock(LOCK_STATE_ACCESS, transStateOwner);
-//                } finally {
-//                    cleanupConnection(conn);
-//                }
-//            }
-//        }
-//        firstCheckIn = false;
-//        return recovered;
-//    }
 
-//    /**
-//     * Get a list of all scheduler instances in the cluster that may have failed.
-//     * This includes this scheduler if it is checking in for the first time.
-//     * 获取群集中可能已失败的所有计划程序实例的列表。如果是第一次签入，则包括此调度程序。
-//     */
-//    protected List<SchedulerStateRecord> findFailedInstances(Connection conn) throws JobPersistenceException {
-//        try {
-//            List<SchedulerStateRecord> failedInstances = new LinkedList<SchedulerStateRecord>();
-//            boolean foundThisScheduler = false;
-//            long timeNow = System.currentTimeMillis();
-//            // 获取当前应用下所有 SCHEDULER_STATE 记录
-//            List<SchedulerStateRecord> states = getDelegate().selectSchedulerStateRecords(conn, null);
-//            for(SchedulerStateRecord rec: states) {
-//                // find own record... 查找当前实例记录，一定是当前应用中的当前实例
-//                if (rec.getSchedulerInstanceId().equals(getInstanceId())) {
-//                    foundThisScheduler = true;
-//                    // 并且是第一次checkIn的
-//                    if (firstCheckIn) {
-//                        failedInstances.add(rec);
-//                    }
-//                } else {
-//                    // find failed instances... 查找失败的实例
-//                    //  scheduler_state:last_checkin_time+13.5S < now
-//                    if (calcFailedIfAfter(rec) < timeNow) {
-//                        failedInstances.add(rec);
-//                    }
-//                }
-//            }
-//            // todo ... 是去掉了，是否还有替代方案???
-////            // The first time through, also check for orphaned fired triggers.
-////            // 第一次通过时，还要检查孤立的触发器。
-////            if (firstCheckIn) {
-////                // 1.从 FIRED_TRIGGERS 查找当前实例下所有的，并移除包含 states 的
-////                // 2.1的结果添加至 failedInstances
-////                failedInstances.addAll(findOrphanedFailedInstances(conn, states));
-////            }
-//
-//            // If not the first time but we didn't find our own instance, then
-//            // Someone must have done recovery for us.
-//            // 如果不是第一次，但我们没有找到自己的实例，那么一定有人为我们做了恢复。
-//            if ((!foundThisScheduler) && (!firstCheckIn)) {
-//                // FUTURE_TODO: revisit when handle self-failed-out impl'ed (see FUTURE_TODO in clusterCheckIn() below)
-//                getLog().warn(
-//                    "This scheduler instance (" + getInstanceId() + ") is still " +
-//                    "active but was recovered by another instance in the cluster.  " +
-//                    "This may cause inconsistent behavior.");
-//            }
-//            return failedInstances;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            lastCheckin = System.currentTimeMillis();
-//            throw new JobPersistenceException("Failure identifying failed instances when checking-in: " + e.getMessage(), e);
-//        }
-//    }
-//
-//    /**
-//     * Create dummy <code>SchedulerStateRecord</code> objects for fired triggers
-//     * that have no scheduler state record.  Checkin timestamp and interval are
-//     * left as zero on these dummy <code>SchedulerStateRecord</code> objects.
-//     *  为没有调度程序状态记录的激发触发器创建伪SchedulerStateRecord对象。在这些伪SchedulerStateRecord对象上，签入时间戳和间隔保留为零。
-//     *
-//     * @param schedulerStateRecords List of all current <code>SchedulerStateRecords</code>
-//     */
-//    private List<SchedulerStateRecord> findOrphanedFailedInstances(Connection conn,List<SchedulerStateRecord> schedulerStateRecords) throws SQLException, NoSuchDelegateException {
-//        List<SchedulerStateRecord> orphanedInstances = new ArrayList<SchedulerStateRecord>();
-//        // SELECT DISTINCT INSTANCE_NAME FROM {0}FIRED_TRIGGERS WHERE SCHED_NAME = {1}
-//        // INSTANCE_NAME 是实例名(机器名+时间戳)
-//        Set<String> allFiredTriggerInstanceNames = getDelegate().selectFiredTriggerInstanceNames(conn);
-//        if (!allFiredTriggerInstanceNames.isEmpty()) {
-//            // 取差集(移除掉包含的)
-//            for (SchedulerStateRecord rec: schedulerStateRecords) {
-//                allFiredTriggerInstanceNames.remove(rec.getSchedulerInstanceId());
-//            }
-//            // 循环构建
-//            for (String inst: allFiredTriggerInstanceNames) {
-//                SchedulerStateRecord orphanedInstance = new SchedulerStateRecord();
-//                orphanedInstance.setSchedulerInstanceId(inst);
-//
-//                orphanedInstances.add(orphanedInstance);
-//                getLog().warn("Found orphaned fired triggers for instance: " + orphanedInstance.getSchedulerInstanceId());
-//            }
-//        }
-//        return orphanedInstances;
-//    }
-    
-    protected long calcFailedIfAfter(SchedulerStateRecord rec) {
-        // 计算公式为: scheduler_state:last_checkin_time + 最大(6S,now-lastCheckin) + 7500L
-        // 简单理解为 scheduler_state:last_checkin_time+13.5S
-        return rec.getCheckinTimestamp() +
-            Math.max(rec.getCheckinInterval(), (System.currentTimeMillis() - lastCheckin)) +
-            7500L;
-    }
-
-//    /**
-//     * 获取群集中可能已失败的所有计划程序实例的列表
-//     * @param conn
-//     * @return
-//     * @throws JobPersistenceException
-//     */
-//    protected List<SchedulerStateRecord> clusterCheckIn(Connection conn) throws JobPersistenceException {
-//        // 获取所有已经失效的 SCHEDULER_STATE 记录
-//        List<SchedulerStateRecord> failedInstances = findFailedInstances(conn);
-//        try {
-//            // FUTURE_TODO: handle self-failed-out
-//            // check in... ( check in 就是任务之前那一刻(也可以说是前一刻)的时间 )
-//            lastCheckin = System.currentTimeMillis();
-//            // 数据库有实例记录则更新，否则写入 （QRTZ_SCHEDULER_STATE）
-//            // UPDATE QRTZ_SCHEDULER_STATE SET LAST_CHECKIN_TIME = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND INSTANCE_NAME = ?
-//            if(getDelegate().updateSchedulerState(conn, getInstanceId(), lastCheckin) == 0) {
-//                // INSERT INTO {0}SCHEDULER_STATE
-//                getDelegate().insertSchedulerState(conn, getInstanceId(), lastCheckin, getClusterCheckinInterval());
-//            }
-//        } catch (Exception e) {
-//            throw new JobPersistenceException("Failure updating scheduler state when checking-in: "+ e.getMessage(), e);
-//        }
-//        return failedInstances;
-//    }
 
     // 群集恢复
     @SuppressWarnings("ConstantConditions")
@@ -3537,6 +2884,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                     // 检查我们刚刚删除的任何已触发触发器是否是COMPLETE触发器的最后一个已触发触发器记录。
                     int completeCount = 0;
                     for (Key k : keys) {
+                        // k from QRTZ_FIRED_TRIGGERS
                         if (getDelegate().selectTriggerState(conn,k).equals(STATE_COMPLETE)) {
                             // SELECT * FROM QRTZ_FIRED_TRIGGERS WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? AND TRIGGER_TYPE = ?
                             List<FiredTriggerRecord> firedTriggers = getDelegate().selectFiredTriggerRecords(conn,k/*, triggerKey.getGroup()*/);
@@ -3769,6 +3117,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
      * lockCallback is still executed in a non-managed transaction.
      *  lockName–要获取的锁的名称，例如“TRIGGER_ACCESS”。如果为null，则不会获取锁，但lockCallback仍在非托管事务中执行。
      */
+    @Deprecated
     protected <T> T executeInNonManagedTXLock(String lockName, TransactionCallback<T> txCallback, final TransactionValidator<T> txValidator) throws JobPersistenceException {
         boolean transOwner = false;
         Connection conn = null;
@@ -3824,147 +3173,363 @@ public abstract class JobStoreSupport implements JobStore, Constants {
     //
     /////////////////////////////////////////////////////////////////////////////
 
-    class ClusterManager extends Thread {
+    private volatile boolean FIRST_CHECK = true;
+    private static Object lockCheck = new Object();
+    // 集群及熄火任务处理
+    final class ClusterMisfireHandler extends Thread{
 
-        private volatile boolean shutdown = false;
-
-        private int numFails = 0;
-        
-        ClusterManager() {
+        private long TIME_CHECK_INTERVAL = 15000L;
+        // 上一次清理时间
+        private long PRE_CLEAR_TIME = System.currentTimeMillis()-86400_000L;
+        ClusterMisfireHandler(){
             this.setPriority(Thread.NORM_PRIORITY + 2);
-            this.setName("QuartzScheduler_" + instanceName + "-" + instanceId + "_ClusterManager");
+//            this.setName("QuartzScheduler_" + instanceName + "-" + instanceId + "_ClusterMisfireHandler");
+            this.setName("QuartzScheduler_" +SystemPropGenerator.hostIP()+ "_ClusterMisfireHandler");
             this.setDaemon(getMakeThreadsDaemons());
         }
-        // schedulerStarted -> initialize
-        public void initialize() {
-//            this.manage();
-//            ThreadExecutor executor = getThreadExecutor();
-//            executor.execute(ClusterManager.this);
-            ClusterManager.this.start();
-        }
-
         public void shutdown() {
             shutdown = true;
             this.interrupt();
         }
-        // ClusterManager::run
         @Override
-        public void run() {
-            while (!shutdown) {
-                if (!shutdown) {
-                    long timeToSleep = getClusterCheckinInterval(); // 6000 6s
-                    long transpiredTime = (System.currentTimeMillis() - lastCheckin); // 发生时间=当前时间-上一次checkin时间
-                    timeToSleep = timeToSleep - transpiredTime; // 配置的checkin时间-实际chickin所用的时间
-                    if (timeToSleep <= 0) {
-                        timeToSleep = 100L;
-                    }
-                    if(numFails > 0) {
-                        timeToSleep = Math.max(getDbRetryInterval(), timeToSleep);
-                    }
-                    try {
-//                        long s = System.currentTimeMillis();
-                        Thread.sleep(timeToSleep);
-//                        System.out.println("睡眠耗时:"+(System.currentTimeMillis()-s));
-                    } catch (Exception ignore) {
-                    }
-                }
-                if (!shutdown /*&& this.manage()*/) {
-                    signalSchedulingChangeImmediately(0L);
-                }
-            }//while !shutdown
+        public void run(){
+            synchronized (lockCheck){
+            final String hostIP = SystemPropGenerator.hostIP();
+//            long _t = System.currentTimeMillis();
+             long _start  = System.currentTimeMillis()/1000*1000;
+              while (!shutdown){
+//                  System.out.println("support耗时:"+(System.currentTimeMillis()-_t));
+//                  _t=System.currentTimeMillis();
+//                  getLog().info("........PROCESS...........");
+
+                  Connection conn = null;
+                  /***** try start... *****/
+                  try {
+                      // String hostName = SystemPropGenerator.hostName();
+                      // ## 加锁
+                      //1.获取qrtz_app记录
+                      conn = getNonManagedTXConnection();
+//                      conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+//                      conn.setAutoCommit(true);
+                      QrtzApp app = getDelegate().findQrtzAppByApp(conn, getInstanceName());
+                      // 由于状态可能存在不一致 app:state ~ node:state
+//                      if( null==app || (app.getTimeNext()-4)>_start /*|| "N".equals(app.getState())*/){
+                      if( null==app /*|| "N".equals(app.getState())*/){
+                          getLog().info("APPLICATION is empty:{},{} ",getInstanceName(),hostIP);
+                          continue;
+                      }
+                      //2.更新qrtz_app以获取锁
+                      app.setTimePre(app.getTimeNext());
+                      app.setTimeNext(_start+TIME_CHECK_INTERVAL);
+                      app.setTimeInterval(TIME_CHECK_INTERVAL);
+//                      if( getDelegate().updateQrtzAppByApp(conn,app,_start,"Y") < 1){
+//                          getLog().info("ClusterMisfireHandler lock by other node ... ");
+//                          continue;
+//                      }
+                      getDelegate().updateQrtzAppByApp(conn,app/*,_start,"Y"*/);// 更新app,不论成功与否必须要这样做，否则当前support在state=N的节点执行时无法更新job及execute
+//                      getLog().info(">>> In process Cluster! <<<");
+                      // ## 更新节点信息
+                      //1.获取qrtz_node记录
+                      QrtzNode node = getDelegate().findQrtzNodeByAppHost(conn, getInstanceName(),hostIP);
+                      if( null==node || "N".equals(node.getState() )){ // 这个state判断十分重要，决定了当前节点是否参与 job及execute的 更新，如果是N就无需执行之后的逻辑
+                          getLog().info("node is empty or state=N : {},{}",getInstanceName(),hostIP);
+                          continue;
+                      }
+                      getLog().info(">>> In process Cluster "+node.getApplication()+":"+node.getHostIp()+" ! <<<");
+                      //2.更新状态不一致的记录 (app:state=N且node:state=Y时:应用关闭时节点一定要关闭 )
+                      if( "N".equals(app.getState()) &&  "Y".equals(node.getState()) ){
+                          node.setState("N");
+                          node.setTimeCheck(_start);
+                          getDelegate().updateQrtzNodeOfState(conn,node);
+                          continue;
+                      }
+                      //3.更新time_check (根据频度)
+                      else if( (_start - node.getTimeCheck()) >= 86400_000L ){
+                          node.setTimeCheck(_start);
+                          getDelegate().updateQrtzNodeOfTimeCheck(conn,node);
+                      }
+                      if(FIRST_CHECK==false) {
+                          // ## 清理历史记录(每间隔七天&&上午十点)
+                          if ((_start - PRE_CLEAR_TIME) >= 86400_000L * 7 && LocalDateTime.now().getHour() - 10 == 0) {
+                              getDelegate().clearHistoryData(conn, 366 * 86400_000L);// 1年=1天*366
+                              PRE_CLEAR_TIME = _start;// update time
+                          }
+                          // 修正执行信息
+                          recoverExecute(_start/*conn,app,node*/);
+                          // 修正配置信息
+                          recoverJob(/*conn,app,node*/);
+                      }
+                  }catch (Exception e){
+                      e.printStackTrace();
+                  }
+                  finally {
+                      // ## 休眠8S
+                      // 这个8S是当前次循环所耗费的总时间,所以这里的休眠时间一般小于8S
+                      // getLog().info("invoke sleep ... ");
+//                      System.out.println("invoke sleep ... ");
+                      // 休眠等待下一次
+                      long sleep_time = 0;
+                      if ( (sleep_time = (TIME_CHECK_INTERVAL-(System.currentTimeMillis() - _start)-2))>0 ) {
+                          try {
+                              conn.commit();
+                              cleanupConnection(conn);
+//                              getLog().info("SLEEP ：{} ",sleep_time);
+                              TimeUnit.MILLISECONDS.sleep(sleep_time);
+                          } catch (Exception e) {
+                          }
+                      }
+                      _start=System.currentTimeMillis();
+                  }
+                  /***** try end... *****/
+//                  long sleep_time = 0;
+//                  if ( (sleep_time = (TIME_CHECK_INTERVAL-(System.currentTimeMillis() - _start)-2))>4 ) {
+//                      try {
+////                              getLog().info("to sleep ：{} ",sleep_time);
+////                          TimeUnit.MILLISECONDS.sleep(sleep_time);
+//                          lockCheck.wait(sleep_time);
+////                              try {
+////                                  conn.commit();
+////                              } catch (SQLException e) {
+////                                  e.printStackTrace();
+////                              }
+////                          cleanupConnection(conn);
+//                      } catch (InterruptedException e) {
+//                      }
+//                  }
+              }
+            }
         }
+        // 修正配置信息
+        private void recoverJob(/*Connection conn, QrtzApp app, QrtzNode node*/) {
+            // 修正配置信息
+            //针对已有终态任务做状态更新
+            //1.状态
+            //2.更新时间
 
-//        // schedulerStarted -> initialize -> manage
-//        // run -> manage
-//        private boolean manage() {
-//            boolean res = false;
-//            try {
-//                res = doCheckin();
-//                // 完成之后错误次数要重置为0
-//                numFails = 0;
-//                getLog().debug("ClusterManager: Check-in complete.");
-//            } catch (Exception e) {
-//                // 减少日志产生
-//                if(numFails % 4 == 0) {
-//                    getLog().error("ClusterManager: Error managing cluster: " + e.getMessage(), e);
-//                }
-//                numFails++;
-//            }
-//            return res;
-//        }
-
-    }
-
-    /////////////////////////////////////////////////////////////////////////////
-    //
-    // MisfireHandler Thread 熄火处理程序线程
-    //
-    /////////////////////////////////////////////////////////////////////////////
-
-    class MisfireHandler extends Thread {
-
-        private volatile boolean shutdown = false;
-
-        private int numFails = 0;
-
-        MisfireHandler() {
-            this.setName("QuartzScheduler_" + instanceName + "-" + instanceId + "_MisfireHandler");
-            this.setDaemon(getMakeThreadsDaemons());
-        }
-
-        public void initialize() {
-//            ThreadExecutor executor = getThreadExecutor();
-//            executor.execute(MisfireHandler.this);
-            MisfireHandler.this.start();
-        }
-
-        public void shutdown() {
-            shutdown = true;
-            this.interrupt();
-        }
-
-        private RecoverMisfiredJobsResult manage() {
+            // 更新状态及时间(update_time)
+            // 1.查找job记录( state!=COMPLETE,INIT,PAUSED ) 及其下的所有execute记录
+            //  + 从execute列表中寻找,若有 EXECUTING 则 更新job信息 state=EXECUTING update_time=now
+            //  + 从execute列表中寻找,若有 PAUSED  则 更新job信息 state=PAUSED update_time=now
+            //  + 从execute列表中寻找,若有 ERROR  则 更新job信息 state=ERROR update_time=now
+            // 2.查找job记录( state=COMPLETE update_time>1年的 ) 并删除,按频度执行逻辑
+            Connection conn = null;
+            final String applicaton = getInstanceName();
+            final String hostIP = SystemPropGenerator.hostIP();
+            final String hostName = SystemPropGenerator.hostName();
+            final Long now = System.currentTimeMillis();
+            /***** try start... *****/
             try {
-                getLog().debug("MisfireHandler: scanning for misfires...");
-                RecoverMisfiredJobsResult res = doRecoverMisfires();
-                numFails = 0;
-                return res;
-            } catch (Exception e) {
-                if(numFails % 4 == 0) {
-                    getLog().error("MisfireHandler: Error handling misfires: " + e.getMessage(), e);
-                }
-                numFails++;
-            }
-            return RecoverMisfiredJobsResult.NO_OP;
-        }
-        // MisfireHandler::run
-        @Override
-        public void run() {
-            while (!shutdown) {
-                long sTime = System.currentTimeMillis();
-                RecoverMisfiredJobsResult recoverMisfiredJobsResult = this.manage();
-                if (recoverMisfiredJobsResult.getProcessedMisfiredTriggerCount() > 0) {
-                    signalSchedulingChangeImmediately(recoverMisfiredJobsResult.getEarliestNewTime());
-                }
-                if (!shutdown) {
-                    long timeToSleep = 50L;  // At least a short pause to help balance threads
-                    if (!recoverMisfiredJobsResult.hasMoreMisfiredTriggers()) {
-                        timeToSleep = getMisfireThreshold() - (System.currentTimeMillis() - sTime);
-                        if (timeToSleep <= 0) {
-                            timeToSleep = 50L;
-                        }
-                        if(numFails > 0) {
-                            timeToSleep = Math.max(getDbRetryInterval(), timeToSleep);
+                //0.获取节点下异常执行项 (start_time>now and end_time>0 end_time is not null and next_fire_time<now and state!=(COMPLETE,INIT,PAUSED) )
+                conn = getNonManagedTXConnection();
+                List<QrtzJob> jobs = getDelegate().findQrtzJobByAppForRecover(conn,applicaton);
+                for(QrtzJob job:jobs){
+                    List<QrtzExecute> executes = getDelegate().findAllQrtzExecuteByPID(conn,job.getId());
+                    boolean hasExecuting = false;
+                    boolean hasPaused = false;
+                    boolean hasError = false;
+                    for( QrtzExecute execute:executes ){
+                        final String state = execute.getState();
+                        if("EXECUTING".equals(state)){
+                            hasExecuting=true;
+                        }else if("PAUSED".equals(state)){
+                            hasPaused=true;
+                        }else if("ERROR".equals(state)){
+                            hasError=true;
+                        }else{
+                            continue;
                         }
                     }
-                    try {
-                        Thread.sleep(timeToSleep);
-                    } catch (Exception ignore) {
+                    // 如果所有状态都有则按以下优先级来
+                    if(hasError){
+                        job.setState("ERROR");
+                    }else if(hasExecuting){
+                        job.setState("EXECUTING");
+                    }else if(hasPaused){
+                        job.setState("PAUSED");
+                    }else{
+                        continue;
                     }
-                }//while !shutdown
+                    job.setUpdateTime(now);
+                    getDelegate().updateRecoverJob(conn,job);
+                }
+                //2. 清理 state=COMPLETE && update_time >1年的清理(删除),按频度执行逻辑
+                if( (now - PRE_CLEAR_TIME) >= 86400_000L*7 && LocalDateTime.now().getHour()-10==0 ){
+                    int ct = getDelegate().clearAllJobData(conn,366*86400_000L);
+                    log.error(".....已清理execute数据 {}条.....",ct);
+                }
+            }catch (Exception e){
+                log.error("异常了：{},{},{},{}",applicaton,hostIP,hostName,now,e);
+                e.printStackTrace();
+            }finally {
+                cleanupConnection(conn);
+            }
+            /***** try start... *****/
+
+        }
+
+        // 修正执行信息
+        private void recoverExecute(long now/*Connection conn, QrtzApp app, QrtzNode node */) {
+            // 修正执行信息
+            //针对中途停止的异常熄火的
+            //0.获取节点下异常执行项 (start_time<=now and end_time!=0 end_time is not null and next_fire_time<now and state!=(COMPLETE,INIT,PAUSED) )
+            //1.调整状态 及 下一次执行时间
+            // + 对于SIMPLE任务
+            //  - 若 end_time>0 and end_time>=now 则修改 state=COMPLETE(完成)
+            //  - 若 repeat_count>0 && time_triggered>=repeat_count 则修改 state=COMPLETE(完成)
+            //  - 根据 (now+24S)>start_time?(now+24S):start_time 计算 next_fire_time 同时修改 next_fire_time=next_fire_time(new) state=EXECUTING
+            // + 对于CRON任务 先计算 next_fire_time (参照时间: (now+24S)>start_time?(now+24S):start_time 且end_time>now )
+            //  - 若无 则修正 end_time=next_fire_time state=COMPLETE
+            //  - 若有 则修正 next_fire_time=next_fire_time(new) state=EXECUTING
+            // + todo : 对于调整好的且仍为EXECUTING状态的任务是否应该唤醒QuartzSchedulerThread进行执行(如果不唤醒对于短时任务可能错过执行时间 )
+            //2. 清理 state=COMPLETE && next_fire_time >1年的清理(删除),按频度执行逻辑
+
+            Connection conn = null;
+            final String applicaton = getInstanceName();
+            final String hostIP = SystemPropGenerator.hostIP();
+            final String hostName = SystemPropGenerator.hostName();
+//            final Long now = System.currentTimeMillis();
+            /***** try start... *****/
+            try {
+                //0.获取节点下异常执行项 (start_time>now and end_time>0 end_time is not null and next_fire_time<now and state!=(COMPLETE,INIT,PAUSED) )
+//                conn = getNonManagedTXConnection();
+                conn = getConnection();
+                // SELECT * FROM {0}JOB WHERE APPLICATION="QUARTZ-SPRINGBOOT" AND STATE!="COMPLETE" AND STATE!="INIT" AND STATE!=PAUSED
+                List<QrtzJob> jobs = getDelegate().findQrtzJobByAppForRecover(conn,applicaton);
+//                for(int i=0;i<jobs.size();i++ ){
+//                    // state!=(COMPLETE,INIT,PAUSED)
+//                    String jobState = jobs.get(i).getState();
+//                    if("COMPLETE".equals(jobState) || "INIT".equals(jobState) || "PAUSED".equals(jobState)){
+//                        jobs.remove(jobs.get(i));
+//                    }
+//                }
+                // SELECT * FROM QRTZ_EXECUTE WHERE PID=? AND NEXT_FIRE_TIME<=? AND STATE!=? AND STATE!=? AND STATE!=?
+                List<QrtzExecute> executes = getDelegate().findQrtzExecuteForRecover(conn,jobs,now-5000L-8); // 这个5S很重要，一旦与QuartzSchedulerThread的执行时间无法错开则导致任务无法执行
+                for(QrtzExecute execute:executes){
+                    final String jobType = execute.getJobType();
+                    final Long endTime = execute.getEndTime();
+                    if( "CRON".equals(jobType) ){
+                        execute.setHostIp(hostIP);
+                        execute.setHostName(hostName);
+                        // + 对于CRON任务 先计算 next_fire_time (参照时间: (now+24S)>start_time?(now+24S):start_time 且end_time>now )
+                        //  - 若无 则修正 end_time=next_fire_time state=COMPLETE
+                        //  - 若有 则修正 next_fire_time=next_fire_time(new) state=EXECUTING
+                        // + todo : 对于调整好的且仍为EXECUTING状态的任务是否应该唤醒QuartzSchedulerThread进行执行(如果不唤醒对于短时任务可能错过执行时间 )
+                        CronTriggerImpl cronTrigger = new CronTriggerImpl()
+                                .setCronExpression(execute.getCron())
+                                .setStartTime(new Date(execute.getStartTime()))
+                                .setEndTime(null==endTime?null:new Date(endTime))
+                                .setTimeZone(TimeZone.getTimeZone(execute.getZoneId()));
+                        // loop时间 => QuartzSchedulerThread:run一次的时间,默认5S
+                        // check时间 => JobStoreSupport:run一次的时间,默认15S
+                        // 这个afterTime时间非常重要，它一定要大于check时间 ( loop时间<=afterTime<check时间 )以保证loop时被扫到
+                        Date nextFireTime =cronTrigger.getFireTimeAfter(new Date(now+TIME_CHECK_INTERVAL/2));
+                        // 对 SIMPLE 任务的保存
+                        if(null==nextFireTime){
+                            // 没有下一次执行时间就是执行完成
+//                                execute.setNextFireTime(null);
+                            execute.setState("COMPLETE");
+                        }else{
+                            execute.setNextFireTime(nextFireTime.getTime());
+                            execute.setState("EXECUTING");
+                        }
+//                        getDelegate().updateRecoverExecute(conn,execute);
+                    }else if("SIMPLE".equals(jobType)){
+                        execute.setHostIp(hostIP);
+                        execute.setHostName(hostName);
+                        //+ 对于SIMPLE任务
+                        // - 若 end_time>0 and end_time>=now 则修改 state=COMPLETE(完成)
+                        // - 若 repeat_count>0 && time_triggered>=repeat_count 则修改 state=COMPLETE(完成)
+                        // - 根据 (now+16S)>start_time?(now+16S):start_time 计算 next_fire_time 同时修改 next_fire_time=next_fire_time(new) state=EXECUTING
+                        if( null!=execute.getEndTime() && execute.getEndTime()>=now){
+                            execute.setState("COMPLETE");
+                        }else if( execute.getTimeTriggered()>=execute.getRepeatCount() ){
+                            execute.setState("COMPLETE");
+                        }else if( (now+TIME_CHECK_INTERVAL*2)>execute.getStartTime() ){
+                            SimpleTriggerImpl simpleTrigger = new SimpleTriggerImpl()
+                                    .setStartTime(new Date(execute.getStartTime()))
+//                                    .setEndTime(new Date(execute.getEndTime()))
+                                    .setEndTime(null==endTime?null:new Date(endTime))
+                                    .setRepeatCount(execute.getRepeatCount())
+                                    .setRepeatInterval(execute.getRepeatInterval())
+                                    .setTimesTriggered(execute.getTimeTriggered());
+                            Date nextFireTime = simpleTrigger.getFireTimeAfter(new Date(now+TIME_CHECK_INTERVAL));
+                            if(null==nextFireTime){
+                                // 没有下一次执行时间就是执行完成
+//                                execute.setNextFireTime(null);
+                                execute.setState("COMPLETE");
+                            }else{
+                                execute.setNextFireTime(nextFireTime.getTime());
+                                execute.setState("EXECUTING");
+                            }
+                        }else {
+                            continue;
+                        }
+
+                    }else{
+                        log.error("jobType is not support! {},{},{}",applicaton,hostIP,jobType);
+                        continue;
+                    }
+                    // 对 CRON/SIMPLE 任务的保存
+                    getDelegate().updateRecoverExecute(conn,execute);
+                }
+                //2. 清理 state=COMPLETE && next_fire_time >1年的清理(删除),按频度执行逻辑
+                if( (now - PRE_CLEAR_TIME) >= 86400_000L*7 && LocalDateTime.now().getHour()-10==0 ){
+                    int ct = getDelegate().clearAllExecuteData(conn,366*86400_000L);
+                    log.error(".....已清理execute数据 {}条.....",ct);
+                }
+            }catch (Exception e){
+                log.error("异常了：{},{},{},{}",applicaton,hostIP,hostName,now,e);
+                e.printStackTrace();
+            }finally {
+                cleanupConnection(conn);
+            }
+            /***** try start... *****/
+
+        }
+
+        // 前置处理
+        //0.加对象锁
+        //1.尝试写入qrtz_app
+        //2.尝试写入qrtz_node
+        //3.尝试清理 qrtz_node
+        //  及任务 and 执行信息
+        private void preProcess(){
+            log.info("=====>invoke preProcess...<=====");
+            // 前置处理
+            Connection conn = null;
+            try{
+                conn = getNonManagedTXConnection();
+                // 构造对象
+                String application = getInstanceName();
+                String state = "Y";
+                Long timePre = 0L;
+                Long now = System.currentTimeMillis();
+                Long timeNext = now+TIME_CHECK_INTERVAL;
+                Long timeInterval = TIME_CHECK_INTERVAL;
+                final String hostIP = SystemPropGenerator.hostIP();
+                final String hostName = SystemPropGenerator.hostName();
+                QrtzApp app = new QrtzApp(application,state,timePre,timeNext,timeInterval);
+                QrtzNode node = new QrtzNode(application,hostIP,hostName,state,now); // 1天 86400_000L
+                // 写入 qrtz_app、 qrtz_node、清理
+                getDelegate().insertQrtzApp(conn,app);
+                getDelegate().insertQrtzNode(conn,node);
+//                if( (now - PRE_CLEAR_TIME) >= 86400_000L){
+//                    getDelegate().clearHistoryData(conn,366*86400_000L);// 1年=1天*366
+//                    PRE_CLEAR_TIME=now;// update time
+//                }
+                getDelegate().clearHistoryData(conn,366*86400_000L);// 1年=1天*366
+                // conn.commit();
+            }catch (Exception e){
+                e.printStackTrace();
+                cleanupConnection(conn);
+            }finally {
+                cleanupConnection(conn);
+//                ALREADY_CHECK=true;
             }
         }
+
     }
+
 }
 
 // EOF

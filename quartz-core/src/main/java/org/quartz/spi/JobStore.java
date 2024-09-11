@@ -34,6 +34,7 @@ import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.Trigger.TriggerState;
+import org.quartz.impl.QrtzExecute;
 import org.quartz.utils.Key;
 
 /**
@@ -573,6 +574,9 @@ public interface JobStore {
      * @see #releaseAcquiredTrigger(OperableTrigger)
      */
     List<OperableTrigger> acquireNextTriggers(long noLaterThan, int maxCount, long timeWindow) throws JobPersistenceException;
+    default List<QrtzExecute> acquireNextTriggers(String application,long _tsw,long _tew) throws JobPersistenceException{
+        throw new JobPersistenceException("method is not defined ! "+application+" : "+_tsw+","+_tew);
+    }
 
     /**
      * Inform the <code>JobStore</code> that the scheduler no longer plans to
@@ -646,4 +650,15 @@ public interface JobStore {
      * @return the time (in milliseconds) to wait before trying again
      */
     long getAcquireRetryDelay(int failureCount);
+
+    default String findNodeStateByPK(String application, String hostIP){
+//        throw new Exception("findNodeStateByPK method is not defined ! "+application+" : "+hostIP);
+        return null;
+    }
+
+    default int toLockAndUpdate(QrtzExecute newCe, String oldState, long oldPrevTime, long oldNextTime){
+//        throw new JobPersistenceException("toLockAndUpdate method is not defined ! "+newCe+" : "+oldState);
+        return 0;
+    }
+
 }

@@ -70,7 +70,7 @@ public class PointbaseDelegate extends StdJDBCDelegate {
             ps.setString(1, job.getKey().getName());
 //            ps.setString(2, job.getKey().getGroup());
             ps.setString(2, job.getDescription());
-            ps.setString(3, job.getJobClass().getName());
+            ps.setString(3, job.getJobClassName());
 //            setBoolean(ps, 4, job.isDurable());
             setBoolean(ps, 4, job.isConcurrentExectionDisallowed());
             setBoolean(ps, 5, job.isPersistJobDataAfterExecution());
@@ -107,7 +107,7 @@ public class PointbaseDelegate extends StdJDBCDelegate {
         try {
             ps = conn.prepareStatement(rtp(UPDATE_JOB_DETAIL));
             ps.setString(1, job.getDescription());
-            ps.setString(2, job.getJobClass().getName());
+            ps.setString(2, job.getJobClassName());
 //            setBoolean(ps, 3, job.isDurable());
             setBoolean(ps, 3, job.isConcurrentExectionDisallowed());
             setBoolean(ps, 4, job.isPersistJobDataAfterExecution());

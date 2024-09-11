@@ -89,7 +89,7 @@ public interface MutableTrigger extends Trigger {
      * of the trigger.
      * </p>
      */
-    public void setStartTime(Date startTime);
+    public MutableTrigger setStartTime(Date startTime);
 
     /**
      * <p>
@@ -100,7 +100,7 @@ public interface MutableTrigger extends Trigger {
      * 
      * @see TriggerUtils#computeEndTimeToAllowParticularNumberOfFirings(Trigger, Calendar, int)
      */
-    public void setEndTime(Date endTime);
+    public MutableTrigger setEndTime(Date endTime);
 
     /**
      * <p>

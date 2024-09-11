@@ -24,11 +24,17 @@ import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger.CompletedExecutionInstruction;
+import org.quartz.impl.JobDetailImpl;
 import org.quartz.impl.JobExecutionContextImpl;
+import org.quartz.impl.QrtzExecute;
+import org.quartz.impl.triggers.CronTriggerImpl;
+import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.spi.TriggerFiredBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Date;
 
 /**
  * <p>
@@ -65,8 +71,10 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
     protected JobExecutionContextImpl jec = null;
 
     protected QuartzScheduler qs = null;
-    
-    protected TriggerFiredBundle firedTriggerBundle = null;
+//    @Deprecated
+//    protected TriggerFiredBundle firedTriggerBundle = null;
+    private QrtzExecute eJob = null;
+//    private Class<? extends Job> jobClass = null;
 
     protected Scheduler scheduler = null;
 
@@ -91,9 +99,16 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
      *          The <code>Scheduler</code> instance that should be made
      *          available within the <code>JobExecutionContext</code>.
      */
-    public JobRunShell(Scheduler scheduler, TriggerFiredBundle bndle) {
+//    @Deprecated
+//    public JobRunShell(Scheduler scheduler, TriggerFiredBundle bndle) {
+//        this.scheduler = scheduler;
+//        this.firedTriggerBundle = bndle;
+//    }
+    public JobRunShell(Scheduler scheduler, QrtzExecute eJob,Class<? extends Job> jobClass) {
         this.scheduler = scheduler;
-        this.firedTriggerBundle = bndle;
+//        this.firedTriggerBundle = bndle;
+        this.eJob = eJob;
+//        this.jobClass=jobClass;
     }
 
     /*
@@ -114,23 +129,49 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
 //        return log;
 //    }
 
+//    public void initialize(QuartzScheduler sched) throws SchedulerException {
+//        this.qs = sched;
+//        Job job = null;
+//        JobDetail jobDetail = firedTriggerBundle.getJobDetail();
+//        try {
+//            // 创建job实例并补充上下文及参数
+//            job = sched.getJobFactory().newJob(firedTriggerBundle, scheduler);
+//        } catch (SchedulerException se) {
+//            log.error("An error occured instantiating job to be executed. job= '" + jobDetail.getKey() + "'", se);
+////            sched.notifySchedulerListenersError("An error occured instantiating job to be executed. job= '" + jobDetail.getKey() + "'", se);
+//            throw se;
+//        } catch (Throwable ncdfe) { // such as NoClassDefFoundError
+//            SchedulerException se = new SchedulerException("Problem instantiating class '" + jobDetail.getJobClass().getName() + "' - ", ncdfe);
+////            sched.notifySchedulerListenersError("An error occured instantiating job to be executed. job= '" + jobDetail.getKey() + "'", se);
+//            throw se;
+//        }
+//        this.jec = new JobExecutionContextImpl(scheduler, firedTriggerBundle, job);
+//    }
     public void initialize(QuartzScheduler sched) throws SchedulerException {
         this.qs = sched;
         Job job = null;
-        JobDetail jobDetail = firedTriggerBundle.getJobDetail();
+//        JobDetail jobDetail = firedTriggerBundle.getJobDetail();
+        JobDetail jobDetail = new JobDetailImpl(this.eJob);
+        Date fireTime = this.eJob.getFireTime();
+        Date scheduledFireTime = this.eJob.getScheduledFireTime();
+        Date prevFireTime = new Date(this.eJob.getPrevFireTime());
+        Date nextFireTime = new Date(this.eJob.getNextFireTime());
+        OperableTrigger trigger = "CRON".equals(this.eJob.getJobType())?new CronTriggerImpl(): new SimpleTriggerImpl();
+        TriggerFiredBundle bundle = new TriggerFiredBundle(jobDetail,trigger,null,fireTime,scheduledFireTime,prevFireTime,nextFireTime);
         try {
             // 创建job实例并补充上下文及参数
-            job = sched.getJobFactory().newJob(firedTriggerBundle, scheduler);
+            job = sched.getJobFactory().newJob(bundle, scheduler);
+//            job = sched.getJobFactory().newJob(scheduler,jobDetail);
         } catch (SchedulerException se) {
             log.error("An error occured instantiating job to be executed. job= '" + jobDetail.getKey() + "'", se);
-//            sched.notifySchedulerListenersError("An error occured instantiating job to be executed. job= '" + jobDetail.getKey() + "'", se);
             throw se;
         } catch (Throwable ncdfe) { // such as NoClassDefFoundError
-            SchedulerException se = new SchedulerException("Problem instantiating class '" + jobDetail.getJobClass().getName() + "' - ", ncdfe);
-//            sched.notifySchedulerListenersError("An error occured instantiating job to be executed. job= '" + jobDetail.getKey() + "'", se);
+            SchedulerException se = new SchedulerException("Problem instantiating class '" + jobDetail.getJobClassName() + "' - ", ncdfe);
             throw se;
         }
-        this.jec = new JobExecutionContextImpl(scheduler, firedTriggerBundle, job);
+//        this.jec = new JobExecutionContextImpl(scheduler, firedTriggerBundle, job);
+//        this.jec = new JobExecutionContextImpl(scheduler,jobDetail,job);
+        this.jec = new JobExecutionContextImpl(scheduler,bundle,job);
     }
 
     public void requestShutdown() {
@@ -244,7 +285,8 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
 //                    qs.notifySchedulerListenersError("Error executing Job (" + jec.getJobDetail().getKey() + ": couldn't finalize execution.", se);
                     continue;
                 }
-                qs.notifyJobStoreJobComplete(trigger, jobDetail, instCode);
+                // todo ...
+//                qs.notifyJobStoreJobComplete(trigger, jobDetail, instCode);
                 break;
             } while (true);
 
