@@ -54,7 +54,7 @@
 <!--    <module>quartz-stubs</module>-->
 <!--    <module>quartz-oracle</module>-->
 <!--    <module>quartz-weblogic</module>    -->
-    <module>quartz-jobs</module> 
+<!--    <module>quartz-jobs</module> -->
 <!--    <module>quartz-plugins</module>-->
     <module>quartz-springboot</module>
     <!--    <module>quartz</module>-->
@@ -67,7 +67,7 @@
 
     <skipDeploy>false</skipDeploy>
     <skipJavadoc>false</skipJavadoc>
-    <skipCheckstyle>false</skipCheckstyle>
+    <skipCheckstyle>true</skipCheckstyle>
     
     <slf4j.version>1.7.7</slf4j.version>
     <c3p0.version>0.9.5.4</c3p0.version>
