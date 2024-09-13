@@ -19,11 +19,9 @@ package org.quartz.spi;
 
 import java.util.Date;
 
-import org.quartz.Calendar;
 import org.quartz.CronTrigger;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
-import org.quartz.TriggerUtils;
 
 public interface MutableTrigger extends Trigger {
 

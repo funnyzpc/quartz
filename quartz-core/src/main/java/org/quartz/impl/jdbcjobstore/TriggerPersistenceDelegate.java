@@ -42,7 +42,7 @@ public interface TriggerPersistenceDelegate {
     
 //    int deleteExtendedTriggerProperties(Connection conn, Key key) throws SQLException;
 
-    TriggerPropertyBundle loadExtendedTriggerProperties(Connection conn,Key triggerKey) throws SQLException;
+//    TriggerPropertyBundle loadExtendedTriggerProperties(Connection conn,Key triggerKey) throws SQLException;
     
     class TriggerPropertyBundle {
         private ScheduleBuilder<?> sb;

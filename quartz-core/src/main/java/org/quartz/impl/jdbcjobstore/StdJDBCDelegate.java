@@ -17,7 +17,6 @@
 
 package org.quartz.impl.jdbcjobstore;
 
-import static org.quartz.TriggerBuilder.newTrigger;
 import static org.quartz.utils.Key.key;
 
 import java.io.ByteArrayOutputStream;
@@ -42,18 +41,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import org.quartz.Calendar;
-import org.quartz.ExecuteCfg;
 import org.quartz.Job;
-import org.quartz.JobCfg;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobPersistenceException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
-import org.quartz.impl.ExecuteCfgImpl;
-import org.quartz.impl.JobCfgImpl;
 import org.quartz.impl.JobDetailImpl;
 import org.quartz.impl.QrtzApp;
 import org.quartz.impl.QrtzExecute;
@@ -583,71 +576,71 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             closeStatement(ps);
         }
     }
-
-    @Override
-    public int insertJobCfg(Connection conn, JobCfg jobCfg) throws SQLException, IOException {
-        PreparedStatement ps = null;
-        int insertResult = 0;
-        final String triggerType = jobCfg.getTriggerType();
-        JobCfgImpl jobCfg1 = (JobCfgImpl)jobCfg;
-        try {
-            ps = conn.prepareStatement(rtp(INSERT_JOB_CFG));
-            ps.setString(1,jobCfg1.getSchedName()); // SCHED_NAME
-            ps.setString(2,jobCfg1.getTriggerName()); // TRIGGER_NAME
-            ps.setString(3,jobCfg1.getTriggerType()); // TRIGGER_TYPE
-            ps.setString(4,jobCfg1.getTriggerState()); // TRIGGER_STATE
-            ps.setString(5,jobCfg1.getDescription()); // DESCRIPTION
-//            ps.setLong(6,jobCfg1.getNextFireTime()); // NEXT_FIRE_TIME
-            ps.setObject(6,jobCfg1.getNextFireTime()); // NEXT_FIRE_TIME
-//            ps.setLong(7,jobCfg1.getPrevFireTime()); // PREV_FIRE_TIME
-            ps.setObject(7,jobCfg1.getPrevFireTime()); // PREV_FIRE_TIME
-            ps.setInt(8,jobCfg1.getPriority()); // PRIORITY
-//            ps.setLong(9,jobCfg1.getStartTime()); // START_TIME
-            ps.setObject(9,jobCfg1.getStartTime()); // START_TIME
-//            ps.setLong(10,jobCfg1.getEndTime()); // END_TIME
-            ps.setObject(10,jobCfg1.getEndTime()); // END_TIME
-            ps.setString(11,jobCfg1.getCalendarName()); // CALENDAR_NAME
-//            ps.setInt(12,jobCfg1.getMisfireInstr()); // MISFIRE_INSTR
-            ps.setObject(12,jobCfg1.getMisfireInstr()); // MISFIRE_INSTR
-            ps.setString(13,jobCfg1.getJobClassName()); // JOB_CLASS_NAME
-            ps.setBoolean(14,jobCfg1.getIsNonconcurrent()); // IS_NONCONCURRENT
-            ps.setBoolean(15,jobCfg1.getIsUpdateData()); // IS_UPDATE_DATA
-            ps.setBoolean(16,jobCfg1.getRequestsRecovery()); // REQUESTS_RECOVERY
-            ps.setString(17,jobCfg1.getJobData()); // JOB_DATA
-            insertResult = ps.executeUpdate();
-        } finally {
-            // 由于实在同一个connection下，所以不可关闭Connection
-            closeStatement(ps);
-        }
-        return insertResult;
-    }
-
-    @Override
-    public int insertExecuteCfg(Connection conn, ExecuteCfg executeCfg) throws SQLException, IOException {
-        PreparedStatement ps = null;
-        int insertResult = 0;
-        final String triggerType = executeCfg.getTriggerType();
-        final ExecuteCfgImpl executeCfg1 = (ExecuteCfgImpl)executeCfg;
-        try {
-            ps = conn.prepareStatement(rtp(INSERT_EXECUTE_CFG));
-            ps.setString(1,executeCfg1.getSchedName());// SCHED_NAME
-            ps.setString(2,executeCfg1.getTriggerName());// TRIGGER_NAME
-            ps.setString(3,executeCfg1.getTriggerType());// TRIGGER_TYPE
-            ps.setString(4,executeCfg1.getCronExpression());// CRON_EXPRESSION
-            ps.setString(5,executeCfg1.getTimeZoneId());// TIME_ZONE_ID
-//            ps.setLong(6,executeCfg1.getRepeatCount());// REPEAT_COUNT
-            ps.setObject(6,executeCfg1.getRepeatCount());// REPEAT_COUNT
-//            ps.setLong(7,executeCfg1.getRepeatInterval());// REPEAT_INTERVAL
-            ps.setObject(7,executeCfg1.getRepeatInterval());// REPEAT_INTERVAL
-//            ps.setLong(8,executeCfg1.getTimesTriggered());// TIMES_TRIGGERED
-            ps.setObject(8,executeCfg1.getTimesTriggered());// TIMES_TRIGGERED
-            insertResult = ps.executeUpdate();
-        } finally {
-            // 由于实在同一个connection下，所以不可关闭Connection
-            closeStatement(ps);
-        }
-        return insertResult;
-    }
+//
+//    @Override
+//    public int insertJobCfg(Connection conn, JobCfg jobCfg) throws SQLException, IOException {
+//        PreparedStatement ps = null;
+//        int insertResult = 0;
+//        final String triggerType = jobCfg.getTriggerType();
+//        JobCfgImpl jobCfg1 = (JobCfgImpl)jobCfg;
+//        try {
+//            ps = conn.prepareStatement(rtp(INSERT_JOB_CFG));
+//            ps.setString(1,jobCfg1.getSchedName()); // SCHED_NAME
+//            ps.setString(2,jobCfg1.getTriggerName()); // TRIGGER_NAME
+//            ps.setString(3,jobCfg1.getTriggerType()); // TRIGGER_TYPE
+//            ps.setString(4,jobCfg1.getTriggerState()); // TRIGGER_STATE
+//            ps.setString(5,jobCfg1.getDescription()); // DESCRIPTION
+////            ps.setLong(6,jobCfg1.getNextFireTime()); // NEXT_FIRE_TIME
+//            ps.setObject(6,jobCfg1.getNextFireTime()); // NEXT_FIRE_TIME
+////            ps.setLong(7,jobCfg1.getPrevFireTime()); // PREV_FIRE_TIME
+//            ps.setObject(7,jobCfg1.getPrevFireTime()); // PREV_FIRE_TIME
+//            ps.setInt(8,jobCfg1.getPriority()); // PRIORITY
+////            ps.setLong(9,jobCfg1.getStartTime()); // START_TIME
+//            ps.setObject(9,jobCfg1.getStartTime()); // START_TIME
+////            ps.setLong(10,jobCfg1.getEndTime()); // END_TIME
+//            ps.setObject(10,jobCfg1.getEndTime()); // END_TIME
+//            ps.setString(11,jobCfg1.getCalendarName()); // CALENDAR_NAME
+////            ps.setInt(12,jobCfg1.getMisfireInstr()); // MISFIRE_INSTR
+//            ps.setObject(12,jobCfg1.getMisfireInstr()); // MISFIRE_INSTR
+//            ps.setString(13,jobCfg1.getJobClassName()); // JOB_CLASS_NAME
+//            ps.setBoolean(14,jobCfg1.getIsNonconcurrent()); // IS_NONCONCURRENT
+//            ps.setBoolean(15,jobCfg1.getIsUpdateData()); // IS_UPDATE_DATA
+//            ps.setBoolean(16,jobCfg1.getRequestsRecovery()); // REQUESTS_RECOVERY
+//            ps.setString(17,jobCfg1.getJobData()); // JOB_DATA
+//            insertResult = ps.executeUpdate();
+//        } finally {
+//            // 由于实在同一个connection下，所以不可关闭Connection
+//            closeStatement(ps);
+//        }
+//        return insertResult;
+//    }
+//
+//    @Override
+//    public int insertExecuteCfg(Connection conn, ExecuteCfg executeCfg) throws SQLException, IOException {
+//        PreparedStatement ps = null;
+//        int insertResult = 0;
+//        final String triggerType = executeCfg.getTriggerType();
+//        final ExecuteCfgImpl executeCfg1 = (ExecuteCfgImpl)executeCfg;
+//        try {
+//            ps = conn.prepareStatement(rtp(INSERT_EXECUTE_CFG));
+//            ps.setString(1,executeCfg1.getSchedName());// SCHED_NAME
+//            ps.setString(2,executeCfg1.getTriggerName());// TRIGGER_NAME
+//            ps.setString(3,executeCfg1.getTriggerType());// TRIGGER_TYPE
+//            ps.setString(4,executeCfg1.getCronExpression());// CRON_EXPRESSION
+//            ps.setString(5,executeCfg1.getTimeZoneId());// TIME_ZONE_ID
+////            ps.setLong(6,executeCfg1.getRepeatCount());// REPEAT_COUNT
+//            ps.setObject(6,executeCfg1.getRepeatCount());// REPEAT_COUNT
+////            ps.setLong(7,executeCfg1.getRepeatInterval());// REPEAT_INTERVAL
+//            ps.setObject(7,executeCfg1.getRepeatInterval());// REPEAT_INTERVAL
+////            ps.setLong(8,executeCfg1.getTimesTriggered());// TIMES_TRIGGERED
+//            ps.setObject(8,executeCfg1.getTimesTriggered());// TIMES_TRIGGERED
+//            insertResult = ps.executeUpdate();
+//        } finally {
+//            // 由于实在同一个connection下，所以不可关闭Connection
+//            closeStatement(ps);
+//        }
+//        return insertResult;
+//    }
 
     //---------------------------------------------------------------------------
     // jobs
@@ -1858,44 +1851,44 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             closeStatement(ps);
         }
     }
-
-    /**
-     * <p>
-     * Select the triggers for a job
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @return an array of <code>(@link org.quartz.Trigger)</code> objects
-     *         associated with a given job.
-     * @throws SQLException
-     * @throws JobPersistenceException 
-     */
-    @Override
-    public List<OperableTrigger> selectTriggersForJob(Connection conn, Key jobKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException {
-        LinkedList<OperableTrigger> trigList = new LinkedList<OperableTrigger>();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            // SELECT TRIGGER_NAME, TRIGGER_GROUP FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
-            ps = conn.prepareStatement(rtp(SELECT_TRIGGERS_FOR_JOB));
-            ps.setString(1, jobKey.getName());
-//            ps.setString(2, jobKey.getGroup());
-            rs = ps.executeQuery();
-            while (rs.next()) {
-//                OperableTrigger t = selectTrigger(conn, triggerKey(rs.getString(COL_TRIGGER_NAME), rs.getString(COL_TRIGGER_GROUP)));
-                final Key key = key(rs.getString(COL_TRIGGER_NAME),rs.getString(COL_SCHEDULER_NAME));
-                OperableTrigger t = selectTrigger(conn,key);
-                if(t != null) {
-                    trigList.add(t);
-                }
-            }
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-        }
-        return trigList;
-    }
+//
+//    /**
+//     * <p>
+//     * Select the triggers for a job
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @return an array of <code>(@link org.quartz.Trigger)</code> objects
+//     *         associated with a given job.
+//     * @throws SQLException
+//     * @throws JobPersistenceException
+//     */
+//    @Override
+//    public List<OperableTrigger> selectTriggersForJob(Connection conn, Key jobKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException {
+//        LinkedList<OperableTrigger> trigList = new LinkedList<OperableTrigger>();
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            // SELECT TRIGGER_NAME, TRIGGER_GROUP FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
+//            ps = conn.prepareStatement(rtp(SELECT_TRIGGERS_FOR_JOB));
+//            ps.setString(1, jobKey.getName());
+////            ps.setString(2, jobKey.getGroup());
+//            rs = ps.executeQuery();
+//            while (rs.next()) {
+////                OperableTrigger t = selectTrigger(conn, triggerKey(rs.getString(COL_TRIGGER_NAME), rs.getString(COL_TRIGGER_GROUP)));
+//                final Key key = key(rs.getString(COL_TRIGGER_NAME),rs.getString(COL_SCHEDULER_NAME));
+//                OperableTrigger t = selectTrigger(conn,key);
+//                if(t != null) {
+//                    trigList.add(t);
+//                }
+//            }
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//        }
+//        return trigList;
+//    }
 //    @Override
 //    public List<OperableTrigger> selectTriggersForCalendar(Connection conn, String calName) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException {
 //        LinkedList<OperableTrigger> trigList = new LinkedList<OperableTrigger>();
@@ -1917,203 +1910,203 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //
 //        return trigList;
 //    }
-
-    /**
-     * <p>
-     * Select a trigger.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @return the <code>{@link org.quartz.Trigger}</code> object
-     * @throws JobPersistenceException 
-     */
-    @Override
-    public OperableTrigger selectTrigger(Connection conn,Key triggerKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            OperableTrigger trigger = null;
-            // SELECT * FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-            ps = conn.prepareStatement(rtp(SELECT_TRIGGER));
-            ps.setString(1, triggerKey.getName());
-//            ps.setString(2, triggerKey.getGroup());
-            rs = ps.executeQuery();
-            if (rs.next()) {
-//                String jobName = rs.getString(COL_JOB_NAME);
-                final String triggerName = rs.getString(COL_TRIGGER_NAME);
-//                String jobGroup = rs.getString(COL_JOB_GROUP);
-                String description = rs.getString(COL_DESCRIPTION);
-                long nextFireTime = rs.getLong(COL_NEXT_FIRE_TIME);
-                long prevFireTime = rs.getLong(COL_PREV_FIRE_TIME);
-                String triggerType = rs.getString(COL_TRIGGER_TYPE);
-                long startTime = rs.getLong(COL_START_TIME);
-                long endTime = rs.getLong(COL_END_TIME);
-                String calendarName = rs.getString(COL_CALENDAR_NAME);
-                int misFireInstr = rs.getInt(COL_MISFIRE_INSTRUCTION);
-                int priority = rs.getInt(COL_PRIORITY);
-//                Map<?, ?> map = null;
-//                if (canUseProperties()) {
-//                    map = getMapFromProperties(rs);
-//                } else {
-//                    map = (Map<?, ?>) getObjectFromBlob(rs, COL_JOB_DATAMAP);
-//                }
-                Date nft = null;
-                if (nextFireTime > 0) {
-                    nft = new Date(nextFireTime);
-                }
-                Date pft = null;
-                if (prevFireTime > 0) {
-                    pft = new Date(prevFireTime);
-                }
-                Date startTimeD = new Date(startTime);
-                Date endTimeD = null;
-                if (endTime > 0) {
-                    endTimeD = new Date(endTime);
-                }
-//                if (triggerType.equals(TTYPE_BLOB)) {
-//                    rs.close(); rs = null;
-//                    ps.close(); ps = null;
-//                    // SELECT * FROM QRTZ_BLOB_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-//                    ps = conn.prepareStatement(rtp(SELECT_BLOB_TRIGGER));
-//                    ps.setString(1, triggerKey.getName());
-////                    ps.setString(2, triggerKey.getGroup());
-//                    rs = ps.executeQuery();
-//                    if (rs.next()) {
-//                        trigger = (OperableTrigger) getObjectFromBlob(rs, COL_BLOB);
-//                    }
-//                }
-//                else {
-                    TriggerPersistenceDelegate tDel = findTriggerPersistenceDelegate(triggerType);
-                    if(tDel == null){
-                        throw new JobPersistenceException("No TriggerPersistenceDelegate for trigger discriminator type: " + triggerType);
-                    }
-                    TriggerPropertyBundle triggerProps = null;
-                    try {
-                        triggerProps = tDel.loadExtendedTriggerProperties(conn, triggerKey);
-                    } catch (IllegalStateException isex) {
-                        if (isTriggerStillPresent(ps)) {
-                            throw isex;
-                        } else {
-                            // QTZ-386 Trigger has been deleted
-                            return null;
-                        }
-                    }
-                    TriggerBuilder<?> tb = newTrigger()
-                        .withDescription(description)
-                        .withPriority(priority)
-                        .startAt(startTimeD)
-                        .endAt(endTimeD)
-                        .withIdentity(triggerKey)
-                        .modifiedByCalendar(calendarName)
-                        .withSchedule(triggerProps.getScheduleBuilder());
-//                        .forJob(jobKey(jobName, jobGroup));
-                // todo ...
-//                        .forJob(Key.key(triggerName));
-//                    if (null != map) {
-//                        tb.usingJobData(new JobDataMap(map));
-//                    }
-                    trigger = (OperableTrigger) tb.build();
-                    trigger.setMisfireInstruction(misFireInstr);
-                    trigger.setNextFireTime(nft);
-                    trigger.setPreviousFireTime(pft);
-                    setTriggerStateProperties(trigger, triggerProps);
-//                }
-            }
-            return trigger;
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-        }
-    }
-
-    @Override
-    public OperableTrigger selectJobCfgTrigger(Connection conn,Key triggerKey) throws SQLException,JobPersistenceException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            OperableTrigger trigger = null;
+//
+//    /**
+//     * <p>
+//     * Select a trigger.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @return the <code>{@link org.quartz.Trigger}</code> object
+//     * @throws JobPersistenceException
+//     */
+//    @Override
+//    public OperableTrigger selectTrigger(Connection conn,Key triggerKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException {
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            OperableTrigger trigger = null;
+//            // SELECT * FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
 //            ps = conn.prepareStatement(rtp(SELECT_TRIGGER));
-            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-            ps = conn.prepareStatement(rtp(SELECT_JOB_CFG));
-            ps.setString(1, triggerKey.getName());
-            ps.setString(2, triggerKey.getType());
-            rs = ps.executeQuery();
-            if (rs.next()) {
+//            ps.setString(1, triggerKey.getName());
+////            ps.setString(2, triggerKey.getGroup());
+//            rs = ps.executeQuery();
+//            if (rs.next()) {
+////                String jobName = rs.getString(COL_JOB_NAME);
 //                final String triggerName = rs.getString(COL_TRIGGER_NAME);
-                String description = rs.getString(COL_DESCRIPTION);
-                long nextFireTime = rs.getLong(COL_NEXT_FIRE_TIME);
-                long prevFireTime = rs.getLong(COL_PREV_FIRE_TIME);
-                final String triggerType = rs.getString(COL_TRIGGER_TYPE);
-                long startTime = rs.getLong(COL_START_TIME);
-                long endTime = rs.getLong(COL_END_TIME);
-                String calendarName = rs.getString(COL_CALENDAR_NAME);
-                int misFireInstr = rs.getInt(COL_MISFIRE_INSTRUCTION);
-                int priority = rs.getInt(COL_PRIORITY);
-//                Map<?, ?> map = null;
-//                if (canUseProperties()) {
-//                    map = getMapFromProperties(rs);
-//                } else {
-//                    map = (Map<?, ?>) getObjectFromBlob(rs, COL_JOB_DATAMAP);
+////                String jobGroup = rs.getString(COL_JOB_GROUP);
+//                String description = rs.getString(COL_DESCRIPTION);
+//                long nextFireTime = rs.getLong(COL_NEXT_FIRE_TIME);
+//                long prevFireTime = rs.getLong(COL_PREV_FIRE_TIME);
+//                String triggerType = rs.getString(COL_TRIGGER_TYPE);
+//                long startTime = rs.getLong(COL_START_TIME);
+//                long endTime = rs.getLong(COL_END_TIME);
+//                String calendarName = rs.getString(COL_CALENDAR_NAME);
+//                int misFireInstr = rs.getInt(COL_MISFIRE_INSTRUCTION);
+//                int priority = rs.getInt(COL_PRIORITY);
+////                Map<?, ?> map = null;
+////                if (canUseProperties()) {
+////                    map = getMapFromProperties(rs);
+////                } else {
+////                    map = (Map<?, ?>) getObjectFromBlob(rs, COL_JOB_DATAMAP);
+////                }
+//                Date nft = null;
+//                if (nextFireTime > 0) {
+//                    nft = new Date(nextFireTime);
 //                }
-//                final String jobData = rs.getString(COL_JOB_DATAMAP);
-                Date nft = null;
-                if (nextFireTime > 0) {
-                    nft = new Date(nextFireTime);
-                }
-                Date pft = null;
-                if (prevFireTime > 0) {
-                    pft = new Date(prevFireTime);
-                }
-                Date startTimeD = new Date(startTime);
-                Date endTimeD = null;
-                if (endTime > 0) {
-                    endTimeD = new Date(endTime);
-                }
-                // 获取 Trigger 类型 目前仅限: CronTriggerPersistenceDelegate or SimpleTriggerPersistenceDelegate
-                TriggerPersistenceDelegate tDel = findTriggerPersistenceDelegate(triggerType);
-                if(tDel == null){
-                    throw new JobPersistenceException("No TriggerPersistenceDelegate for trigger discriminator type: " + triggerType);
-                }
-                // 获取对应执行时间配置 如果是 CRON 则是: CRON_EXPRESSION+TIME_ZONE_ID, 如果是SIMPLE则是：REPEAT_COUNT+REPEAT_INTERVAL+TIMES_TRIGGERED
-                TriggerPropertyBundle triggerProps = null;
-                try {
-                    triggerProps = tDel.loadExtendedTriggerProperties(conn, triggerKey);
-                } catch (IllegalStateException isex) {
-                    if (isTriggerStillPresent(ps)) {
-                        throw isex;
-                    } else {
-                        // QTZ-386 Trigger has been deleted
-                        return null;
-                    }
-                }
-                TriggerBuilder<?> tb = newTrigger()
-                        .withDescription(description)
-                        .withPriority(priority)
-                        .startAt(startTimeD)
-                        .endAt(endTimeD)
-                        .withIdentity(triggerKey)
-                        .modifiedByCalendar(calendarName)
-                        .withSchedule(triggerProps.getScheduleBuilder());
-//                        .forJob(jobKey(jobName, jobGroup));
-                // todo ...
-//                        .forJob(Key.key(triggerName));
-//                    if (null != map) {
-//                        tb.usingJobData(new JobDataMap(map));
+//                Date pft = null;
+//                if (prevFireTime > 0) {
+//                    pft = new Date(prevFireTime);
+//                }
+//                Date startTimeD = new Date(startTime);
+//                Date endTimeD = null;
+//                if (endTime > 0) {
+//                    endTimeD = new Date(endTime);
+//                }
+////                if (triggerType.equals(TTYPE_BLOB)) {
+////                    rs.close(); rs = null;
+////                    ps.close(); ps = null;
+////                    // SELECT * FROM QRTZ_BLOB_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
+////                    ps = conn.prepareStatement(rtp(SELECT_BLOB_TRIGGER));
+////                    ps.setString(1, triggerKey.getName());
+//////                    ps.setString(2, triggerKey.getGroup());
+////                    rs = ps.executeQuery();
+////                    if (rs.next()) {
+////                        trigger = (OperableTrigger) getObjectFromBlob(rs, COL_BLOB);
+////                    }
+////                }
+////                else {
+//                    TriggerPersistenceDelegate tDel = findTriggerPersistenceDelegate(triggerType);
+//                    if(tDel == null){
+//                        throw new JobPersistenceException("No TriggerPersistenceDelegate for trigger discriminator type: " + triggerType);
 //                    }
-                trigger = (OperableTrigger) tb.build();
-                trigger.setMisfireInstruction(misFireInstr);
-                trigger.setNextFireTime(nft);
-                trigger.setPreviousFireTime(pft);
-                // todo ...
-//                setTriggerStateProperties(trigger, triggerProps);
-            }
-            return trigger;
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-        }
-    }
+//                    TriggerPropertyBundle triggerProps = null;
+//                    try {
+//                        triggerProps = tDel.loadExtendedTriggerProperties(conn, triggerKey);
+//                    } catch (IllegalStateException isex) {
+//                        if (isTriggerStillPresent(ps)) {
+//                            throw isex;
+//                        } else {
+//                            // QTZ-386 Trigger has been deleted
+//                            return null;
+//                        }
+//                    }
+//                    TriggerBuilder<?> tb = newTrigger()
+//                        .withDescription(description)
+//                        .withPriority(priority)
+//                        .startAt(startTimeD)
+//                        .endAt(endTimeD)
+//                        .withIdentity(triggerKey)
+//                        .modifiedByCalendar(calendarName)
+//                        .withSchedule(triggerProps.getScheduleBuilder());
+////                        .forJob(jobKey(jobName, jobGroup));
+//                // todo ...
+////                        .forJob(Key.key(triggerName));
+////                    if (null != map) {
+////                        tb.usingJobData(new JobDataMap(map));
+////                    }
+//                    trigger = (OperableTrigger) tb.build();
+//                    trigger.setMisfireInstruction(misFireInstr);
+//                    trigger.setNextFireTime(nft);
+//                    trigger.setPreviousFireTime(pft);
+//                    setTriggerStateProperties(trigger, triggerProps);
+////                }
+//            }
+//            return trigger;
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//        }
+//    }
+//
+//    @Override
+//    public OperableTrigger selectJobCfgTrigger(Connection conn,Key triggerKey) throws SQLException,JobPersistenceException {
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            OperableTrigger trigger = null;
+////            ps = conn.prepareStatement(rtp(SELECT_TRIGGER));
+//            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
+//            ps = conn.prepareStatement(rtp(SELECT_JOB_CFG));
+//            ps.setString(1, triggerKey.getName());
+//            ps.setString(2, triggerKey.getType());
+//            rs = ps.executeQuery();
+//            if (rs.next()) {
+////                final String triggerName = rs.getString(COL_TRIGGER_NAME);
+//                String description = rs.getString(COL_DESCRIPTION);
+//                long nextFireTime = rs.getLong(COL_NEXT_FIRE_TIME);
+//                long prevFireTime = rs.getLong(COL_PREV_FIRE_TIME);
+//                final String triggerType = rs.getString(COL_TRIGGER_TYPE);
+//                long startTime = rs.getLong(COL_START_TIME);
+//                long endTime = rs.getLong(COL_END_TIME);
+//                String calendarName = rs.getString(COL_CALENDAR_NAME);
+//                int misFireInstr = rs.getInt(COL_MISFIRE_INSTRUCTION);
+//                int priority = rs.getInt(COL_PRIORITY);
+////                Map<?, ?> map = null;
+////                if (canUseProperties()) {
+////                    map = getMapFromProperties(rs);
+////                } else {
+////                    map = (Map<?, ?>) getObjectFromBlob(rs, COL_JOB_DATAMAP);
+////                }
+////                final String jobData = rs.getString(COL_JOB_DATAMAP);
+//                Date nft = null;
+//                if (nextFireTime > 0) {
+//                    nft = new Date(nextFireTime);
+//                }
+//                Date pft = null;
+//                if (prevFireTime > 0) {
+//                    pft = new Date(prevFireTime);
+//                }
+//                Date startTimeD = new Date(startTime);
+//                Date endTimeD = null;
+//                if (endTime > 0) {
+//                    endTimeD = new Date(endTime);
+//                }
+//                // 获取 Trigger 类型 目前仅限: CronTriggerPersistenceDelegate or SimpleTriggerPersistenceDelegate
+//                TriggerPersistenceDelegate tDel = findTriggerPersistenceDelegate(triggerType);
+//                if(tDel == null){
+//                    throw new JobPersistenceException("No TriggerPersistenceDelegate for trigger discriminator type: " + triggerType);
+//                }
+//                // 获取对应执行时间配置 如果是 CRON 则是: CRON_EXPRESSION+TIME_ZONE_ID, 如果是SIMPLE则是：REPEAT_COUNT+REPEAT_INTERVAL+TIMES_TRIGGERED
+//                TriggerPropertyBundle triggerProps = null;
+//                try {
+//                    triggerProps = tDel.loadExtendedTriggerProperties(conn, triggerKey);
+//                } catch (IllegalStateException isex) {
+//                    if (isTriggerStillPresent(ps)) {
+//                        throw isex;
+//                    } else {
+//                        // QTZ-386 Trigger has been deleted
+//                        return null;
+//                    }
+//                }
+//                TriggerBuilder<?> tb = newTrigger()
+//                        .withDescription(description)
+//                        .withPriority(priority)
+//                        .startAt(startTimeD)
+//                        .endAt(endTimeD)
+//                        .withIdentity(triggerKey)
+//                        .modifiedByCalendar(calendarName)
+//                        .withSchedule(triggerProps.getScheduleBuilder());
+////                        .forJob(jobKey(jobName, jobGroup));
+//                // todo ...
+////                        .forJob(Key.key(triggerName));
+////                    if (null != map) {
+////                        tb.usingJobData(new JobDataMap(map));
+////                    }
+//                trigger = (OperableTrigger) tb.build();
+//                trigger.setMisfireInstruction(misFireInstr);
+//                trigger.setNextFireTime(nft);
+//                trigger.setPreviousFireTime(pft);
+//                // todo ...
+////                setTriggerStateProperties(trigger, triggerProps);
+//            }
+//            return trigger;
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//        }
+//    }
 
     private boolean isTriggerStillPresent(PreparedStatement ps) throws SQLException {
         ResultSet rs = null;

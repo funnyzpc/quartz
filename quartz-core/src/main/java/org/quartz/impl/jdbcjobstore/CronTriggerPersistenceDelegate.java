@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.TimeZone;
 
-import org.quartz.CronScheduleBuilder;
 import org.quartz.impl.triggers.CronTriggerImpl;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.utils.Key;
@@ -72,35 +71,35 @@ public class CronTriggerPersistenceDelegate implements TriggerPersistenceDelegat
 //            Util.closeStatement(ps);
 //        }
 //    }
-    @Override
-    public TriggerPropertyBundle loadExtendedTriggerProperties(Connection conn,Key triggerKey) throws SQLException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            // SELECT * FROM QRTZ_CRON_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-//            ps = conn.prepareStatement(Util.rtp(SELECT_CRON_TRIGGER, tablePrefix, schedNameLiteral));
-            ps = conn.prepareStatement(Util.rtp(SELECT_CRON_EXECUTE_CFG, tablePrefix, schedNameLiteral));
-            ps.setString(1, triggerKey.getName());
-            ps.setString(2,triggerKey.getType());
-//            ps.setString(2, triggerKey.getGroup());
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                String cronExpr = rs.getString(COL_CRON_EXPRESSION);
-                String timeZoneId = rs.getString(COL_TIME_ZONE_ID);
-                CronScheduleBuilder cb = CronScheduleBuilder.cronSchedule(cronExpr);
-                if (timeZoneId != null) {
-                    cb.inTimeZone(TimeZone.getTimeZone(timeZoneId));
-                }
-                return new TriggerPropertyBundle(cb, null, null);
-            }
-//            throw new IllegalStateException("No record found for selection of Trigger with key: '" + triggerKey + "' and statement: " + Util.rtp(SELECT_CRON_TRIGGER, tablePrefix, schedNameLiteral));
-            throw new IllegalStateException("No record found for selection of Trigger with key: '" + triggerKey + "' and statement: " + ps.toString());
-        } finally {
-            Util.closeResultSet(rs);
-            Util.closeStatement(ps);
-        }
-    }
-
+//    @Override
+//    public TriggerPropertyBundle loadExtendedTriggerProperties(Connection conn,Key triggerKey) throws SQLException {
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            // SELECT * FROM QRTZ_CRON_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
+////            ps = conn.prepareStatement(Util.rtp(SELECT_CRON_TRIGGER, tablePrefix, schedNameLiteral));
+//            ps = conn.prepareStatement(Util.rtp(SELECT_CRON_EXECUTE_CFG, tablePrefix, schedNameLiteral));
+//            ps.setString(1, triggerKey.getName());
+//            ps.setString(2,triggerKey.getType());
+////            ps.setString(2, triggerKey.getGroup());
+//            rs = ps.executeQuery();
+//            if (rs.next()) {
+//                String cronExpr = rs.getString(COL_CRON_EXPRESSION);
+//                String timeZoneId = rs.getString(COL_TIME_ZONE_ID);
+//                CronScheduleBuilder cb = CronScheduleBuilder.cronSchedule(cronExpr);
+//                if (timeZoneId != null) {
+//                    cb.inTimeZone(TimeZone.getTimeZone(timeZoneId));
+//                }
+//                return new TriggerPropertyBundle(cb, null, null);
+//            }
+////            throw new IllegalStateException("No record found for selection of Trigger with key: '" + triggerKey + "' and statement: " + Util.rtp(SELECT_CRON_TRIGGER, tablePrefix, schedNameLiteral));
+//            throw new IllegalStateException("No record found for selection of Trigger with key: '" + triggerKey + "' and statement: " + ps.toString());
+//        } finally {
+//            Util.closeResultSet(rs);
+//            Util.closeStatement(ps);
+//        }
+//    }
+//
 //    @Override
 //    public int updateExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
 //        CronTrigger cronTrigger = (CronTrigger)trigger;

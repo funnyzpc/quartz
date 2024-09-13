@@ -23,14 +23,11 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import org.quartz.CronExpression;
-import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.ScheduleBuilder;
 import org.quartz.Scheduler;
 import org.quartz.Trigger;
-import org.quartz.TriggerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -573,45 +570,45 @@ public class CronTriggerImpl extends AbstractTrigger<CronTrigger> implements Cro
     protected boolean validateMisfireInstruction(int misfireInstruction) {
         return misfireInstruction >= MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY && misfireInstruction <= MISFIRE_INSTRUCTION_DO_NOTHING;
     }
-
-    /**
-     * <p>
-     * Updates the <code>CronTrigger</code>'s state based on the
-     * MISFIRE_INSTRUCTION_XXX that was selected when the <code>CronTrigger</code>
-     * was created.
-     * 根据创建CronTrigger时选择的MISFIRE_INSTRUCTION_XXX更新CronTrigger的状态。
-     * </p>
-     * 
-     * <p>
-     * If the misfire instruction is set to MISFIRE_INSTRUCTION_SMART_POLICY,
-     * then the following scheme will be used: <br>
-     * 如果失火指令设置为misfire_instruction_SMART_POLICY，则将使用以下方案：
-     * <ul>
-     * <li>The instruction will be interpreted as <code>MISFIRE_INSTRUCTION_FIRE_ONCE_NOW</code>
-     * 该指令将被解释为MISFIRE_instruction_FIRE_ONCE_NOW
-     * </ul>
-     * </p>
-     */
-    @Override
-    public void updateAfterMisfire(org.quartz.Calendar cal) {
-        int instr = getMisfireInstruction();
-        if(instr == Trigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY){
-            return;
-        }
-        if (instr == MISFIRE_INSTRUCTION_SMART_POLICY) {
-            instr = MISFIRE_INSTRUCTION_FIRE_ONCE_NOW;
-        }
-        if (instr == MISFIRE_INSTRUCTION_DO_NOTHING) {
-            Date newFireTime = getFireTimeAfter(new Date());
-            while (newFireTime != null && cal != null && !cal.isTimeIncluded(newFireTime.getTime())) {
-                newFireTime = getFireTimeAfter(newFireTime);
-            }
-            setNextFireTime(newFireTime);
-        } else if (instr == MISFIRE_INSTRUCTION_FIRE_ONCE_NOW) {
-            setNextFireTime(new Date());
-        }
-    }
-
+//
+//    /**
+//     * <p>
+//     * Updates the <code>CronTrigger</code>'s state based on the
+//     * MISFIRE_INSTRUCTION_XXX that was selected when the <code>CronTrigger</code>
+//     * was created.
+//     * 根据创建CronTrigger时选择的MISFIRE_INSTRUCTION_XXX更新CronTrigger的状态。
+//     * </p>
+//     *
+//     * <p>
+//     * If the misfire instruction is set to MISFIRE_INSTRUCTION_SMART_POLICY,
+//     * then the following scheme will be used: <br>
+//     * 如果失火指令设置为misfire_instruction_SMART_POLICY，则将使用以下方案：
+//     * <ul>
+//     * <li>The instruction will be interpreted as <code>MISFIRE_INSTRUCTION_FIRE_ONCE_NOW</code>
+//     * 该指令将被解释为MISFIRE_instruction_FIRE_ONCE_NOW
+//     * </ul>
+//     * </p>
+//     */
+//    @Override
+//    public void updateAfterMisfire(org.quartz.Calendar cal) {
+//        int instr = getMisfireInstruction();
+//        if(instr == Trigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY){
+//            return;
+//        }
+//        if (instr == MISFIRE_INSTRUCTION_SMART_POLICY) {
+//            instr = MISFIRE_INSTRUCTION_FIRE_ONCE_NOW;
+//        }
+//        if (instr == MISFIRE_INSTRUCTION_DO_NOTHING) {
+//            Date newFireTime = getFireTimeAfter(new Date());
+//            while (newFireTime != null && cal != null && !cal.isTimeIncluded(newFireTime.getTime())) {
+//                newFireTime = getFireTimeAfter(newFireTime);
+//            }
+//            setNextFireTime(newFireTime);
+//        } else if (instr == MISFIRE_INSTRUCTION_FIRE_ONCE_NOW) {
+//            setNextFireTime(new Date());
+//        }
+//    }
+//
     /**
      * <p>
      * Determines whether the date and (optionally) time of the given Calendar 
@@ -675,85 +672,85 @@ public class CronTriggerImpl extends AbstractTrigger<CronTrigger> implements Cro
         }
         return fta.equals(testTime);
     }
-
-    /**
-     * <p>
-     * Called when the <code>{@link Scheduler}</code> has decided to 'fire'
-     * the trigger (execute the associated <code>Job</code>), in order to
-     * give the <code>Trigger</code> a chance to update itself for its next
-     * triggering (if any).
-     * </p>
-     * 
-     * @see #executionComplete(JobExecutionContext, JobExecutionException)
-     */
-    @Override
-    public void triggered(org.quartz.Calendar calendar) {
-        previousFireTime = nextFireTime;
-        nextFireTime = getFireTimeAfter(nextFireTime);
-
-        while (nextFireTime != null && calendar != null && !calendar.isTimeIncluded(nextFireTime.getTime())) {
-            nextFireTime = getFireTimeAfter(nextFireTime);
-        }
-    }
-
-    /**
-     *  
-     * @see AbstractTrigger#updateWithNewCalendar(org.quartz.Calendar, long)
-     */
-    @Override
-    public void updateWithNewCalendar(org.quartz.Calendar calendar, long misfireThreshold) {
-        nextFireTime = getFireTimeAfter(previousFireTime);
-        if (nextFireTime == null || calendar == null) {
-            return;
-        }
-        Date now = new Date();
-        while (nextFireTime != null && !calendar.isTimeIncluded(nextFireTime.getTime())) {
-            nextFireTime = getFireTimeAfter(nextFireTime);
-            if(nextFireTime == null){
-                break;
-            }
-
-            // avoid infinite loop
-            // Use gregorian only because the constant is based on Gregorian
-            java.util.Calendar c = new java.util.GregorianCalendar();
-            c.setTime(nextFireTime);
-            if (c.get(java.util.Calendar.YEAR) > YEAR_TO_GIVEUP_SCHEDULING_AT) {
-                nextFireTime = null;
-            }
-            if(nextFireTime != null && nextFireTime.before(now)) {
-                long diff = now.getTime() - nextFireTime.getTime();
-                if(diff >= misfireThreshold) {
-                    nextFireTime = getFireTimeAfter(nextFireTime);
-                }
-            }
-        }
-    }
-
-    /**
-     * <p>
-     * Called by the scheduler at the time a <code>Trigger</code> is first
-     * added to the scheduler, in order to have the <code>Trigger</code>
-     * compute its first fire time, based on any associated calendar.
-     * </p>
-     * 
-     * <p>
-     * After this method has been called, <code>getNextFireTime()</code>
-     * should return a valid answer.
-     * </p>
-     * 
-     * @return the first time at which the <code>Trigger</code> will be fired
-     *         by the scheduler, which is also the same value <code>getNextFireTime()</code>
-     *         will return (until after the first firing of the <code>Trigger</code>).
-     *         </p>
-     */
-    @Override
-    public Date computeFirstFireTime(org.quartz.Calendar calendar) {
-        nextFireTime = getFireTimeAfter(new Date(getStartTime().getTime() - 1000L));
-        while (nextFireTime != null && calendar != null && !calendar.isTimeIncluded(nextFireTime.getTime())) {
-            nextFireTime = getFireTimeAfter(nextFireTime);
-        }
-        return nextFireTime;
-    }
+//
+//    /**
+//     * <p>
+//     * Called when the <code>{@link Scheduler}</code> has decided to 'fire'
+//     * the trigger (execute the associated <code>Job</code>), in order to
+//     * give the <code>Trigger</code> a chance to update itself for its next
+//     * triggering (if any).
+//     * </p>
+//     *
+//     * @see #executionComplete(JobExecutionContext, JobExecutionException)
+//     */
+//    @Override
+//    public void triggered(org.quartz.Calendar calendar) {
+//        previousFireTime = nextFireTime;
+//        nextFireTime = getFireTimeAfter(nextFireTime);
+//
+//        while (nextFireTime != null && calendar != null && !calendar.isTimeIncluded(nextFireTime.getTime())) {
+//            nextFireTime = getFireTimeAfter(nextFireTime);
+//        }
+//    }
+//
+//    /**
+//     *
+//     * @see AbstractTrigger#updateWithNewCalendar(org.quartz.Calendar, long)
+//     */
+//    @Override
+//    public void updateWithNewCalendar(org.quartz.Calendar calendar, long misfireThreshold) {
+//        nextFireTime = getFireTimeAfter(previousFireTime);
+//        if (nextFireTime == null || calendar == null) {
+//            return;
+//        }
+//        Date now = new Date();
+//        while (nextFireTime != null && !calendar.isTimeIncluded(nextFireTime.getTime())) {
+//            nextFireTime = getFireTimeAfter(nextFireTime);
+//            if(nextFireTime == null){
+//                break;
+//            }
+//
+//            // avoid infinite loop
+//            // Use gregorian only because the constant is based on Gregorian
+//            java.util.Calendar c = new java.util.GregorianCalendar();
+//            c.setTime(nextFireTime);
+//            if (c.get(java.util.Calendar.YEAR) > YEAR_TO_GIVEUP_SCHEDULING_AT) {
+//                nextFireTime = null;
+//            }
+//            if(nextFireTime != null && nextFireTime.before(now)) {
+//                long diff = now.getTime() - nextFireTime.getTime();
+//                if(diff >= misfireThreshold) {
+//                    nextFireTime = getFireTimeAfter(nextFireTime);
+//                }
+//            }
+//        }
+//    }
+//
+//    /**
+//     * <p>
+//     * Called by the scheduler at the time a <code>Trigger</code> is first
+//     * added to the scheduler, in order to have the <code>Trigger</code>
+//     * compute its first fire time, based on any associated calendar.
+//     * </p>
+//     *
+//     * <p>
+//     * After this method has been called, <code>getNextFireTime()</code>
+//     * should return a valid answer.
+//     * </p>
+//     *
+//     * @return the first time at which the <code>Trigger</code> will be fired
+//     *         by the scheduler, which is also the same value <code>getNextFireTime()</code>
+//     *         will return (until after the first firing of the <code>Trigger</code>).
+//     *         </p>
+//     */
+//    @Override
+//    public Date computeFirstFireTime(org.quartz.Calendar calendar) {
+//        nextFireTime = getFireTimeAfter(new Date(getStartTime().getTime() - 1000L));
+//        while (nextFireTime != null && calendar != null && !calendar.isTimeIncluded(nextFireTime.getTime())) {
+//            nextFireTime = getFireTimeAfter(nextFireTime);
+//        }
+//        return nextFireTime;
+//    }
 
     /* (non-Javadoc)
      * @see org.quartz.CronTriggerI#getExpressionSummary()
@@ -773,34 +770,34 @@ public class CronTriggerImpl extends AbstractTrigger<CronTrigger> implements Cro
 //    public boolean hasAdditionalProperties() {
 //        return false;
 //    }
-
-    /**
-     * Get a {@link ScheduleBuilder} that is configured to produce a 
-     * schedule identical to this trigger's schedule.
-     * 
-     * @see #getTriggerBuilder()
-     */
-    @Override
-    public ScheduleBuilder<CronTrigger> getScheduleBuilder() {
-        CronScheduleBuilder cb = CronScheduleBuilder.cronSchedule(getCronExpression()).inTimeZone(getTimeZone());
-        int misfireInstruction = getMisfireInstruction();
-        switch(misfireInstruction) {
-            case MISFIRE_INSTRUCTION_SMART_POLICY:
-                break;
-            case MISFIRE_INSTRUCTION_DO_NOTHING:
-                cb.withMisfireHandlingInstructionDoNothing();
-                break;
-            case MISFIRE_INSTRUCTION_FIRE_ONCE_NOW:
-                cb.withMisfireHandlingInstructionFireAndProceed();
-                break;
-            case MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY:
-                cb.withMisfireHandlingInstructionIgnoreMisfires();
-                break;
-            default:
-                LOGGER.warn("Unrecognized misfire policy {}. Derived builder will use the default cron trigger behavior (MISFIRE_INSTRUCTION_FIRE_ONCE_NOW)", misfireInstruction);
-        }
-        return cb;
-    }
+//
+//    /**
+//     * Get a {@link ScheduleBuilder} that is configured to produce a
+//     * schedule identical to this trigger's schedule.
+//     *
+//     * @see #getTriggerBuilder()
+//     */
+//    @Override
+//    public ScheduleBuilder<CronTrigger> getScheduleBuilder() {
+//        CronScheduleBuilder cb = CronScheduleBuilder.cronSchedule(getCronExpression()).inTimeZone(getTimeZone());
+//        int misfireInstruction = getMisfireInstruction();
+//        switch(misfireInstruction) {
+//            case MISFIRE_INSTRUCTION_SMART_POLICY:
+//                break;
+//            case MISFIRE_INSTRUCTION_DO_NOTHING:
+//                cb.withMisfireHandlingInstructionDoNothing();
+//                break;
+//            case MISFIRE_INSTRUCTION_FIRE_ONCE_NOW:
+//                cb.withMisfireHandlingInstructionFireAndProceed();
+//                break;
+//            case MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY:
+//                cb.withMisfireHandlingInstructionIgnoreMisfires();
+//                break;
+//            default:
+//                LOGGER.warn("Unrecognized misfire policy {}. Derived builder will use the default cron trigger behavior (MISFIRE_INSTRUCTION_FIRE_ONCE_NOW)", misfireInstruction);
+//        }
+//        return cb;
+//    }
     
     ////////////////////////////////////////////////////////////////////////////
     //

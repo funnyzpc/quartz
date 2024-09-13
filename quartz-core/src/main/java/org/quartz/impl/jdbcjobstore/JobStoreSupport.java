@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import org.quartz.ExecuteCfg;
 import org.quartz.Job;
 import org.quartz.JobCfg;
 import org.quartz.JobDetail;
@@ -39,9 +38,7 @@ import org.quartz.JobPersistenceException;
 import org.quartz.SchedulerConfigException;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
-import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.Trigger.TriggerState;
-import org.quartz.impl.JobCfgImpl;
 import org.quartz.impl.QrtzApp;
 import org.quartz.impl.QrtzExecute;
 import org.quartz.impl.QrtzJob;
@@ -1085,34 +1082,34 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //                }
 //            });
 //    }
-
-    @Override
-    public void storeJobAndExecute(JobCfg jobCfg, ExecuteCfg executeCfg) throws JobPersistenceException {
-        executeInLock(
-                (isLockOnInsert()) ? LOCK_TRIGGER_ACCESS : null,
-                new VoidTransactionCallback() {
-                    @Override
-                    public void executeVoid(Connection conn) throws JobPersistenceException {
-                        storeJobAndExecute(conn,jobCfg,executeCfg);
-                    }
-                });
-    }
-
-    private void storeJobAndExecute(Connection conn,JobCfg jobCfg, ExecuteCfg executeCfg) throws JobPersistenceException{
-//        // 写job_detail
-//        storeJob(conn, newJob, false);
-//        // 获取
-//        storeTrigger(conn, newTrigger, newJob, false,Constants.STATE_WAITING, false, false);
-        try{
-            ((JobCfgImpl)jobCfg).setTriggerState(Constants.STATE_WAITING);
-            this.getDelegate().insertJobCfg(conn,jobCfg);
-            this.getDelegate().insertExecuteCfg(conn,executeCfg);
-        }catch (Exception e){
-            e.printStackTrace();
-            throw new JobPersistenceException("store JobCfg or ExecuteCfg error: "+ e.getMessage(), e);
-        }
-    }
-
+//
+//    @Override
+//    public void storeJobAndExecute(JobCfg jobCfg, ExecuteCfg executeCfg) throws JobPersistenceException {
+//        executeInLock(
+//                (isLockOnInsert()) ? LOCK_TRIGGER_ACCESS : null,
+//                new VoidTransactionCallback() {
+//                    @Override
+//                    public void executeVoid(Connection conn) throws JobPersistenceException {
+//                        storeJobAndExecute(conn,jobCfg,executeCfg);
+//                    }
+//                });
+//    }
+//
+//    private void storeJobAndExecute(Connection conn,JobCfg jobCfg, ExecuteCfg executeCfg) throws JobPersistenceException{
+////        // 写job_detail
+////        storeJob(conn, newJob, false);
+////        // 获取
+////        storeTrigger(conn, newTrigger, newJob, false,Constants.STATE_WAITING, false, false);
+//        try{
+//            ((JobCfgImpl)jobCfg).setTriggerState(Constants.STATE_WAITING);
+//            this.getDelegate().insertJobCfg(conn,jobCfg);
+//            this.getDelegate().insertExecuteCfg(conn,executeCfg);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            throw new JobPersistenceException("store JobCfg or ExecuteCfg error: "+ e.getMessage(), e);
+//        }
+//    }
+//
 //    /**
 //     * <p>
 //     * Store the given <code>{@link org.quartz.JobDetail}</code>.
@@ -1500,39 +1497,39 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //            throw new JobPersistenceException("Couldn't remove trigger: " + e.getMessage(), e);
 //        }
 //    }
-
-    /**
-     * <p>
-     * Retrieve the given <code>{@link org.quartz.Trigger}</code>.
-     * 检索给定的触发器。
-     * </p>
-     * 
-     * @return The desired <code>Trigger</code>, or null if there is no
-     *         match.
-     */
-    @Override
-    public OperableTrigger retrieveTrigger(final Key triggerKey) throws JobPersistenceException {
-        return (OperableTrigger)executeWithoutLock( // no locks necessary for read...
-            new TransactionCallback() {
-                @Override
-                public Object execute(Connection conn) throws JobPersistenceException {
-                    return retrieveTrigger(conn, triggerKey);
-                }
-            });
-    }
-    
-    protected OperableTrigger retrieveTrigger(Connection conn,Key key) throws JobPersistenceException {
-        try {
-            //  SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-//            return getDelegate().selectTrigger(conn, key);
-            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-            return getDelegate().selectJobCfgTrigger(conn, key);
-        } catch (Exception e) {
-            log.error("出现异常了:{}",key,e);
-            throw new JobPersistenceException("Couldn't retrieve trigger: " + e.getMessage(), e);
-        }
-    }
-
+//
+//    /**
+//     * <p>
+//     * Retrieve the given <code>{@link org.quartz.Trigger}</code>.
+//     * 检索给定的触发器。
+//     * </p>
+//     *
+//     * @return The desired <code>Trigger</code>, or null if there is no
+//     *         match.
+//     */
+//    @Override
+//    public OperableTrigger retrieveTrigger(final Key triggerKey) throws JobPersistenceException {
+//        return (OperableTrigger)executeWithoutLock( // no locks necessary for read...
+//            new TransactionCallback() {
+//                @Override
+//                public Object execute(Connection conn) throws JobPersistenceException {
+//                    return retrieveTrigger(conn, triggerKey);
+//                }
+//            });
+//    }
+//
+//    protected OperableTrigger retrieveTrigger(Connection conn,Key key) throws JobPersistenceException {
+//        try {
+//            //  SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
+////            return getDelegate().selectTrigger(conn, key);
+//            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
+//            return getDelegate().selectJobCfgTrigger(conn, key);
+//        } catch (Exception e) {
+//            log.error("出现异常了:{}",key,e);
+//            throw new JobPersistenceException("Couldn't retrieve trigger: " + e.getMessage(), e);
+//        }
+//    }
+//
     /**
      * <p>
      * Get the current state of the identified <code>{@link Trigger}</code>.
@@ -1781,40 +1778,40 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //                    }
 //                });
 //    }
-
-    /**
-     * <p>
-     * Get all of the Triggers that are associated to the given Job.
-     * 获取与给定作业关联的所有触发器。
-     * </p>
-     * 
-     * <p>
-     * If there are no matches, a zero-length array should be returned.
-     * 如果没有匹配项，则应返回一个长度为零的数组。
-     * </p>
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<OperableTrigger> getTriggersForJob(final Key jobKey) throws JobPersistenceException {
-        return (List<OperableTrigger>)executeWithoutLock( // no locks necessary for read...
-            new TransactionCallback() {
-                @Override
-                public Object execute(Connection conn) throws JobPersistenceException {
-                    return getTriggersForJob(conn, jobKey);
-                }
-            });
-    }
-    
-    protected List<OperableTrigger> getTriggersForJob(Connection conn,Key key) throws JobPersistenceException {
-        List<OperableTrigger> list;
-        try {
-            list = getDelegate().selectTriggersForJob(conn, key);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JobPersistenceException("Couldn't obtain triggers for job: " + e.getMessage(), e);
-        }
-        return list;
-    }
+//
+//    /**
+//     * <p>
+//     * Get all of the Triggers that are associated to the given Job.
+//     * 获取与给定作业关联的所有触发器。
+//     * </p>
+//     *
+//     * <p>
+//     * If there are no matches, a zero-length array should be returned.
+//     * 如果没有匹配项，则应返回一个长度为零的数组。
+//     * </p>
+//     */
+//    @Override
+//    @SuppressWarnings("unchecked")
+//    public List<OperableTrigger> getTriggersForJob(final Key jobKey) throws JobPersistenceException {
+//        return (List<OperableTrigger>)executeWithoutLock( // no locks necessary for read...
+//            new TransactionCallback() {
+//                @Override
+//                public Object execute(Connection conn) throws JobPersistenceException {
+//                    return getTriggersForJob(conn, jobKey);
+//                }
+//            });
+//    }
+//
+//    protected List<OperableTrigger> getTriggersForJob(Connection conn,Key key) throws JobPersistenceException {
+//        List<OperableTrigger> list;
+//        try {
+//            list = getDelegate().selectTriggersForJob(conn, key);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            throw new JobPersistenceException("Couldn't obtain triggers for job: " + e.getMessage(), e);
+//        }
+//        return list;
+//    }
 
     /**
      * <p>
@@ -2139,95 +2136,95 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //                    }
 //                });
 //    }
-    
-    // FUTURE_TODO: this really ought to return something like a FiredTriggerBundle,
-    // so that the fireInstanceId doesn't have to be on the trigger...
-    // FUTURE_TODO：这真的应该返回类似FiredTriggerBundle的东西，
-    // 这样fireInstanceId就不必在触发器上。。。
-    protected List<OperableTrigger> acquireNextTrigger(Connection conn, long noLaterThan, int maxCount, long timeWindow) throws JobPersistenceException {
-        // noLaterThan: now + 30S
-        // maxCount: Math.min(availThreadCount, qsRsrcs.getMaxBatchSize()) , 这个在获取记录前会做判断，如果是<=0,则只可获取到一条记录
-        // timeWindow: qsRsrcs.getBatchTimeWindow() 默认是0且可配置:org.quartz.scheduler.batchTriggerAcquisitionFireAheadTimeWindow
-        if (timeWindow < 0) {
-          throw new IllegalArgumentException();
-        }
-        List<OperableTrigger> acquiredTriggers = new ArrayList<OperableTrigger>();
-//        Set<Key> acquiredJobKeysForNoConcurrentExec = new HashSet<Key>();
-        final int MAX_DO_LOOP_RETRY = 3;
-        int currentLoopCount = 0;
-        do {
-            currentLoopCount ++;
-            try {
-                // SELECT TRIGGER_NAME, NEXT_FIRE_TIME, PRIORITY, SCHED_NAME,TRIGGER_TYPE FROM QRTZ_JOB_CFG
-                // WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_STATE = 'WAITING' AND NEXT_FIRE_TIME <= :noLaterThan
-                // AND (MISFIRE_INSTR = -1 OR (MISFIRE_INSTR != -1 AND NEXT_FIRE_TIME >= :noEarlierThan ))
-                // ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC
-                // noLaterThan=now+30S+0
-                // noEarlierThan=now-60000L(60秒前)
-                // NEXT_FIRE_TIME: 下一次触发时间（毫秒），默认为-1，意味不会自动触发 ; 以上取值范围大致为 now-60S<=NEXT_FIRE_TIME<=now+30S
-                // 注意：这个查询只取 TRIGGER_STATE = 'WAITING' 的记录，其他条件看以上SQL
-                List<Key> keys = getDelegate().selectTriggerToAcquire(conn, noLaterThan + timeWindow, getMisfireTime(), maxCount);
-                // No trigger is ready to fire yet. 触发器还没有准备好点火
-                if (keys == null || keys.size() == 0){
-                    return acquiredTriggers;
-                }
-                long batchEnd = noLaterThan; // now + 30S
-                for(Key triggerKey: keys) {
-                    // If our trigger is no longer available, try a new one. 如果我们的触发器不再可用，请尝试新的触发器。
-                    // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-                    OperableTrigger nextTrigger = retrieveTrigger(conn, triggerKey);
-                    if(nextTrigger == null) {
-                        continue; // next trigger
-                    }
-                    Date nextFireTime = nextTrigger.getNextFireTime();
-                    if (nextFireTime == null) {
-                        log.warn("Trigger {} returned null on nextFireTime and yet still exists in DB!",nextTrigger.getKey());
-                        continue;
-                    }
-                    // batchEnd=noLaterThan=now+30S+0 ,也就是只取未来30秒以内的
-                    if (nextFireTime.getTime() > batchEnd) {
-                      break;
-                    }
-                    // We now have a acquired trigger, let's add to return list.
-                    // If our trigger was no longer in the expected state, try a new one.
-                    //  我们现在有一个已获取的触发器，让我们将其添加到返回列表中。
-                    //  如果我们的触发器不再处于预期状态，请尝试新的触发器。
-                    //  内部执行的是:　UPDATE {0}JOB_CFG SET TRIGGER_STATE = 'ACQUIRED' WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? AND TRIGGER_STATE = ? and TRIGGER_TYPE = 'WAITING'
-//                    int rowsUpdated = getDelegate().updateTriggerStateFromOtherState(conn, triggerKey, STATE_ACQUIRED, STATE_WAITING);
-                    int rowsUpdated = getDelegate().updateJobCfgStateToAcquired(conn, triggerKey, STATE_ACQUIRED,new String[]{STATE_WAITING,STATE_ACQUIRED,STATE_EXECUTING,STATE_BLOCKED,STATE_ERROR});
-                    if (rowsUpdated <= 0) {
-                        // 小于0意味着状态已经发生变化需要从新循环从数据库捞数据
-                        continue; // next trigger
-                    }
-                    // todo ... 这里需要重新规划
-//                    // instanceId + ftrCtr++;
-//                    nextTrigger.setFireInstanceId(getFiredTriggerRecordId());
-//                    // 执行 INSERT INTO {0}FIRED_TRIGGERS ...(sate=ACQUIRED)
-//                    getDelegate().insertFiredTrigger(conn, nextTrigger, STATE_ACQUIRED, null);
-                    if(acquiredTriggers.isEmpty()) {
-                        // MAX(下一次点火时间,时间)+0 其中 timeWindow默认为0，具体配置见: org.quartz.scheduler.batchTriggerAcquisitionFireAheadTimeWindow
-                        batchEnd = Math.max(nextFireTime.getTime(), System.currentTimeMillis()) + timeWindow;
-                    }
-                    // 已经写入的记录同时保存至List
-                    acquiredTriggers.add(nextTrigger);
-                }
-                // if we didn't end up with any trigger to fire from that first
-                // batch, try again for another batch. We allow with a max retry count.
-                //  如果我们最终没有从第一批中获得任何触发器，请重试另一批。我们允许最大重试次数。
-                //  触发器未能获取到时当前请求循环次数最大只能为2
-                if(acquiredTriggers.size() == 0 && currentLoopCount < MAX_DO_LOOP_RETRY) {
-                    continue;
-                }
-                // We are done with the while loop. 我们已经完成了while循环。
-                break;
-            } catch (Exception ee) {
-                ee.printStackTrace();
-                throw new JobPersistenceException("Couldn't acquire next trigger: " + ee.getMessage(), ee);
-            }
-        } while (true);
-        // Return the acquired trigger list
-        return acquiredTriggers;
-    }
+//
+//    // FUTURE_TODO: this really ought to return something like a FiredTriggerBundle,
+//    // so that the fireInstanceId doesn't have to be on the trigger...
+//    // FUTURE_TODO：这真的应该返回类似FiredTriggerBundle的东西，
+//    // 这样fireInstanceId就不必在触发器上。。。
+//    protected List<OperableTrigger> acquireNextTrigger(Connection conn, long noLaterThan, int maxCount, long timeWindow) throws JobPersistenceException {
+//        // noLaterThan: now + 30S
+//        // maxCount: Math.min(availThreadCount, qsRsrcs.getMaxBatchSize()) , 这个在获取记录前会做判断，如果是<=0,则只可获取到一条记录
+//        // timeWindow: qsRsrcs.getBatchTimeWindow() 默认是0且可配置:org.quartz.scheduler.batchTriggerAcquisitionFireAheadTimeWindow
+//        if (timeWindow < 0) {
+//          throw new IllegalArgumentException();
+//        }
+//        List<OperableTrigger> acquiredTriggers = new ArrayList<OperableTrigger>();
+////        Set<Key> acquiredJobKeysForNoConcurrentExec = new HashSet<Key>();
+//        final int MAX_DO_LOOP_RETRY = 3;
+//        int currentLoopCount = 0;
+//        do {
+//            currentLoopCount ++;
+//            try {
+//                // SELECT TRIGGER_NAME, NEXT_FIRE_TIME, PRIORITY, SCHED_NAME,TRIGGER_TYPE FROM QRTZ_JOB_CFG
+//                // WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_STATE = 'WAITING' AND NEXT_FIRE_TIME <= :noLaterThan
+//                // AND (MISFIRE_INSTR = -1 OR (MISFIRE_INSTR != -1 AND NEXT_FIRE_TIME >= :noEarlierThan ))
+//                // ORDER BY NEXT_FIRE_TIME ASC, PRIORITY DESC
+//                // noLaterThan=now+30S+0
+//                // noEarlierThan=now-60000L(60秒前)
+//                // NEXT_FIRE_TIME: 下一次触发时间（毫秒），默认为-1，意味不会自动触发 ; 以上取值范围大致为 now-60S<=NEXT_FIRE_TIME<=now+30S
+//                // 注意：这个查询只取 TRIGGER_STATE = 'WAITING' 的记录，其他条件看以上SQL
+//                List<Key> keys = getDelegate().selectTriggerToAcquire(conn, noLaterThan + timeWindow, getMisfireTime(), maxCount);
+//                // No trigger is ready to fire yet. 触发器还没有准备好点火
+//                if (keys == null || keys.size() == 0){
+//                    return acquiredTriggers;
+//                }
+//                long batchEnd = noLaterThan; // now + 30S
+//                for(Key triggerKey: keys) {
+//                    // If our trigger is no longer available, try a new one. 如果我们的触发器不再可用，请尝试新的触发器。
+//                    // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
+//                    OperableTrigger nextTrigger = retrieveTrigger(conn, triggerKey);
+//                    if(nextTrigger == null) {
+//                        continue; // next trigger
+//                    }
+//                    Date nextFireTime = nextTrigger.getNextFireTime();
+//                    if (nextFireTime == null) {
+//                        log.warn("Trigger {} returned null on nextFireTime and yet still exists in DB!",nextTrigger.getKey());
+//                        continue;
+//                    }
+//                    // batchEnd=noLaterThan=now+30S+0 ,也就是只取未来30秒以内的
+//                    if (nextFireTime.getTime() > batchEnd) {
+//                      break;
+//                    }
+//                    // We now have a acquired trigger, let's add to return list.
+//                    // If our trigger was no longer in the expected state, try a new one.
+//                    //  我们现在有一个已获取的触发器，让我们将其添加到返回列表中。
+//                    //  如果我们的触发器不再处于预期状态，请尝试新的触发器。
+//                    //  内部执行的是:　UPDATE {0}JOB_CFG SET TRIGGER_STATE = 'ACQUIRED' WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? AND TRIGGER_STATE = ? and TRIGGER_TYPE = 'WAITING'
+////                    int rowsUpdated = getDelegate().updateTriggerStateFromOtherState(conn, triggerKey, STATE_ACQUIRED, STATE_WAITING);
+//                    int rowsUpdated = getDelegate().updateJobCfgStateToAcquired(conn, triggerKey, STATE_ACQUIRED,new String[]{STATE_WAITING,STATE_ACQUIRED,STATE_EXECUTING,STATE_BLOCKED,STATE_ERROR});
+//                    if (rowsUpdated <= 0) {
+//                        // 小于0意味着状态已经发生变化需要从新循环从数据库捞数据
+//                        continue; // next trigger
+//                    }
+//                    // todo ... 这里需要重新规划
+////                    // instanceId + ftrCtr++;
+////                    nextTrigger.setFireInstanceId(getFiredTriggerRecordId());
+////                    // 执行 INSERT INTO {0}FIRED_TRIGGERS ...(sate=ACQUIRED)
+////                    getDelegate().insertFiredTrigger(conn, nextTrigger, STATE_ACQUIRED, null);
+//                    if(acquiredTriggers.isEmpty()) {
+//                        // MAX(下一次点火时间,时间)+0 其中 timeWindow默认为0，具体配置见: org.quartz.scheduler.batchTriggerAcquisitionFireAheadTimeWindow
+//                        batchEnd = Math.max(nextFireTime.getTime(), System.currentTimeMillis()) + timeWindow;
+//                    }
+//                    // 已经写入的记录同时保存至List
+//                    acquiredTriggers.add(nextTrigger);
+//                }
+//                // if we didn't end up with any trigger to fire from that first
+//                // batch, try again for another batch. We allow with a max retry count.
+//                //  如果我们最终没有从第一批中获得任何触发器，请重试另一批。我们允许最大重试次数。
+//                //  触发器未能获取到时当前请求循环次数最大只能为2
+//                if(acquiredTriggers.size() == 0 && currentLoopCount < MAX_DO_LOOP_RETRY) {
+//                    continue;
+//                }
+//                // We are done with the while loop. 我们已经完成了while循环。
+//                break;
+//            } catch (Exception ee) {
+//                ee.printStackTrace();
+//                throw new JobPersistenceException("Couldn't acquire next trigger: " + ee.getMessage(), ee);
+//            }
+//        } while (true);
+//        // Return the acquired trigger list
+//        return acquiredTriggers;
+//    }
     @Override
     public List<QrtzExecute> acquireNextTriggers(final String application,final long _tsw,final long _tew) throws JobPersistenceException {
         long scheduledFireTime = -1;

@@ -56,12 +56,12 @@ public interface SchedulerFactory {
      */
     Scheduler getScheduler(String schedName) throws SchedulerException;
 
-    /**
-     * <p>
-     * Returns handles to all known Schedulers (made by any SchedulerFactory
-     * within this jvm.).
-     * </p>
-     */
-    Collection<Scheduler> getAllSchedulers() throws SchedulerException;
+//    /**
+//     * <p>
+//     * Returns handles to all known Schedulers (made by any SchedulerFactory
+//     * within this jvm.).
+//     * </p>
+//     */
+//    Collection<Scheduler> getAllSchedulers() throws SchedulerException;
 
 }

@@ -122,73 +122,73 @@ public interface Scheduler {
 //     * that <code>Job</code> and <code>Trigger</code> instances belong to.
 //     */
 //    String DEFAULT_GROUP = Key.DEFAULT_GROUP;
-
-    /**
-     * A constant <code>Trigger</code> group name used internally by the
-     * scheduler - clients should not use the value of this constant
-     * ("RECOVERING_JOBS") for the name of a <code>Trigger</code>'s group.
-     *
-     * @see org.quartz.JobDetail#requestsRecovery()
-     */
-    String DEFAULT_RECOVERY_GROUP = "RECOVERING_JOBS";
-
-    /**
-     * A constant <code>Trigger</code> group name used internally by the
-     * scheduler - clients should not use the value of this constant
-     * ("FAILED_OVER_JOBS") for the name of a <code>Trigger</code>'s group.
-     *
-     * @see org.quartz.JobDetail#requestsRecovery()
-     */
-    String DEFAULT_FAIL_OVER_GROUP = "FAILED_OVER_JOBS";
-
-
-    /**
-     * A constant <code>JobDataMap</code> key that can be used to retrieve the
-     * name of the original <code>Trigger</code> from a recovery trigger's
-     * data map in the case of a job recovering after a failed scheduler
-     * instance.
-     *
-     * @see org.quartz.JobDetail#requestsRecovery()
-     */
-    String FAILED_JOB_ORIGINAL_TRIGGER_NAME =  "QRTZ_FAILED_JOB_ORIG_TRIGGER_NAME";
-
-    /**
-     * A constant <code>JobDataMap</code> key that can be used to retrieve the
-     * group of the original <code>Trigger</code> from a recovery trigger's
-     * data map in the case of a job recovering after a failed scheduler
-     * instance.
-     *
-     * @see org.quartz.JobDetail#requestsRecovery()
-     */
-    String FAILED_JOB_ORIGINAL_TRIGGER_GROUP =  "QRTZ_FAILED_JOB_ORIG_TRIGGER_GROUP";
-
-    /**
-     * A constant <code>JobDataMap</code> key that can be used to retrieve the
-     * fire time of the original <code>Trigger</code> from a recovery
-     * trigger's data map in the case of a job recovering after a failed scheduler
-     * instance.  
-     * 
-     * <p>Note that this is the time the original firing actually occurred,
-     * which may be different from the scheduled fire time - as a trigger doesn't
-     * always fire exactly on time.</p>
-     *
-     * @see org.quartz.JobDetail#requestsRecovery()
-     */
-    String FAILED_JOB_ORIGINAL_TRIGGER_FIRETIME_IN_MILLISECONDS =  "QRTZ_FAILED_JOB_ORIG_TRIGGER_FIRETIME_IN_MILLISECONDS_AS_STRING";
-
-    /**
-     * A constant <code>JobDataMap</code> key that can be used to retrieve the
-     * scheduled fire time of the original <code>Trigger</code> from a recovery
-     * trigger's data map in the case of a job recovering after a failed scheduler
-     * instance.  
-     * 
-     * <p>Note that this is the time the original firing was scheduled for,
-     * which may be different from the actual firing time - as a trigger doesn't
-     * always fire exactly on time.</p>
-     *
-     * @see org.quartz.JobDetail#requestsRecovery()
-     */
-    String FAILED_JOB_ORIGINAL_TRIGGER_SCHEDULED_FIRETIME_IN_MILLISECONDS =  "QRTZ_FAILED_JOB_ORIG_TRIGGER_SCHEDULED_FIRETIME_IN_MILLISECONDS_AS_STRING";
+//
+//    /**
+//     * A constant <code>Trigger</code> group name used internally by the
+//     * scheduler - clients should not use the value of this constant
+//     * ("RECOVERING_JOBS") for the name of a <code>Trigger</code>'s group.
+//     *
+//     * @see org.quartz.JobDetail#requestsRecovery()
+//     */
+//    String DEFAULT_RECOVERY_GROUP = "RECOVERING_JOBS";
+//
+//    /**
+//     * A constant <code>Trigger</code> group name used internally by the
+//     * scheduler - clients should not use the value of this constant
+//     * ("FAILED_OVER_JOBS") for the name of a <code>Trigger</code>'s group.
+//     *
+//     * @see org.quartz.JobDetail#requestsRecovery()
+//     */
+//    String DEFAULT_FAIL_OVER_GROUP = "FAILED_OVER_JOBS";
+//
+//
+//    /**
+//     * A constant <code>JobDataMap</code> key that can be used to retrieve the
+//     * name of the original <code>Trigger</code> from a recovery trigger's
+//     * data map in the case of a job recovering after a failed scheduler
+//     * instance.
+//     *
+//     * @see org.quartz.JobDetail#requestsRecovery()
+//     */
+//    String FAILED_JOB_ORIGINAL_TRIGGER_NAME =  "QRTZ_FAILED_JOB_ORIG_TRIGGER_NAME";
+//
+//    /**
+//     * A constant <code>JobDataMap</code> key that can be used to retrieve the
+//     * group of the original <code>Trigger</code> from a recovery trigger's
+//     * data map in the case of a job recovering after a failed scheduler
+//     * instance.
+//     *
+//     * @see org.quartz.JobDetail#requestsRecovery()
+//     */
+//    String FAILED_JOB_ORIGINAL_TRIGGER_GROUP =  "QRTZ_FAILED_JOB_ORIG_TRIGGER_GROUP";
+//
+//    /**
+//     * A constant <code>JobDataMap</code> key that can be used to retrieve the
+//     * fire time of the original <code>Trigger</code> from a recovery
+//     * trigger's data map in the case of a job recovering after a failed scheduler
+//     * instance.
+//     *
+//     * <p>Note that this is the time the original firing actually occurred,
+//     * which may be different from the scheduled fire time - as a trigger doesn't
+//     * always fire exactly on time.</p>
+//     *
+//     * @see org.quartz.JobDetail#requestsRecovery()
+//     */
+//    String FAILED_JOB_ORIGINAL_TRIGGER_FIRETIME_IN_MILLISECONDS =  "QRTZ_FAILED_JOB_ORIG_TRIGGER_FIRETIME_IN_MILLISECONDS_AS_STRING";
+//
+//    /**
+//     * A constant <code>JobDataMap</code> key that can be used to retrieve the
+//     * scheduled fire time of the original <code>Trigger</code> from a recovery
+//     * trigger's data map in the case of a job recovering after a failed scheduler
+//     * instance.
+//     *
+//     * <p>Note that this is the time the original firing was scheduled for,
+//     * which may be different from the actual firing time - as a trigger doesn't
+//     * always fire exactly on time.</p>
+//     *
+//     * @see org.quartz.JobDetail#requestsRecovery()
+//     */
+//    String FAILED_JOB_ORIGINAL_TRIGGER_SCHEDULED_FIRETIME_IN_MILLISECONDS =  "QRTZ_FAILED_JOB_ORIG_TRIGGER_SCHEDULED_FIRETIME_IN_MILLISECONDS_AS_STRING";
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -754,19 +754,19 @@ public interface Scheduler {
      * @throws SchedulerException On error
      */
     Set<Key> getAllJobKeysInSched(final String triggerName) throws SchedulerException;
-
-    /**
-     * Get all <code>{@link Trigger}</code> s that are associated with the
-     * identified <code>{@link org.quartz.JobDetail}</code>.
-     * 
-     * <p>The returned Trigger objects will be snap-shots of the actual stored
-     * triggers.  If you wish to modify a trigger, you must re-store the
-     * trigger afterward (e.g. see {@link #rescheduleJob(TriggerKey, Trigger)}).
-     * </p>
-     * 
-     */
-    List<? extends Trigger> getTriggersOfJob(Key jobKey) throws SchedulerException;
-
+//
+//    /**
+//     * Get all <code>{@link Trigger}</code> s that are associated with the
+//     * identified <code>{@link org.quartz.JobDetail}</code>.
+//     *
+//     * <p>The returned Trigger objects will be snap-shots of the actual stored
+//     * triggers.  If you wish to modify a trigger, you must re-store the
+//     * trigger afterward (e.g. see {@link #rescheduleJob(TriggerKey, Trigger)}).
+//     * </p>
+//     *
+//     */
+//    List<? extends Trigger> getTriggersOfJob(Key jobKey) throws SchedulerException;
+//
 //    /**
 //     * Get the names of all known <code>{@link Trigger}</code> groups.
 //     */
@@ -797,16 +797,16 @@ public interface Scheduler {
      * 
      */
     JobDetail getJobDetail(Key jobKey) throws SchedulerException;
-
-    /**
-     * Get the <code>{@link Trigger}</code> instance with the given key.
-     * 
-     * <p>The returned Trigger object will be a snap-shot of the actual stored
-     * trigger.  If you wish to modify the trigger, you must re-store the
-     * trigger afterward (e.g. see {@link #rescheduleJob(TriggerKey, Trigger)}).
-     * </p>
-     */
-    Trigger getTrigger(Key triggerKey) throws SchedulerException;
+//
+//    /**
+//     * Get the <code>{@link Trigger}</code> instance with the given key.
+//     *
+//     * <p>The returned Trigger object will be a snap-shot of the actual stored
+//     * trigger.  If you wish to modify the trigger, you must re-store the
+//     * trigger afterward (e.g. see {@link #rescheduleJob(TriggerKey, Trigger)}).
+//     * </p>
+//     */
+//    Trigger getTrigger(Key triggerKey) throws SchedulerException;
 
     /**
      * Get the current state of the identified <code>{@link Trigger}</code>.
@@ -830,26 +830,26 @@ public interface Scheduler {
 //     * @see Trigger.TriggerState
 //     */
 //    void resetTriggerFromErrorState(TriggerKey triggerKey) throws SchedulerException;
-
-    /**
-     * Add (register) the given <code>Calendar</code> to the Scheduler.
-     *
-     * @param updateTriggers whether or not to update existing triggers that
-     * referenced the already existing calendar so that they are 'correct'
-     * based on the new trigger.
-     *
-     *
-     * @throws SchedulerException
-     *           if there is an internal Scheduler error, or a Calendar with
-     *           the same name already exists, and <code>replace</code> is
-     *           <code>false</code>.
-     *  ##为springboot starter接入而保留##
-     */
-    @Deprecated
-    default void addCalendar(String calName, Calendar calendar, boolean replace, boolean updateTriggers) throws SchedulerException{
-        System.out.println("org.quartz.Scheduler::addCalendar method is not defined...");
-    }
-
+//
+//    /**
+//     * Add (register) the given <code>Calendar</code> to the Scheduler.
+//     *
+//     * @param updateTriggers whether or not to update existing triggers that
+//     * referenced the already existing calendar so that they are 'correct'
+//     * based on the new trigger.
+//     *
+//     *
+//     * @throws SchedulerException
+//     *           if there is an internal Scheduler error, or a Calendar with
+//     *           the same name already exists, and <code>replace</code> is
+//     *           <code>false</code>.
+//     *  ##为springboot starter接入而保留##
+//     */
+//    @Deprecated
+//    default void addCalendar(String calName, Calendar calendar, boolean replace, boolean updateTriggers) throws SchedulerException{
+//        System.out.println("org.quartz.Scheduler::addCalendar method is not defined...");
+//    }
+//
 //    /**
 //     * Delete the identified <code>Calendar</code> from the Scheduler.
 //     *

@@ -1259,8 +1259,7 @@ public class StdSchedulerFactory implements SchedulerFactory {
     }
 
 
-    private void setBeanProps(Object obj, Properties props)
-            throws NoSuchMethodException, IllegalAccessException,
+    private void setBeanProps(Object obj, Properties props) throws NoSuchMethodException, IllegalAccessException,
             java.lang.reflect.InvocationTargetException,
             IntrospectionException, SchedulerConfigException {
         props.remove("class");
@@ -1403,15 +1402,16 @@ public class StdSchedulerFactory implements SchedulerFactory {
     public Scheduler getScheduler(String schedName) throws SchedulerException {
         return SchedulerRepository.getInstance().lookup(schedName);
     }
+//
+//    /**
+//     * <p>
+//     * Returns a handle to all known Schedulers (made by any
+//     * StdSchedulerFactory instance.).
+//     * </p>
+//     */
+//    @Override
+//    public Collection<Scheduler> getAllSchedulers() throws SchedulerException {
+//        return SchedulerRepository.getInstance().lookupAll();
+//    }
 
-    /**
-     * <p>
-     * Returns a handle to all known Schedulers (made by any
-     * StdSchedulerFactory instance.).
-     * </p>
-     */
-    @Override
-    public Collection<Scheduler> getAllSchedulers() throws SchedulerException {
-        return SchedulerRepository.getInstance().lookupAll();
-    }
 }

@@ -19,7 +19,6 @@
 package org.quartz;
 
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.Date;
 
 
@@ -274,27 +273,27 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
      */
     int getMisfireInstruction();
 
-    /**
-     * Get a {@link TriggerBuilder} that is configured to produce a 
-     * <code>Trigger</code> identical to this one.
-     * 
-     * @see #getScheduleBuilder()
-     */
-    default TriggerBuilder<? extends Trigger> getTriggerBuilder(){
-        System.out.println(" org.quartz.Trigger:getTriggerBuilder() is not defined!");
-        return null;
-    }
-    
-    /**
-     * Get a {@link ScheduleBuilder} that is configured to produce a 
-     * schedule identical to this trigger's schedule.
-     * 
-     * @see #getTriggerBuilder()
-     */
-    default ScheduleBuilder<? extends Trigger> getScheduleBuilder(){
-        System.out.println("method getScheduleBuilder is not defined!");
-        return null;
-    }
+//    /**
+//     * Get a {@link TriggerBuilder} that is configured to produce a
+//     * <code>Trigger</code> identical to this one.
+//     *
+//     * @see #getScheduleBuilder()
+//     */
+//    default TriggerBuilder<? extends Trigger> getTriggerBuilder(){
+//        System.out.println(" org.quartz.Trigger:getTriggerBuilder() is not defined!");
+//        return null;
+//    }
+//
+//    /**
+//     * Get a {@link ScheduleBuilder} that is configured to produce a
+//     * schedule identical to this trigger's schedule.
+//     *
+//     * @see #getTriggerBuilder()
+//     */
+//    default ScheduleBuilder<? extends Trigger> getScheduleBuilder(){
+//        System.out.println("method getScheduleBuilder is not defined!");
+//        return null;
+//    }
 
 
     /**
@@ -315,44 +314,44 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
     @Override
     int compareTo(Trigger other);
 
-    /**
-     * A Comparator that compares trigger's next fire times, or in other words,
-     * sorts them according to earliest next fire time.  If the fire times are
-     * the same, then the triggers are sorted according to priority (highest
-     * value first), if the priorities are the same, then they are sorted
-     * by key.
-     */
-    class TriggerTimeComparator implements Comparator<Trigger>, Serializable {
-      
-        private static final long serialVersionUID = -3904243490805975570L;
-        
-        // This static method exists for comparator in TC clustered quartz
-//        public static int compare(Date nextFireTime1, int priority1, TriggerKey key1, Date nextFireTime2, int priority2, TriggerKey key2) {
-//        public static int compare(Date nextFireTime1, int priority1,Key key1, Date nextFireTime2, int priority2,Key key2) {
-        public static int compare(Date nextFireTime1, int priority1,String key1, Date nextFireTime2, int priority2,String key2) {
-            if (nextFireTime1 != null || nextFireTime2 != null) {
-                if (nextFireTime1 == null) {
-                    return 1;
-                }
-                if (nextFireTime2 == null) {
-                    return -1;
-                }
-                if(nextFireTime1.before(nextFireTime2)) {
-                    return -1;
-                }
-                if(nextFireTime1.after(nextFireTime2)) {
-                    return 1;
-                }
-            }
-            int comp = priority2 - priority1;
-            if (comp != 0) {
-                return comp;
-            }
-            return key1.compareTo(key2);
-        }
-        @Override
-        public int compare(Trigger t1, Trigger t2) {
-            return compare(t1.getNextFireTime(), t1.getPriority(), t1.getKey(), t2.getNextFireTime(), t2.getPriority(), t2.getKey());
-        }
-    }
+//    /**
+//     * A Comparator that compares trigger's next fire times, or in other words,
+//     * sorts them according to earliest next fire time.  If the fire times are
+//     * the same, then the triggers are sorted according to priority (highest
+//     * value first), if the priorities are the same, then they are sorted
+//     * by key.
+//     */
+//    class TriggerTimeComparator implements Comparator<Trigger>, Serializable {
+//
+//        private static final long serialVersionUID = -3904243490805975570L;
+//
+//        // This static method exists for comparator in TC clustered quartz
+////        public static int compare(Date nextFireTime1, int priority1, TriggerKey key1, Date nextFireTime2, int priority2, TriggerKey key2) {
+////        public static int compare(Date nextFireTime1, int priority1,Key key1, Date nextFireTime2, int priority2,Key key2) {
+//        public static int compare(Date nextFireTime1, int priority1,String key1, Date nextFireTime2, int priority2,String key2) {
+//            if (nextFireTime1 != null || nextFireTime2 != null) {
+//                if (nextFireTime1 == null) {
+//                    return 1;
+//                }
+//                if (nextFireTime2 == null) {
+//                    return -1;
+//                }
+//                if(nextFireTime1.before(nextFireTime2)) {
+//                    return -1;
+//                }
+//                if(nextFireTime1.after(nextFireTime2)) {
+//                    return 1;
+//                }
+//            }
+//            int comp = priority2 - priority1;
+//            if (comp != 0) {
+//                return comp;
+//            }
+//            return key1.compareTo(key2);
+//        }
+//        @Override
+//        public int compare(Trigger t1, Trigger t2) {
+//            return compare(t1.getNextFireTime(), t1.getPriority(), t1.getKey(), t2.getNextFireTime(), t2.getPriority(), t2.getKey());
+//        }
+//    }
 }

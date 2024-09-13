@@ -21,7 +21,6 @@ package org.quartz.impl;
 import java.util.Date;
 import java.util.HashMap;
 
-import org.quartz.Calendar;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -54,7 +53,7 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
 
     private transient Job job;
     
-    private Calendar calendar;
+//    private Calendar calendar;
 
 //    private boolean recovering = false;
 
@@ -88,11 +87,27 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
      * Create a JobExcecutionContext with the given context data.
      * </p>
      */
-    @Deprecated
+//    @Deprecated
+//    public JobExecutionContextImpl(Scheduler scheduler, TriggerFiredBundle firedBundle, Job job) {
+//        this.scheduler = scheduler;
+//        this.trigger = firedBundle.getTrigger();
+//        this.calendar = firedBundle.getCalendar();
+//        this.jobDetail = firedBundle.getJobDetail();
+//        this.job = job;
+////        this.recovering = firedBundle.isRecovering();
+//        this.fireTime = firedBundle.getFireTime();
+//        this.scheduledFireTime = firedBundle.getScheduledFireTime();
+//        this.prevFireTime = firedBundle.getPrevFireTime();
+//        this.nextFireTime = firedBundle.getNextFireTime();
+//
+//        this.jobDataMap = new JobDataMap();
+//        this.jobDataMap.putAll(jobDetail.getJobDataMap());
+////        this.jobDataMap.putAll(trigger.getJobDataMap());
+//    }
     public JobExecutionContextImpl(Scheduler scheduler, TriggerFiredBundle firedBundle, Job job) {
         this.scheduler = scheduler;
         this.trigger = firedBundle.getTrigger();
-        this.calendar = firedBundle.getCalendar();
+//        this.calendar = firedBundle.getCalendar();
         this.jobDetail = firedBundle.getJobDetail();
         this.job = job;
 //        this.recovering = firedBundle.isRecovering();
@@ -100,27 +115,27 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
         this.scheduledFireTime = firedBundle.getScheduledFireTime();
         this.prevFireTime = firedBundle.getPrevFireTime();
         this.nextFireTime = firedBundle.getNextFireTime();
-        
+
         this.jobDataMap = new JobDataMap();
         this.jobDataMap.putAll(jobDetail.getJobDataMap());
 //        this.jobDataMap.putAll(trigger.getJobDataMap());
     }
 
-    public JobExecutionContextImpl(Scheduler scheduler,JobDetail jobDetail, Job job) {
-        this.scheduler = scheduler;
-//        this.trigger = firedBundle.getTrigger();
-//        this.calendar = firedBundle.getCalendar();
-        this.jobDetail = jobDetail;
-        this.job = job;
-        this.fireTime = jobDetail.getEJob().getFireTime();
-        this.scheduledFireTime = jobDetail.getEJob().getScheduledFireTime();
-        this.prevFireTime = new Date(jobDetail.getEJob().getPrevFireTime());
-        this.nextFireTime = new Date(jobDetail.getEJob().getNextFireTime());
-        // todo 考虑是否需要序列化
-        this.dataStr = jobDetail.getEJob().getJob().getJobData();
-        this.jobDataMap = new JobDataMap();
-        this.jobDataMap.putAll(jobDetail.getJobDataMap());
-    }
+//    public JobExecutionContextImpl(Scheduler scheduler,JobDetail jobDetail, Job job) {
+//        this.scheduler = scheduler;
+////        this.trigger = firedBundle.getTrigger();
+////        this.calendar = firedBundle.getCalendar();
+//        this.jobDetail = jobDetail;
+//        this.job = job;
+//        this.fireTime = jobDetail.getEJob().getFireTime();
+//        this.scheduledFireTime = jobDetail.getEJob().getScheduledFireTime();
+//        this.prevFireTime = new Date(jobDetail.getEJob().getPrevFireTime());
+//        this.nextFireTime = new Date(jobDetail.getEJob().getNextFireTime());
+//        // todo 考虑是否需要序列化
+//        this.dataStr = jobDetail.getEJob().getJob().getJobData();
+//        this.jobDataMap = new JobDataMap();
+//        this.jobDataMap.putAll(jobDetail.getJobDataMap());
+//    }
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -145,15 +160,15 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
     public Trigger getTrigger() {
         return trigger;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Calendar getCalendar() {
-        return calendar;
-    }
-
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public Calendar getCalendar() {
+//        return calendar;
+//    }
+//
 //    /**
 //     * {@inheritDoc}
 //     */
@@ -307,7 +322,7 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
                 ", jobDetail=" + jobDetail +
                 ", jobDataMap=" + jobDataMap +
                 ", job=" + job +
-                ", calendar=" + calendar +
+//                ", calendar=" + calendar +
 //                ", recovering=" + recovering +
                 ", numRefires=" + numRefires +
                 ", fireTime=" + fireTime +

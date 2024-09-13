@@ -19,7 +19,6 @@ package org.quartz.spi;
 
 import java.util.Date;
 
-import org.quartz.Calendar;
 import org.quartz.JobDetail;
 
 /**
@@ -48,7 +47,7 @@ public class TriggerFiredBundle implements java.io.Serializable {
 
     private OperableTrigger trigger;
 
-    private Calendar cal;
+//    private Calendar cal;
 
 //    private boolean jobIsRecovering;
 
@@ -68,14 +67,24 @@ public class TriggerFiredBundle implements java.io.Serializable {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    public TriggerFiredBundle(JobDetail job, OperableTrigger trigger, Calendar cal,
-           /* boolean jobIsRecovering,*/ Date fireTime, Date scheduledFireTime,
-            Date prevFireTime, Date nextFireTime) {
+//    public TriggerFiredBundle(JobDetail job, OperableTrigger trigger, Calendar cal,
+//           /* boolean jobIsRecovering,*/ Date fireTime, Date scheduledFireTime,
+//            Date prevFireTime, Date nextFireTime) {
+//        this.job = job;
+//        this.trigger = trigger;
+//        this.cal = cal;
+////        this.jobIsRecovering = jobIsRecovering;
+//        this.fireTime = fireTime;
+//        this.scheduledFireTime = scheduledFireTime;
+//        this.prevFireTime = prevFireTime;
+//        this.nextFireTime = nextFireTime;
+//    }
+
+    public TriggerFiredBundle(JobDetail job, OperableTrigger trigger,Date scheduledFireTime, Date prevFireTime, Date nextFireTime) {
         this.job = job;
         this.trigger = trigger;
-        this.cal = cal;
+//        this.cal = cal;
 //        this.jobIsRecovering = jobIsRecovering;
-        this.fireTime = fireTime;
         this.scheduledFireTime = scheduledFireTime;
         this.prevFireTime = prevFireTime;
         this.nextFireTime = nextFireTime;
@@ -97,10 +106,10 @@ public class TriggerFiredBundle implements java.io.Serializable {
         return trigger;
     }
 
-    public Calendar getCalendar() {
-        return cal;
-    }
-
+//    public Calendar getCalendar() {
+//        return cal;
+//    }
+//
 //    public boolean isRecovering() {
 //        return jobIsRecovering;
 //    }
@@ -138,7 +147,7 @@ public class TriggerFiredBundle implements java.io.Serializable {
         return "TriggerFiredBundle{" +
                 "job=" + job +
                 ", trigger=" + trigger +
-                ", cal=" + cal +
+//                ", cal=" + cal +
 //                ", jobIsRecovering=" + jobIsRecovering +
                 ", fireTime=" + fireTime +
                 ", scheduledFireTime=" + scheduledFireTime +

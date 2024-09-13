@@ -29,7 +29,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.quartz.ExecuteCfg;
 import org.quartz.InterruptableJob;
 import org.quartz.Job;
 import org.quartz.JobCfg;
@@ -38,13 +37,9 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobListener;
 import org.quartz.SchedulerContext;
 import org.quartz.SchedulerException;
-import org.quartz.SchedulerListener;
 import org.quartz.Trigger;
-import org.quartz.TriggerListener;
 import org.quartz.UnableToInterruptJobException;
 import org.quartz.Trigger.TriggerState;
-import org.quartz.impl.ExecuteCfgImpl;
-import org.quartz.impl.JobCfgImpl;
 import org.quartz.impl.SchedulerRepository;
 import org.quartz.simpl.PropertySettingJobFactory;
 import org.quartz.simpl.SystemPropGenerator;
@@ -138,7 +133,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 
 //    private HashMap<String, TriggerListener> internalTriggerListeners = new HashMap<String, TriggerListener>(10);
 
-    private ArrayList<SchedulerListener> internalSchedulerListeners = new ArrayList<SchedulerListener>(10);
+//    private ArrayList<SchedulerListener> internalSchedulerListeners = new ArrayList<SchedulerListener>(10);
 
     private JobFactory jobFactory = new PropertySettingJobFactory();
     
@@ -786,56 +781,56 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //        return ft;
 //    }
 
-    /**
-     * 获取 schedName
-     * @param jobCfg     任务配置
-     * @param executeCfg  任务执行配置
-     * @return
-     */
-    private String schedName(JobCfg jobCfg, ExecuteCfg executeCfg){
-        String instanceName = this.resources.getJobStore().getInstanceName();
-        ((JobCfgImpl)jobCfg).setSchedName(instanceName);
-        ((ExecuteCfgImpl)executeCfg).setSchedName(instanceName);
-        return instanceName;
-    }
-
-    @Override
-    public Date scheduleJob(JobCfg jobCfg, ExecuteCfg executeCfg) throws SchedulerException {
-        validateState();
-        final String triggerType;
-        if (jobCfg == null || executeCfg == null) {
-            throw new SchedulerException("JobCfg or ExecuteCfg cannot be null");
-        }
-        if( (triggerType=jobCfg.getTriggerType())==null || !(jobCfg.checkCfg(triggerType) && executeCfg.checkCfg(triggerType)) ){
-            throw new SchedulerException("JobCfg or ExecuteCfg  invalid fields!");
-        }
-        if(null==jobCfg.getSchedName()){
-            this.schedName(jobCfg,executeCfg);
-        }
-//        OperableTrigger trig = (OperableTrigger)trigger;
-//        // todo ...
-//        if (trigger.getKey() == null) {
-//            trig.setKey(jobDetail.getKey());
-//        } else if (!trigger.getKey().equals(jobDetail.getKey())) {
-//            throw new SchedulerException("Trigger does not reference given job!");
+//    /**
+//     * 获取 schedName
+//     * @param jobCfg     任务配置
+//     * @param executeCfg  任务执行配置
+//     * @return
+//     */
+//    private String schedName(JobCfg jobCfg, ExecuteCfg executeCfg){
+//        String instanceName = this.resources.getJobStore().getInstanceName();
+//        ((JobCfgImpl)jobCfg).setSchedName(instanceName);
+//        ((ExecuteCfgImpl)executeCfg).setSchedName(instanceName);
+//        return instanceName;
+//    }
+//
+//    @Override
+//    public Date scheduleJob(JobCfg jobCfg, ExecuteCfg executeCfg) throws SchedulerException {
+//        validateState();
+//        final String triggerType;
+//        if (jobCfg == null || executeCfg == null) {
+//            throw new SchedulerException("JobCfg or ExecuteCfg cannot be null");
 //        }
-//        trig.validate();
-//        Calendar cal = null;
-        // 关联排除日期，这个日期是以天为单位
-//        if (trigger.getCalendarName() != null) {
-//            cal = resources.getJobStore().retrieveCalendar(trigger.getCalendarName());
+//        if( (triggerType=jobCfg.getTriggerType())==null || !(jobCfg.checkCfg(triggerType) && executeCfg.checkCfg(triggerType)) ){
+//            throw new SchedulerException("JobCfg or ExecuteCfg  invalid fields!");
 //        }
-//        // 最近一次的执行时间
-//        Date ft = trig.computeFirstFireTime(null);
-//        if (ft == null) {
-//            throw new SchedulerException("Based on configured schedule, the given trigger '" + trigger.getKey() + "' will never fire.");
+//        if(null==jobCfg.getSchedName()){
+//            this.schedName(jobCfg,executeCfg);
 //        }
-        resources.getJobStore().storeJobAndExecute(jobCfg,executeCfg);
-//        notifySchedulerListenersJobAdded(jobDetail);
-//        notifySchedulerThread(trigger.getNextFireTime().getTime());
-//        notifySchedulerListenersSchduled(trigger);
-        return null;
-    }
+////        OperableTrigger trig = (OperableTrigger)trigger;
+////        // todo ...
+////        if (trigger.getKey() == null) {
+////            trig.setKey(jobDetail.getKey());
+////        } else if (!trigger.getKey().equals(jobDetail.getKey())) {
+////            throw new SchedulerException("Trigger does not reference given job!");
+////        }
+////        trig.validate();
+////        Calendar cal = null;
+//        // 关联排除日期，这个日期是以天为单位
+////        if (trigger.getCalendarName() != null) {
+////            cal = resources.getJobStore().retrieveCalendar(trigger.getCalendarName());
+////        }
+////        // 最近一次的执行时间
+////        Date ft = trig.computeFirstFireTime(null);
+////        if (ft == null) {
+////            throw new SchedulerException("Based on configured schedule, the given trigger '" + trigger.getKey() + "' will never fire.");
+////        }
+//        resources.getJobStore().storeJobAndExecute(jobCfg,executeCfg);
+////        notifySchedulerListenersJobAdded(jobDetail);
+////        notifySchedulerThread(trigger.getNextFireTime().getTime());
+////        notifySchedulerListenersSchduled(trigger);
+//        return null;
+//    }
 //    /**
 //     * <p>
 //     * Schedule the given <code>{@link org.quartz.Trigger}</code> with the
@@ -1380,18 +1375,18 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //        return resources.getJobStore().getJobKeys(matcher);
         return resources.getJobStore().getAllJobKeysInSched(triggerName);
     }
-
-    /**
-     * <p>
-     * Get all <code>{@link Trigger}</code> s that are associated with the
-     * identified <code>{@link org.quartz.JobDetail}</code>.
-     * </p>
-     */
-    @Override
-    public List<? extends Trigger> getTriggersOfJob(Key jobKey) throws SchedulerException {
-        validateState();
-        return resources.getJobStore().getTriggersForJob(jobKey);
-    }
+//
+//    /**
+//     * <p>
+//     * Get all <code>{@link Trigger}</code> s that are associated with the
+//     * identified <code>{@link org.quartz.JobDetail}</code>.
+//     * </p>
+//     */
+//    @Override
+//    public List<? extends Trigger> getTriggersOfJob(Key jobKey) throws SchedulerException {
+//        validateState();
+//        return resources.getJobStore().getTriggersForJob(jobKey);
+//    }
 
 //    /**
 //     * <p>
@@ -1433,18 +1428,18 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         validateState();
         return resources.getJobStore().retrieveJob(jobKey);
     }
-
-    /**
-     * <p>
-     * Get the <code>{@link Trigger}</code> instance with the given name and
-     * group.
-     * </p>
-     */
-    @Override
-    public Trigger getTrigger(Key triggerKey) throws SchedulerException {
-        validateState();
-        return resources.getJobStore().retrieveTrigger(triggerKey);
-    }
+//
+//    /**
+//     * <p>
+//     * Get the <code>{@link Trigger}</code> instance with the given name and
+//     * group.
+//     * </p>
+//     */
+//    @Override
+//    public Trigger getTrigger(Key triggerKey) throws SchedulerException {
+//        validateState();
+//        return resources.getJobStore().retrieveTrigger(triggerKey);
+//    }
 
     /**
      * Determine whether a {@link Job} with the given identifier already 

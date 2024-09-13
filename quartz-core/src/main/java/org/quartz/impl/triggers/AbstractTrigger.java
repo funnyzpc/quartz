@@ -20,14 +20,12 @@ package org.quartz.impl.triggers;
 
 import java.util.Date;
 
-import org.quartz.Calendar;
 import org.quartz.CronTrigger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
-import org.quartz.TriggerUtils;
 import org.quartz.spi.OperableTrigger;
 
 
@@ -464,46 +462,46 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
         this.priority = priority;
     }
 
-    /**
-     * <p>
-     * This method should not be used by the Quartz client.
-     * </p>
-     * 
-     * <p>
-     * Called when the <code>{@link Scheduler}</code> has decided to 'fire'
-     * the trigger (execute the associated <code>Job</code>), in order to
-     * give the <code>Trigger</code> a chance to update itself for its next
-     * triggering (if any).
-     * </p>
-     * 
-     * @see #executionComplete(JobExecutionContext, JobExecutionException)
-     */
-    @Override
-    public abstract void triggered(Calendar calendar);
-
-    /**
-     * <p>
-     * This method should not be used by the Quartz client.
-     * </p>
-     * 
-     * <p>
-     * Called by the scheduler at the time a <code>Trigger</code> is first
-     * added to the scheduler, in order to have the <code>Trigger</code>
-     * compute its first fire time, based on any associated calendar.
-     * </p>
-     * 
-     * <p>
-     * After this method has been called, <code>getNextFireTime()</code>
-     * should return a valid answer.
-     * </p>
-     * 
-     * @return the first time at which the <code>Trigger</code> will be fired
-     *         by the scheduler, which is also the same value <code>getNextFireTime()</code>
-     *         will return (until after the first firing of the <code>Trigger</code>).
-     *         </p>
-     */
-    @Override
-    public abstract Date computeFirstFireTime(Calendar calendar);
+//    /**
+//     * <p>
+//     * This method should not be used by the Quartz client.
+//     * </p>
+//     *
+//     * <p>
+//     * Called when the <code>{@link Scheduler}</code> has decided to 'fire'
+//     * the trigger (execute the associated <code>Job</code>), in order to
+//     * give the <code>Trigger</code> a chance to update itself for its next
+//     * triggering (if any).
+//     * </p>
+//     *
+//     * @see #executionComplete(JobExecutionContext, JobExecutionException)
+//     */
+//    @Override
+//    public abstract void triggered(Calendar calendar);
+//
+//    /**
+//     * <p>
+//     * This method should not be used by the Quartz client.
+//     * </p>
+//     *
+//     * <p>
+//     * Called by the scheduler at the time a <code>Trigger</code> is first
+//     * added to the scheduler, in order to have the <code>Trigger</code>
+//     * compute its first fire time, based on any associated calendar.
+//     * </p>
+//     *
+//     * <p>
+//     * After this method has been called, <code>getNextFireTime()</code>
+//     * should return a valid answer.
+//     * </p>
+//     *
+//     * @return the first time at which the <code>Trigger</code> will be fired
+//     *         by the scheduler, which is also the same value <code>getNextFireTime()</code>
+//     *         will return (until after the first firing of the <code>Trigger</code>).
+//     *         </p>
+//     */
+//    @Override
+//    public abstract Date computeFirstFireTime(Calendar calendar);
 
     /**
      * <p>
@@ -706,46 +704,46 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
     public int getMisfireInstruction() {
         return misfireInstruction;
     }
-
-    /**
-     * <p>
-     * This method should not be used by the Quartz client.
-     * </p>
-     * 
-     * <p>
-     * To be implemented by the concrete classes that extend this class.
-     * </p>
-     * 
-     * <p>
-     * The implementation should update the <code>Trigger</code>'s state
-     * based on the MISFIRE_INSTRUCTION_XXX that was selected when the <code>Trigger</code>
-     * was created.
-     * </p>
-     */
-    @Override
-    public abstract void updateAfterMisfire(Calendar cal);
-
-    /**
-     * <p>
-     * This method should not be used by the Quartz client.
-     * </p>
-     * 
-     * <p>
-     * To be implemented by the concrete class.
-     * </p>
-     * 
-     * <p>
-     * The implementation should update the <code>Trigger</code>'s state
-     * based on the given new version of the associated <code>Calendar</code>
-     * (the state should be updated so that it's next fire time is appropriate
-     * given the Calendar's new settings). 
-     * </p>
-     * 
-     * @param cal the modifying calendar
-     */
-    @Override
-    public abstract void updateWithNewCalendar(Calendar cal, long misfireThreshold);
-
+//
+//    /**
+//     * <p>
+//     * This method should not be used by the Quartz client.
+//     * </p>
+//     *
+//     * <p>
+//     * To be implemented by the concrete classes that extend this class.
+//     * </p>
+//     *
+//     * <p>
+//     * The implementation should update the <code>Trigger</code>'s state
+//     * based on the MISFIRE_INSTRUCTION_XXX that was selected when the <code>Trigger</code>
+//     * was created.
+//     * </p>
+//     */
+//    @Override
+//    public abstract void updateAfterMisfire(Calendar cal);
+//
+//    /**
+//     * <p>
+//     * This method should not be used by the Quartz client.
+//     * </p>
+//     *
+//     * <p>
+//     * To be implemented by the concrete class.
+//     * </p>
+//     *
+//     * <p>
+//     * The implementation should update the <code>Trigger</code>'s state
+//     * based on the given new version of the associated <code>Calendar</code>
+//     * (the state should be updated so that it's next fire time is appropriate
+//     * given the Calendar's new settings).
+//     * </p>
+//     *
+//     * @param cal the modifying calendar
+//     */
+//    @Override
+//    public abstract void updateWithNewCalendar(Calendar cal, long misfireThreshold);
+//
 //    /**
 //     * <p>
 //     * Validates whether the properties of the <code>JobDetail</code> are

@@ -24,8 +24,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.quartz.ExecuteCfg;
-import org.quartz.JobCfg;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.SchedulerContext;
@@ -89,9 +87,9 @@ public interface RemotableQuartzScheduler extends Remote {
     List<JobExecutionContext> getCurrentlyExecutingJobs() throws SchedulerException, RemoteException;
 
 //    Date scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException, RemoteException;
-    default Date scheduleJob(JobCfg jobCfg, ExecuteCfg executeCfg) throws SchedulerException, RemoteException{
-        throw new SchedulerException("Undefined logic!");
-    }
+//    default Date scheduleJob(JobCfg jobCfg, ExecuteCfg executeCfg) throws SchedulerException, RemoteException{
+//        throw new SchedulerException("Undefined logic!");
+//    }
 
 //    Date scheduleJob(Trigger trigger) throws SchedulerException, RemoteException;
 
@@ -135,8 +133,8 @@ public interface RemotableQuartzScheduler extends Remote {
 
 //    Set<JobKey> getJobKeys(GroupMatcher<JobKey> matcher) throws SchedulerException, RemoteException;
     Set<Key> getAllJobKeysInSched(final String triggerName) throws SchedulerException, RemoteException;
-
-    List<? extends Trigger> getTriggersOfJob(Key jobKey) throws SchedulerException, RemoteException;
+//
+//    List<? extends Trigger> getTriggersOfJob(Key jobKey) throws SchedulerException, RemoteException;
 
 //    List<String> getTriggerGroupNames() throws SchedulerException, RemoteException;
 
@@ -144,7 +142,7 @@ public interface RemotableQuartzScheduler extends Remote {
 
     JobDetail getJobDetail(Key jobKey) throws SchedulerException, RemoteException;
 
-    Trigger getTrigger(Key triggerKey) throws SchedulerException, RemoteException;
+//    Trigger getTrigger(Key triggerKey) throws SchedulerException, RemoteException;
 
     TriggerState getTriggerState(Key triggerKey) throws SchedulerException, RemoteException;
 

@@ -23,10 +23,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-import org.quartz.Calendar;
-import org.quartz.ExecuteCfg;
 import org.quartz.Job;
-import org.quartz.JobCfg;
 import org.quartz.JobDetail;
 import org.quartz.JobPersistenceException;
 import org.quartz.Trigger;
@@ -590,22 +587,22 @@ public interface DriverDelegate {
      * </p>
      */
     JobDetail selectJobForTrigger(Connection conn, ClassLoadHelper loadHelper,Key key, boolean loadJobClass) throws ClassNotFoundException, SQLException;
-
-    /**
-     * <p>
-     * Select the triggers for a job
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * 
-     * @return an array of <code>(@link org.quartz.Trigger)</code> objects
-     *         associated with a given job.
-     * @throws SQLException
-     * @throws JobPersistenceException 
-     */
-    List<OperableTrigger> selectTriggersForJob(Connection conn, Key jobKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException;
-
+//
+//    /**
+//     * <p>
+//     * Select the triggers for a job
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     *
+//     * @return an array of <code>(@link org.quartz.Trigger)</code> objects
+//     *         associated with a given job.
+//     * @throws SQLException
+//     * @throws JobPersistenceException
+//     */
+//    List<OperableTrigger> selectTriggersForJob(Connection conn, Key jobKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException;
+//
 //    /**
 //     * <p>
 //     * Select the triggers for a calendar
@@ -621,20 +618,20 @@ public interface DriverDelegate {
 //     * @throws JobPersistenceException
 //     */
 //    List<OperableTrigger> selectTriggersForCalendar(Connection conn, String calName) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException;
-
-    /**
-     * <p>
-     * Select a trigger.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * 
-     * @return the <code>{@link org.quartz.Trigger}</code> object
-     * @throws JobPersistenceException 
-     */
-    OperableTrigger selectTrigger(Connection conn,Key triggerKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException;
-    OperableTrigger selectJobCfgTrigger(Connection conn,Key triggerKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException;
+//
+//    /**
+//     * <p>
+//     * Select a trigger.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     *
+//     * @return the <code>{@link org.quartz.Trigger}</code> object
+//     * @throws JobPersistenceException
+//     */
+//    OperableTrigger selectTrigger(Connection conn,Key triggerKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException;
+//    OperableTrigger selectJobCfgTrigger(Connection conn,Key triggerKey) throws SQLException, ClassNotFoundException, IOException, JobPersistenceException;
 
     /**
      * <p>
@@ -1089,8 +1086,8 @@ public interface DriverDelegate {
      */
     void clearData(Connection conn) throws SQLException;
 
-    int insertJobCfg(Connection conn, JobCfg jobCfg) throws SQLException, IOException;
-    int insertExecuteCfg(Connection conn, ExecuteCfg jobCfg) throws SQLException, IOException;
+//    int insertJobCfg(Connection conn, JobCfg jobCfg) throws SQLException, IOException;
+//    int insertExecuteCfg(Connection conn, ExecuteCfg jobCfg) throws SQLException, IOException;
 
     // 写入 qrtz_app 应用信息
     int insertQrtzApp(Connection conn, QrtzApp app);

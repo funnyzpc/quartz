@@ -77,8 +77,12 @@ public interface JobDetail extends Serializable, Cloneable {
      * <p>
      * Get the <code>JobDataMap</code> that is associated with the <code>Job</code>.
      * </p>
+     * ##为接入springboot starter而保留##
      */
-    JobDataMap getJobDataMap();
+    @Deprecated
+    default JobDataMap getJobDataMap(){
+        return new JobDataMap();
+    }
 
 //    /**
 //     * <p>

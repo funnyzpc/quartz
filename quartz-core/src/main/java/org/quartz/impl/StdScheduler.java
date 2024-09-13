@@ -470,16 +470,16 @@ public class StdScheduler implements Scheduler {
 //    public List<String> getJobGroupNames() throws SchedulerException {
 //        return sched.getJobGroupNames();
 //    }
-
-    /**
-     * <p>
-     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
-     * </p>
-     */
-    @Override
-    public List<? extends Trigger> getTriggersOfJob(Key jobKey) throws SchedulerException {
-        return sched.getTriggersOfJob(jobKey);
-    }
+//
+//    /**
+//     * <p>
+//     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
+//     * </p>
+//     */
+//    @Override
+//    public List<? extends Trigger> getTriggersOfJob(Key jobKey) throws SchedulerException {
+//        return sched.getTriggersOfJob(jobKey);
+//    }
 
     /**
      * <p>
@@ -519,16 +519,16 @@ public class StdScheduler implements Scheduler {
     public JobDetail getJobDetail(Key jobKey)throws SchedulerException {
         return sched.getJobDetail(jobKey);
     }
-
-    /**
-     * <p>
-     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
-     * </p>
-     */
-    @Override
-    public Trigger getTrigger(Key triggerKey) throws SchedulerException {
-        return sched.getTrigger(triggerKey);
-    }
+//
+//    /**
+//     * <p>
+//     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
+//     * </p>
+//     */
+//    @Override
+//    public Trigger getTrigger(Key triggerKey) throws SchedulerException {
+//        return sched.getTrigger(triggerKey);
+//    }
 
     /**
      * <p>

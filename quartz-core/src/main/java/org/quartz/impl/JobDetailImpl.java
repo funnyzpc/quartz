@@ -358,17 +358,18 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.quartz.JobDetailI#getJobDataMap()
-     */
-    @Deprecated
-    @Override
-    public JobDataMap getJobDataMap() {
-        if (jobDataMap == null) {
-            jobDataMap = new JobDataMap();
-        }
-        return jobDataMap;
-    }
+//    /** (non-Javadoc)
+//     * @see org.quartz.JobDetailI#getJobDataMap()
+//     *
+//     * ##为接入springboot starter而保留##
+//     */
+//    @Override
+//    public JobDataMap getJobDataMap() {
+//        if (jobDataMap == null) {
+//            jobDataMap = new JobDataMap();
+//        }
+//        return jobDataMap;
+//    }
 
     /**
      * <p>

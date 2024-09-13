@@ -149,18 +149,17 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
     public void initialize(QuartzScheduler sched) throws SchedulerException {
         this.qs = sched;
         Job job = null;
-//        JobDetail jobDetail = firedTriggerBundle.getJobDetail();
         JobDetail jobDetail = new JobDetailImpl(this.eJob);
         Date fireTime = this.eJob.getFireTime();
         Date scheduledFireTime = this.eJob.getScheduledFireTime();
         Date prevFireTime = new Date(this.eJob.getPrevFireTime());
         Date nextFireTime = new Date(this.eJob.getNextFireTime());
         OperableTrigger trigger = "CRON".equals(this.eJob.getJobType())?new CronTriggerImpl(): new SimpleTriggerImpl();
-        TriggerFiredBundle bundle = new TriggerFiredBundle(jobDetail,trigger,null,fireTime,scheduledFireTime,prevFireTime,nextFireTime);
+//        TriggerFiredBundle bundle = new TriggerFiredBundle(jobDetail,trigger,null,fireTime,scheduledFireTime,prevFireTime,nextFireTime);
+        TriggerFiredBundle bundle = new TriggerFiredBundle(jobDetail,trigger,scheduledFireTime,prevFireTime,nextFireTime);
         try {
             // 创建job实例并补充上下文及参数
             job = sched.getJobFactory().newJob(bundle, scheduler);
-//            job = sched.getJobFactory().newJob(scheduler,jobDetail);
         } catch (SchedulerException se) {
             log.error("An error occured instantiating job to be executed. job= '" + jobDetail.getKeyNote() + "'", se);
             throw se;
@@ -168,8 +167,6 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
             SchedulerException se = new SchedulerException("Problem instantiating class '" + jobDetail.getJobClassName() + "' - ", ncdfe);
             throw se;
         }
-//        this.jec = new JobExecutionContextImpl(scheduler, firedTriggerBundle, job);
-//        this.jec = new JobExecutionContextImpl(scheduler,jobDetail,job);
         this.jec = new JobExecutionContextImpl(scheduler,bundle,job);
     }
 

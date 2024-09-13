@@ -26,7 +26,6 @@ import org.quartz.SchedulerConfigException;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.SchedulerSignaler;
 import org.quartz.utils.DBConnectionManager;
-import org.quartz.utils.Key;
 
 /**
  * <p>

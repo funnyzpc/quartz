@@ -77,15 +77,15 @@ public interface JobExecutionContext {
      * </p>
      */
     Trigger getTrigger();
-
-    /**
-     * <p>
-     * Get a handle to the <code>Calendar</code> referenced by the <code>Trigger</code>
-     * instance that fired the <code>Job</code>.
-     * </p>
-     */
-    Calendar getCalendar();
-
+//
+//    /**
+//     * <p>
+//     * Get a handle to the <code>Calendar</code> referenced by the <code>Trigger</code>
+//     * instance that fired the <code>Job</code>.
+//     * </p>
+//     */
+//    Calendar getCalendar();
+//
 //    /**
 //     * <p>
 //     * If the <code>Job</code> is being re-executed because of a 'recovery'

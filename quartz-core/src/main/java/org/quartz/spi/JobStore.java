@@ -20,7 +20,6 @@ package org.quartz.spi;
 import java.util.List;
 import java.util.Set;
 
-import org.quartz.ExecuteCfg;
 import org.quartz.JobCfg;
 import org.quartz.JobDetail;
 import org.quartz.JobPersistenceException;
@@ -126,10 +125,10 @@ public interface JobStore {
 //     *           exists.
 //     */
 //    void storeJobAndTrigger(JobDetail newJob, OperableTrigger newTrigger) throws ObjectAlreadyExistsException, JobPersistenceException;
-    default void storeJobAndExecute(JobCfg jobCfg, ExecuteCfg executeCfg) throws ObjectAlreadyExistsException, JobPersistenceException{
-        throw new JobPersistenceException("Undefined logic");
-    }
-
+//    default void storeJobAndExecute(JobCfg jobCfg, ExecuteCfg executeCfg) throws ObjectAlreadyExistsException, JobPersistenceException{
+//        throw new JobPersistenceException("Undefined logic");
+//    }
+//
 //    /**
 //     * Store the given <code>{@link org.quartz.JobDetail}</code>.
 //     *
@@ -225,14 +224,14 @@ public interface JobStore {
 //     *         name & group was found and removed from the store.
 //     */
 //    boolean replaceTrigger(Key triggerKey, OperableTrigger newTrigger) throws JobPersistenceException;
-
-    /**
-     * Retrieve the given <code>{@link org.quartz.Trigger}</code>.
-     *
-     * @return The desired <code>Trigger</code>, or null if there is no
-     *         match.
-     */
-    OperableTrigger retrieveTrigger(Key triggerKey) throws JobPersistenceException;
+//
+//    /**
+//     * Retrieve the given <code>{@link org.quartz.Trigger}</code>.
+//     *
+//     * @return The desired <code>Trigger</code>, or null if there is no
+//     *         match.
+//     */
+//    OperableTrigger retrieveTrigger(Key triggerKey) throws JobPersistenceException;
 //
 //    /**
 //     * Determine whether a {@link Job} with the given identifier already
@@ -386,15 +385,15 @@ public interface JobStore {
 //     * </p>
 //     */
 //    List<String> getCalendarNames() throws JobPersistenceException;
-
-    /**
-     * Get all of the Triggers that are associated to the given Job.
-     *
-     * <p>
-     * If there are no matches, a zero-length array should be returned.
-     * </p>
-     */
-    List<OperableTrigger> getTriggersForJob(Key jobKey) throws JobPersistenceException;
+//
+//    /**
+//     * Get all of the Triggers that are associated to the given Job.
+//     *
+//     * <p>
+//     * If there are no matches, a zero-length array should be returned.
+//     * </p>
+//     */
+//    List<OperableTrigger> getTriggersForJob(Key jobKey) throws JobPersistenceException;
 
     /**
      * Get the current state of the identified <code>{@link Trigger}</code>.
