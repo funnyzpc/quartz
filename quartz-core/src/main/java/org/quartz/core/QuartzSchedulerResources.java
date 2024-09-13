@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.quartz.management.ManagementRESTServiceConfiguration;
+import org.quartz.simpl.SystemPropGenerator;
 import org.quartz.spi.JobStore;
 import org.quartz.spi.SchedulerPlugin;
 import org.quartz.spi.ThreadPool;
@@ -150,23 +151,23 @@ public class QuartzSchedulerResources {
      * </p>
      */
     public String getInstanceId() {
-        return instanceId;
+        return null==instanceId?(name+"#"+ SystemPropGenerator.hostIP()):instanceId;
     }
 
-    /**
-     * <p>
-     * Set the name for the <code>{@link QuartzScheduler}</code>.
-     * </p>
-     * 
-     * @exception IllegalArgumentException
-     *              if name is null or empty.
-     */
-    public void setInstanceId(String instanceId) {
-        if (instanceId == null || instanceId.trim().length() == 0) {
-            throw new IllegalArgumentException("Scheduler instanceId cannot be empty.");
-        }
-        this.instanceId = instanceId;
-    }
+//    /**
+//     * <p>
+//     * Set the name for the <code>{@link QuartzScheduler}</code>.
+//     * </p>
+//     *
+//     * @exception IllegalArgumentException
+//     *              if name is null or empty.
+//     */
+//    public void setInstanceId(String instanceId) {
+//        if (instanceId == null || instanceId.trim().length() == 0) {
+//            throw new IllegalArgumentException("Scheduler instanceId cannot be empty.");
+//        }
+//        this.instanceId = instanceId;
+//    }
 
     public static String getUniqueIdentifier(String schedName, String schedInstId) {
         return schedName + "_$_" + schedInstId;

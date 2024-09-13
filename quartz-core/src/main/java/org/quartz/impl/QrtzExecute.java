@@ -25,10 +25,10 @@ public class QrtzExecute implements Serializable {
      * 关联任务
      */
     private Long pid;
-    /**
-     * 任务
-     */
-    private Integer executeIdx;
+//    /**
+//     * 任务执行项编号
+//     */
+//    private Integer executeIdx;
     /**
      * 任务类型
      */
@@ -99,10 +99,9 @@ public class QrtzExecute implements Serializable {
      * */
     private transient Class<? extends Job> jobClazz;
 
-    public QrtzExecute(Long id,Long pid,Integer executeIdx,String jobType,String state,String cron,String zoneId,Integer repeatCount,Integer repeatInterval,Integer timeTriggered,Long prevFireTime,Long nextFireTime,String hostIp,String hostName,Long startTime,Long endTime){
+    public QrtzExecute(Long id,Long pid,/*Integer executeIdx,*/String jobType,String state,String cron,String zoneId,Integer repeatCount,Integer repeatInterval,Integer timeTriggered,Long prevFireTime,Long nextFireTime,String hostIp,String hostName,Long startTime,Long endTime){
         this.id=id;
         this.pid=pid;
-        this.executeIdx=executeIdx;
         this.jobType=jobType;
         this.state=state;
         this.cron=cron;
@@ -132,14 +131,6 @@ public class QrtzExecute implements Serializable {
 
     public void setPid(Long pid) {
         this.pid = pid;
-    }
-
-    public Integer getExecuteIdx() {
-        return executeIdx;
-    }
-
-    public void setExecuteIdx(Integer executeIdx) {
-        this.executeIdx = executeIdx;
     }
 
     public String getJobType() {
@@ -287,7 +278,6 @@ public class QrtzExecute implements Serializable {
         return "QrtzExecute{" +
                 "id=" + id +
                 ", pid=" + pid +
-                ", executeIdx=" + executeIdx +
                 ", jobType='" + jobType + '\'' +
                 ", state='" + state + '\'' +
                 ", cron='" + cron + '\'' +

@@ -25,12 +25,10 @@ import org.quartz.CronTrigger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerUtils;
 import org.quartz.spi.OperableTrigger;
-import org.quartz.utils.Key;
 
 
 /**
@@ -92,8 +90,8 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
     private int misfireInstruction = MISFIRE_INSTRUCTION_SMART_POLICY;
 
     private int priority = DEFAULT_PRIORITY;
-
-    private transient Key key = null;
+//    @Deprecated
+//    private transient Key key = null;
 
     /*
     * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -208,7 +206,7 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
             throw new IllegalArgumentException("Trigger name cannot be null or empty.");
         }
         this.name = name;
-        this.key = null;
+//        this.key = null;
     }
 
 //    /**
@@ -240,13 +238,13 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
 //        this.group = group;
 //        this.key = null;
 //    }
-    @Override
-    public void setKey(Key key) {
-        setName(key.getName());
-//        setGroup(key.getGroup());
-        this.key = key;
-    }
-
+//    @Override
+//    public void setKey(Key key) {
+//        setName(key.getName());
+////        setGroup(key.getGroup());
+//        this.key = key;
+//    }
+//
 //    /**
 //     * <p>
 //     * Get the name of the associated <code>{@link org.quartz.JobDetail}</code>.
@@ -319,17 +317,17 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
 //        return group + "." + name;
         return  name;
     }
-    @Override
-    public Key getKey() {
-        if(key == null) {
-            if(getName() == null){
-                return null;
-            }
-//            key = new TriggerKey(getName(), getGroup());
-            key = new Key(getName());
-        }
-        return key;
-    }
+//    @Override
+//    public Key getKey() {
+//        if(key == null) {
+//            if(getName() == null){
+//                return null;
+//            }
+////            key = new TriggerKey(getName(), getGroup());
+//            key = new Key(getName());
+//        }
+//        return key;
+//    }
 //    @Override
 //    public JobKey getJobKey() {
 //        if(getJobName() == null)
@@ -748,33 +746,33 @@ public abstract class AbstractTrigger<T extends Trigger> implements OperableTrig
     @Override
     public abstract void updateWithNewCalendar(Calendar cal, long misfireThreshold);
 
-    /**
-     * <p>
-     * Validates whether the properties of the <code>JobDetail</code> are
-     * valid for submission into a <code>Scheduler</code>.
-     * 
-     * @throws IllegalStateException
-     *           if a required property (such as Name, Group, Class) is not
-     *           set.
-     */
-    @Override
-    public void validate() throws SchedulerException {
-        if(this.key==null){
-            throw new SchedulerException("Trigger's key cannot be null");
-        }
-        if (this.key.getName() == null) {
-            throw new SchedulerException("Trigger's name cannot be null");
-        }
-//        if (group == null) {
-//            throw new SchedulerException("Trigger's group cannot be null");
+//    /**
+//     * <p>
+//     * Validates whether the properties of the <code>JobDetail</code> are
+//     * valid for submission into a <code>Scheduler</code>.
+//     *
+//     * @throws IllegalStateException
+//     *           if a required property (such as Name, Group, Class) is not
+//     *           set.
+//     */
+//    @Override
+//    public void validate() throws SchedulerException {
+//        if(this.key==null){
+//            throw new SchedulerException("Trigger's key cannot be null");
 //        }
-//        if (jobName == null) {
-//            throw new SchedulerException("Trigger's related Job's name cannot be null");
+//        if (this.key.getName() == null) {
+//            throw new SchedulerException("Trigger's name cannot be null");
 //        }
-//        if (jobGroup == null) {
-//            throw new SchedulerException("Trigger's related Job's group cannot be null");
-//        }
-    }
+////        if (group == null) {
+////            throw new SchedulerException("Trigger's group cannot be null");
+////        }
+////        if (jobName == null) {
+////            throw new SchedulerException("Trigger's related Job's name cannot be null");
+////        }
+////        if (jobGroup == null) {
+////            throw new SchedulerException("Trigger's related Job's group cannot be null");
+////        }
+//    }
 
     /**
      * <p>

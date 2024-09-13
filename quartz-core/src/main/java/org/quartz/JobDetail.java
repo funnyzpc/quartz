@@ -51,7 +51,9 @@ import java.io.Serializable;
  */
 public interface JobDetail extends Serializable, Cloneable {
 
-    Key getKey();
+//    Key getKey();
+    String getKey();
+    String getKeyNote();
 
     /**
      * <p>
@@ -125,11 +127,11 @@ public interface JobDetail extends Serializable, Cloneable {
 
     Object clone();
     
-    /**
-     * Get a {@link JobBuilder} that is configured to produce a 
-     * <code>JobDetail</code> identical to this one.
-     */
-    JobBuilder getJobBuilder();
+//    /**
+//     * Get a {@link JobBuilder} that is configured to produce a
+//     * <code>JobDetail</code> identical to this one.
+//     */
+//    JobBuilder getJobBuilder();
 
     QrtzExecute getEJob();
 

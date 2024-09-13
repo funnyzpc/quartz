@@ -15,11 +15,9 @@
  */
 package org.quartz.impl.jdbcjobstore;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.quartz.JobDetail;
 import org.quartz.ScheduleBuilder;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.utils.Key;
@@ -38,11 +36,11 @@ public interface TriggerPersistenceDelegate {
     
     String getHandledTriggerTypeDiscriminator();
     
-    int insertExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException;
+//    int insertExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException;
 
-    int updateExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException;
+//    int updateExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException;
     
-    int deleteExtendedTriggerProperties(Connection conn, Key key) throws SQLException;
+//    int deleteExtendedTriggerProperties(Connection conn, Key key) throws SQLException;
 
     TriggerPropertyBundle loadExtendedTriggerProperties(Connection conn,Key triggerKey) throws SQLException;
     

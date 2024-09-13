@@ -47,10 +47,11 @@ public class JobExecutionException extends SchedulerException {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    private boolean refire = false;
+    private boolean refire = false; // 重新点火
 
+    @Deprecated
     private boolean unscheduleTrigg = false;
-
+    @Deprecated
     private boolean unscheduleAllTriggs = false;
 
     /*
@@ -106,7 +107,6 @@ public class JobExecutionException extends SchedulerException {
      */
     public JobExecutionException(Throwable cause, boolean refireImmediately) {
         super(cause);
-
         refire = refireImmediately;
     }
 
@@ -126,20 +126,18 @@ public class JobExecutionException extends SchedulerException {
      * exception, and the 're-fire immediately' flag set to the given value.
      * </p>
      */
-    public JobExecutionException(String msg, Throwable cause,
-            boolean refireImmediately) {
+    public JobExecutionException(String msg, Throwable cause, boolean refireImmediately) {
         super(msg, cause);
-
         refire = refireImmediately;
     }
     
     /**
      * Create a JobExcecutionException with the given message and the 're-fire 
      * immediately' flag set to the given value.
+     * 如果需要重试，请显式给出 refireImmediately=true,默认refireImmediately是false
      */
     public JobExecutionException(String msg, boolean refireImmediately) {
         super(msg);
-
         refire = refireImmediately;
     }
 

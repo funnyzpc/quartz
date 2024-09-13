@@ -15,16 +15,12 @@
  */
 package org.quartz.impl.jdbcjobstore;
 
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.quartz.JobDetail;
 import org.quartz.SimpleScheduleBuilder;
-import org.quartz.SimpleTrigger;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.utils.Key;
@@ -47,36 +43,36 @@ public class SimpleTriggerPersistenceDelegate implements TriggerPersistenceDeleg
     public boolean canHandleTriggerType(OperableTrigger trigger) {
         return ((trigger instanceof SimpleTriggerImpl) /*&& !((SimpleTriggerImpl)trigger).hasAdditionalProperties()*/);
     }
-    @Override
-    public int deleteExtendedTriggerProperties(Connection conn, Key key) throws SQLException {
-        PreparedStatement ps = null;
-        try {
-            // DELETE FROM QRTZ_SIMPLE_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-            ps = conn.prepareStatement(Util.rtp(DELETE_SIMPLE_TRIGGER, tablePrefix, schedNameLiteral));
-            ps.setString(1, key.getName());
-//            ps.setString(2, triggerKey.getGroup());
-            return ps.executeUpdate();
-        } finally {
-            Util.closeStatement(ps);
-        }
-    }
-    @Override
-    public int insertExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
-        SimpleTrigger simpleTrigger = (SimpleTrigger)trigger;
-        PreparedStatement ps = null;
-        try {
-            // INSERT INTO QRTZ_SIMPLE_TRIGGERS (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP, REPEAT_COUNT, REPEAT_INTERVAL, TIMES_TRIGGERED)  VALUES('MEE_QUARTZ', ?, ?, ?, ?, ?)
-            ps = conn.prepareStatement(Util.rtp(INSERT_SIMPLE_TRIGGER, tablePrefix, schedNameLiteral));
-            ps.setString(1, trigger.getKey().getName());
-//            ps.setString(2, trigger.getKey().getGroup());
-            ps.setInt(2, simpleTrigger.getRepeatCount());
-            ps.setBigDecimal(3, new BigDecimal(String.valueOf(simpleTrigger.getRepeatInterval())));
-            ps.setInt(4, simpleTrigger.getTimesTriggered());
-            return ps.executeUpdate();
-        } finally {
-            Util.closeStatement(ps);
-        }
-    }
+//    @Override
+//    public int deleteExtendedTriggerProperties(Connection conn, Key key) throws SQLException {
+//        PreparedStatement ps = null;
+//        try {
+//            // DELETE FROM QRTZ_SIMPLE_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
+//            ps = conn.prepareStatement(Util.rtp(DELETE_SIMPLE_TRIGGER, tablePrefix, schedNameLiteral));
+//            ps.setString(1, key.getName());
+////            ps.setString(2, triggerKey.getGroup());
+//            return ps.executeUpdate();
+//        } finally {
+//            Util.closeStatement(ps);
+//        }
+//    }
+//    @Override
+//    public int insertExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
+//        SimpleTrigger simpleTrigger = (SimpleTrigger)trigger;
+//        PreparedStatement ps = null;
+//        try {
+//            // INSERT INTO QRTZ_SIMPLE_TRIGGERS (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP, REPEAT_COUNT, REPEAT_INTERVAL, TIMES_TRIGGERED)  VALUES('MEE_QUARTZ', ?, ?, ?, ?, ?)
+//            ps = conn.prepareStatement(Util.rtp(INSERT_SIMPLE_TRIGGER, tablePrefix, schedNameLiteral));
+//            ps.setString(1, trigger.getKey().getName());
+////            ps.setString(2, trigger.getKey().getGroup());
+//            ps.setInt(2, simpleTrigger.getRepeatCount());
+//            ps.setBigDecimal(3, new BigDecimal(String.valueOf(simpleTrigger.getRepeatInterval())));
+//            ps.setInt(4, simpleTrigger.getTimesTriggered());
+//            return ps.executeUpdate();
+//        } finally {
+//            Util.closeStatement(ps);
+//        }
+//    }
     @Override
     public TriggerPropertyBundle loadExtendedTriggerProperties(Connection conn,Key triggerKey) throws SQLException {
         PreparedStatement ps = null;
@@ -105,23 +101,23 @@ public class SimpleTriggerPersistenceDelegate implements TriggerPersistenceDeleg
             Util.closeStatement(ps);
         }
     }
-    @Override
-    public int updateExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
-        SimpleTrigger simpleTrigger = (SimpleTrigger)trigger;
-        PreparedStatement ps = null;
-        try {
-//            ps = conn.prepareStatement(Util.rtp(UPDATE_SIMPLE_TRIGGER, tablePrefix, schedNameLiteral));
-            ps = conn.prepareStatement(Util.rtp(UPDATE_SIMPLE_EXECUTE_CFG, tablePrefix, schedNameLiteral));
-            ps.setInt(1, simpleTrigger.getRepeatCount());
-            ps.setBigDecimal(2, new BigDecimal(String.valueOf(simpleTrigger.getRepeatInterval())));
-            ps.setInt(3, simpleTrigger.getTimesTriggered());
-            ps.setString(4, simpleTrigger.getKey().getName());
-            ps.setString(5, simpleTrigger.getKey().getType());
-//            ps.setString(5, simpleTrigger.getKey().getGroup());
-            return ps.executeUpdate();
-        } finally {
-            Util.closeStatement(ps);
-        }
-    }
+//    @Override
+//    public int updateExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
+//        SimpleTrigger simpleTrigger = (SimpleTrigger)trigger;
+//        PreparedStatement ps = null;
+//        try {
+////            ps = conn.prepareStatement(Util.rtp(UPDATE_SIMPLE_TRIGGER, tablePrefix, schedNameLiteral));
+//            ps = conn.prepareStatement(Util.rtp(UPDATE_SIMPLE_EXECUTE_CFG, tablePrefix, schedNameLiteral));
+//            ps.setInt(1, simpleTrigger.getRepeatCount());
+//            ps.setBigDecimal(2, new BigDecimal(String.valueOf(simpleTrigger.getRepeatInterval())));
+//            ps.setInt(3, simpleTrigger.getTimesTriggered());
+//            ps.setString(4, simpleTrigger.getKey().getName());
+//            ps.setString(5, simpleTrigger.getKey().getType());
+////            ps.setString(5, simpleTrigger.getKey().getGroup());
+//            return ps.executeUpdate();
+//        } finally {
+//            Util.closeStatement(ps);
+//        }
+//    }
 
 }

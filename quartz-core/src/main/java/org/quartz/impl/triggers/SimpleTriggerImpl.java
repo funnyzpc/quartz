@@ -8,7 +8,6 @@ import org.quartz.CronTrigger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerUtils;
@@ -655,6 +654,12 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
         }
     }
 
+    @Override
+    public String getKey() {
+        // todo ...
+        return 0/0+"";
+    }
+
     /**
      * <p>
      * Determines whether or not the <code>SimpleTrigger</code> will occur
@@ -665,24 +670,24 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
     public boolean mayFireAgain() {
         return (getNextFireTime() != null);
     }
-
-    /**
-     * <p>
-     * Validates whether the properties of the <code>JobDetail</code> are
-     * valid for submission into a <code>Scheduler</code>.
-     * 
-     * @throws IllegalStateException
-     *           if a required property (such as Name, Group, Class) is not
-     *           set.
-     */
-    @Override
-    public void validate() throws SchedulerException {
-        super.validate();
-        if (repeatCount != 0 && repeatInterval < 1) {
-            throw new SchedulerException("Repeat Interval cannot be zero.");
-        }
-    }
-
+//
+//    /**
+//     * <p>
+//     * Validates whether the properties of the <code>JobDetail</code> are
+//     * valid for submission into a <code>Scheduler</code>.
+//     *
+//     * @throws IllegalStateException
+//     *           if a required property (such as Name, Group, Class) is not
+//     *           set.
+//     */
+//    @Override
+//    public void validate() throws SchedulerException {
+//        super.validate();
+//        if (repeatCount != 0 && repeatInterval < 1) {
+//            throw new SchedulerException("Repeat Interval cannot be zero.");
+//        }
+//    }
+//
 //    /**
 //     * Used by extensions of SimpleTrigger to imply that there are additional
 //     * properties, specifically so that extensions can choose whether to be

@@ -552,6 +552,12 @@ public class CronTriggerImpl extends AbstractTrigger<CronTrigger> implements Cro
         return resultTime;
     }
 
+    @Override
+    public String getKey() {
+        // todo ..
+        return 0/0+"";
+    }
+
     /**
      * <p>
      * Determines whether or not the <code>CronTrigger</code> will occur

@@ -4,7 +4,6 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.impl.QrtzExecute;
-import org.quartz.utils.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,7 @@ public class Job02TestService implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         QrtzExecute eJob = context.getJobDetail().getEJob();
-        LOGGER.info("=>>{}.{}-{}#{}",eJob.getId(),eJob.getJobType(),eJob.getJob().getJobClass(),eJob.getExecuteIdx());
+        LOGGER.info("=>>{}-{}.{}-{}",eJob.getJob().getId(),eJob.getId(),eJob.getJobType(),eJob.getJob().getJobClass());
         try {
             TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException e) {

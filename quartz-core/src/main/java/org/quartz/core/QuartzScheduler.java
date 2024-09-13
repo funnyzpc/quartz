@@ -23,16 +23,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.quartz.Calendar;
 import org.quartz.ExecuteCfg;
 import org.quartz.InterruptableJob;
 import org.quartz.Job;
@@ -46,12 +42,12 @@ import org.quartz.SchedulerListener;
 import org.quartz.Trigger;
 import org.quartz.TriggerListener;
 import org.quartz.UnableToInterruptJobException;
-import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.impl.ExecuteCfgImpl;
 import org.quartz.impl.JobCfgImpl;
 import org.quartz.impl.SchedulerRepository;
 import org.quartz.simpl.PropertySettingJobFactory;
+import org.quartz.simpl.SystemPropGenerator;
 import org.quartz.spi.JobFactory;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.spi.SchedulerPlugin;
@@ -496,7 +492,8 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
             resources.getJobStore().schedulerResumed();
         }
         schedThread.togglePause(false);
-        getLog().info("Scheduler " + resources.getUniqueIdentifier() + " started.");
+//        getLog().info("Scheduler " + resources.getUniqueIdentifier() + " started.");
+        getLog().info("Scheduler " + SystemPropGenerator.hostIP() + " started.");
 //        notifySchedulerListenersStarted();
     }
     @Override
@@ -533,7 +530,8 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
     public void standby() {
         resources.getJobStore().schedulerPaused();
         schedThread.togglePause(true);
-        getLog().info("Scheduler " + resources.getUniqueIdentifier() + " paused.");
+//        getLog().info("Scheduler " + resources.getUniqueIdentifier() + " paused.");
+        getLog().info("Scheduler " + SystemPropGenerator.hostIP() + " paused.");
 //        notifySchedulerListenersInStandbyMode();
     }
 
@@ -553,14 +551,14 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
         return new Date(initialStart.getTime());
     }
-    @Override
-    public int numJobsExecuted() {
-        return jobMgr.getNumJobsFired();
-    }
-    @Override
-    public Class<?> getJobStoreClass() {
-        return resources.getJobStore().getClass();
-    }
+//    @Override
+//    public int numJobsExecuted() {
+//        return jobMgr.getNumJobsFired();
+//    }
+//    @Override
+//    public Class<?> getJobStoreClass() {
+//        return resources.getJobStore().getClass();
+//    }
     @Override
     public boolean supportsPersistence() {
         return resources.getJobStore().supportsPersistence();
@@ -614,7 +612,8 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
             return;
         }
         shuttingDown = true;
-        getLog().info("Scheduler " + resources.getUniqueIdentifier() + " shutting down.");
+//        getLog().info("Scheduler " + resources.getUniqueIdentifier() + " shutting down.");
+        getLog().info("Scheduler " + SystemPropGenerator.hostIP() + " shutting down.");
         // boolean removeMgmtSvr = false;
         // if (registeredManagementServerBind != null) {
         // ManagementServer standaloneRestServer =
@@ -732,60 +731,60 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
     ///
     ///////////////////////////////////////////////////////////////////////////
 
-    /**
-     * <p>
-     * Add the <code>{@link org.quartz.Job}</code> identified by the given
-     * <code>{@link org.quartz.JobDetail}</code> to the Scheduler, and
-     * associate the given <code>{@link org.quartz.Trigger}</code> with it.
-     * </p>
-     * 
-     * <p>
-     * If the given Trigger does not reference any <code>Job</code>, then it
-     * will be set to reference the Job passed with it into this method.
-     * </p>
-     * 
-     * @throws SchedulerException
-     *           if the Job or Trigger cannot be added to the Scheduler, or
-     *           there is an internal Scheduler error.
-     */
-    @Override
-    public Date scheduleJob(JobDetail jobDetail,Trigger trigger) throws SchedulerException {
-        validateState();
-        if (jobDetail == null) {
-            throw new SchedulerException("JobDetail cannot be null");
-        }
-        if (trigger == null) {
-            throw new SchedulerException("Trigger cannot be null");
-        }
-        if (jobDetail.getKey() == null) {
-            throw new SchedulerException("Job's key cannot be null");
-        }
-        if (jobDetail.getJobClassName() == null) {
-            throw new SchedulerException("Job's class cannot be null");
-        }
-        OperableTrigger trig = (OperableTrigger)trigger;
-        // todo ...
-        if (trig.getKey() == null) {
-            trig.setKey(jobDetail.getKey());
-        } else if (!trigger.getKey().equals(jobDetail.getKey())) {
-            throw new SchedulerException("Trigger does not reference given job!");
-        }
-        trig.validate();
-        Calendar cal = null;
-        // 关联排除日期，这个日期是以天为单位
-//        if (trigger.getCalendarName() != null) {
-//            cal = resources.getJobStore().retrieveCalendar(trigger.getCalendarName());
+//    /**
+//     * <p>
+//     * Add the <code>{@link org.quartz.Job}</code> identified by the given
+//     * <code>{@link org.quartz.JobDetail}</code> to the Scheduler, and
+//     * associate the given <code>{@link org.quartz.Trigger}</code> with it.
+//     * </p>
+//     *
+//     * <p>
+//     * If the given Trigger does not reference any <code>Job</code>, then it
+//     * will be set to reference the Job passed with it into this method.
+//     * </p>
+//     *
+//     * @throws SchedulerException
+//     *           if the Job or Trigger cannot be added to the Scheduler, or
+//     *           there is an internal Scheduler error.
+//     */
+//    @Override
+//    public Date scheduleJob(JobDetail jobDetail,Trigger trigger) throws SchedulerException {
+//        validateState();
+//        if (jobDetail == null) {
+//            throw new SchedulerException("JobDetail cannot be null");
 //        }
-        Date ft = trig.computeFirstFireTime(cal);
-        if (ft == null) {
-            throw new SchedulerException("Based on configured schedule, the given trigger '" + trigger.getKey() + "' will never fire.");
-        }
-        resources.getJobStore().storeJobAndTrigger(jobDetail, trig);
-//        notifySchedulerListenersJobAdded(jobDetail);
-        notifySchedulerThread(trigger.getNextFireTime().getTime());
-//        notifySchedulerListenersSchduled(trigger);
-        return ft;
-    }
+//        if (trigger == null) {
+//            throw new SchedulerException("Trigger cannot be null");
+//        }
+//        if (jobDetail.getKey() == null) {
+//            throw new SchedulerException("Job's key cannot be null");
+//        }
+//        if (jobDetail.getJobClassName() == null) {
+//            throw new SchedulerException("Job's class cannot be null");
+//        }
+//        OperableTrigger trig = (OperableTrigger)trigger;
+//        // todo ...
+//        if (trig.getKey() == null) {
+//            trig.setKey(jobDetail.getKey());
+//        } else if (!trigger.getKey().equals(jobDetail.getKey())) {
+//            throw new SchedulerException("Trigger does not reference given job!");
+//        }
+//        trig.validate();
+//        Calendar cal = null;
+//        // 关联排除日期，这个日期是以天为单位
+////        if (trigger.getCalendarName() != null) {
+////            cal = resources.getJobStore().retrieveCalendar(trigger.getCalendarName());
+////        }
+//        Date ft = trig.computeFirstFireTime(cal);
+//        if (ft == null) {
+//            throw new SchedulerException("Based on configured schedule, the given trigger '" + trigger.getKey() + "' will never fire.");
+//        }
+//        resources.getJobStore().storeJobAndTrigger(jobDetail, trig);
+////        notifySchedulerListenersJobAdded(jobDetail);
+//        notifySchedulerThread(trigger.getNextFireTime().getTime());
+////        notifySchedulerListenersSchduled(trigger);
+//        return ft;
+//    }
 
     /**
      * 获取 schedName
@@ -837,261 +836,258 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //        notifySchedulerListenersSchduled(trigger);
         return null;
     }
-    /**
-     * <p>
-     * Schedule the given <code>{@link org.quartz.Trigger}</code> with the
-     * <code>Job</code> identified by the <code>Trigger</code>'s settings.
-     * </p>
-     * 
-     * @throws SchedulerException
-     *           if the indicated Job does not exist, or the Trigger cannot be
-     *           added to the Scheduler, or there is an internal Scheduler
-     *           error.
-     */
-    @Override
-    public Date scheduleJob(Trigger trigger) throws SchedulerException {
-        validateState();
-        if (trigger == null) {
-            throw new SchedulerException("Trigger cannot be null");
-        }
-        OperableTrigger trig = (OperableTrigger)trigger;
-        trig.validate();
-        Calendar cal = null;
-//        if (trigger.getCalendarName() != null) {
-//            cal = resources.getJobStore().retrieveCalendar(trigger.getCalendarName());
-//            if(cal == null) {
-//                throw new SchedulerException("Calendar not found: " + trigger.getCalendarName());
+//    /**
+//     * <p>
+//     * Schedule the given <code>{@link org.quartz.Trigger}</code> with the
+//     * <code>Job</code> identified by the <code>Trigger</code>'s settings.
+//     * </p>
+//     *
+//     * @throws SchedulerException
+//     *           if the indicated Job does not exist, or the Trigger cannot be
+//     *           added to the Scheduler, or there is an internal Scheduler
+//     *           error.
+//     */
+//    @Override
+//    public Date scheduleJob(Trigger trigger) throws SchedulerException {
+//        validateState();
+//        if (trigger == null) {
+//            throw new SchedulerException("Trigger cannot be null");
+//        }
+//        OperableTrigger trig = (OperableTrigger)trigger;
+//        trig.validate();
+//        Calendar cal = null;
+////        if (trigger.getCalendarName() != null) {
+////            cal = resources.getJobStore().retrieveCalendar(trigger.getCalendarName());
+////            if(cal == null) {
+////                throw new SchedulerException("Calendar not found: " + trigger.getCalendarName());
+////            }
+////        }
+//        Date ft = trig.computeFirstFireTime(cal);
+//        if (ft == null) {
+//            throw new SchedulerException("Based on configured schedule, the given trigger '" + trigger.getKey() + "' will never fire.");
+//        }
+//        resources.getJobStore().storeTrigger(trig, false);
+//        notifySchedulerThread(trigger.getNextFireTime().getTime());
+////        notifySchedulerListenersSchduled(trigger);
+//        return ft;
+//    }
+//
+//    /**
+//     * <p>
+//     * Add the given <code>Job</code> to the Scheduler - with no associated
+//     * <code>Trigger</code>. The <code>Job</code> will be 'dormant' until
+//     * it is scheduled with a <code>Trigger</code>, or <code>Scheduler.triggerJob()</code>
+//     * is called for it.
+//     * </p>
+//     *
+//     * <p>
+//     * The <code>Job</code> must by definition be 'durable', if it is not,
+//     * SchedulerException will be thrown.
+//     * </p>
+//     *
+//     * @throws SchedulerException
+//     *           if there is an internal Scheduler error, or if the Job is not
+//     *           durable, or a Job with the same name already exists, and
+//     *           <code>replace</code> is <code>false</code>.
+//     */
+//    @Override
+//    public void addJob(JobDetail jobDetail, boolean replace) throws SchedulerException {
+//        addJob(jobDetail, replace, false);
+//    }
+//    @Override
+//    public void addJob(JobDetail jobDetail, boolean replace, boolean storeNonDurableWhileAwaitingScheduling) throws SchedulerException {
+//        validateState();
+//        // 等待调度时存储不耐用
+//        if (!storeNonDurableWhileAwaitingScheduling /*&& !jobDetail.isDurable()*/) {
+//            throw new SchedulerException("Jobs added with no trigger must be durable.");
+//        }
+//        resources.getJobStore().storeJob(jobDetail, replace);
+//        notifySchedulerThread(0L);
+////        notifySchedulerListenersJobAdded(jobDetail);
+//    }
+
+//    /**
+//     * <p>
+//     * Delete the identified <code>Job</code> from the Scheduler - and any
+//     * associated <code>Trigger</code>s.
+//     * </p>
+//     *
+//     * @return true if the Job was found and deleted.
+//     * @throws SchedulerException
+//     *           if there is an internal Scheduler error.
+//     */
+//    @Override
+//    public boolean deleteJob(Key jobKey) throws SchedulerException {
+//        validateState();
+//        boolean result = false;
+//        List<? extends Trigger> triggers = getTriggersOfJob(jobKey);
+//        for (Trigger trigger : triggers) {
+//            if (!unscheduleJob(trigger.getKey())) {
+//                StringBuilder sb = new StringBuilder()
+//                        .append("Unable to unschedule trigger [")
+//                        .append(trigger.getKey())
+//                        .append("] while deleting job [")
+//                        .append(jobKey).append( "]");
+//                throw new SchedulerException(sb.toString());
+//            }
+//            result = true;
+//        }
+//        result = resources.getJobStore().removeJob(jobKey) || result;
+//        if (result) {
+//            notifySchedulerThread(0L);
+////            notifySchedulerListenersJobDeleted(jobKey);
+//        }
+//        return result;
+//    }
+//    @Override
+//    public boolean deleteJobs(List<Key> keys)  throws SchedulerException {
+//        validateState();
+//        boolean result = false;
+//        result = resources.getJobStore().removeJobs(keys);
+//        notifySchedulerThread(0L);
+////        for(Key key: keys){
+////            notifySchedulerListenersJobDeleted(key);
+////        }
+//        return result;
+//    }
+//    @Override
+//    public void scheduleJobs(Map<JobDetail, Set<? extends Trigger>> triggersAndJobs, boolean replace)  throws SchedulerException  {
+//        validateState();
+//        // make sure all triggers refer to their associated job
+//        for(Entry<JobDetail, Set<? extends Trigger>> e: triggersAndJobs.entrySet()) {
+//            JobDetail job = e.getKey();
+//            if(job == null) // there can be one of these (for adding a bulk set of triggers for pre-existing jobs)
+//            {
+//                continue;
+//            }
+//            Set<? extends Trigger> triggers = e.getValue();
+//            if(triggers == null) // this is possible because the job may be durable, and not yet be having triggers
+//            {
+//                continue;
+//            }
+//            for(Trigger trigger: triggers) {
+//                OperableTrigger opt = (OperableTrigger)trigger;
+////                opt.setJobKey(job.getKey());
+//                opt.setKey(job.getKey());
+//                opt.validate();
+//                Calendar cal = null;
+////                if (trigger.getCalendarName() != null) {
+////                    cal = resources.getJobStore().retrieveCalendar(trigger.getCalendarName());
+////                    if(cal == null) {
+////                        throw new SchedulerException("Calendar '" + trigger.getCalendarName() + "' not found for trigger: " + trigger.getKey());
+////                    }
+////                }
+//                Date ft = opt.computeFirstFireTime(cal);
+//                if (ft == null) {
+//                    throw new SchedulerException("Based on configured schedule, the given trigger will never fire.");
+//                }
 //            }
 //        }
-        Date ft = trig.computeFirstFireTime(cal);
-        if (ft == null) {
-            throw new SchedulerException("Based on configured schedule, the given trigger '" + trigger.getKey() + "' will never fire.");
-        }
-        resources.getJobStore().storeTrigger(trig, false);
-        notifySchedulerThread(trigger.getNextFireTime().getTime());
-//        notifySchedulerListenersSchduled(trigger);
-        return ft;
-    }
+//        resources.getJobStore().storeJobsAndTriggers(triggersAndJobs, replace);
+//        notifySchedulerThread(0L);
+////        for (JobDetail job : triggersAndJobs.keySet()) {
+////          notifySchedulerListenersJobAdded(job);
+////          Set<? extends Trigger> triggers = triggersAndJobs.get(job);
+////          for (Trigger trigger : triggers) {
+////            notifySchedulerListenersSchduled(trigger);
+////          }
+////        }
+//    }
 
-    /**
-     * <p>
-     * Add the given <code>Job</code> to the Scheduler - with no associated
-     * <code>Trigger</code>. The <code>Job</code> will be 'dormant' until
-     * it is scheduled with a <code>Trigger</code>, or <code>Scheduler.triggerJob()</code>
-     * is called for it.
-     * </p>
-     * 
-     * <p>
-     * The <code>Job</code> must by definition be 'durable', if it is not,
-     * SchedulerException will be thrown.
-     * </p>
-     * 
-     * @throws SchedulerException
-     *           if there is an internal Scheduler error, or if the Job is not
-     *           durable, or a Job with the same name already exists, and
-     *           <code>replace</code> is <code>false</code>.
-     */
-    @Override
-    public void addJob(JobDetail jobDetail, boolean replace) throws SchedulerException {
-        addJob(jobDetail, replace, false);
-    }
-    @Override
-    public void addJob(JobDetail jobDetail, boolean replace, boolean storeNonDurableWhileAwaitingScheduling) throws SchedulerException {
-        validateState();
-        // 等待调度时存储不耐用
-        if (!storeNonDurableWhileAwaitingScheduling /*&& !jobDetail.isDurable()*/) {
-            throw new SchedulerException("Jobs added with no trigger must be durable.");
-        }
-        resources.getJobStore().storeJob(jobDetail, replace);
-        notifySchedulerThread(0L);
-//        notifySchedulerListenersJobAdded(jobDetail);
-    }
-
-    /**
-     * <p>
-     * Delete the identified <code>Job</code> from the Scheduler - and any
-     * associated <code>Trigger</code>s.
-     * </p>
-     * 
-     * @return true if the Job was found and deleted.
-     * @throws SchedulerException
-     *           if there is an internal Scheduler error.
-     */
-    @Override
-    public boolean deleteJob(Key jobKey) throws SchedulerException {
-        validateState();
-        boolean result = false;
-        List<? extends Trigger> triggers = getTriggersOfJob(jobKey);
-        for (Trigger trigger : triggers) {
-            if (!unscheduleJob(trigger.getKey())) {
-                StringBuilder sb = new StringBuilder()
-                        .append("Unable to unschedule trigger [")
-                        .append(trigger.getKey())
-                        .append("] while deleting job [")
-                        .append(jobKey).append( "]");
-                throw new SchedulerException(sb.toString());
-            }
-            result = true;
-        }
-        result = resources.getJobStore().removeJob(jobKey) || result;
-        if (result) {
-            notifySchedulerThread(0L);
-//            notifySchedulerListenersJobDeleted(jobKey);
-        }
-        return result;
-    }
-    @Override
-    public boolean deleteJobs(List<Key> keys)  throws SchedulerException {
-        validateState();
-        boolean result = false;
-        result = resources.getJobStore().removeJobs(keys);
-        notifySchedulerThread(0L);
-//        for(Key key: keys){
-//            notifySchedulerListenersJobDeleted(key);
+//    @Override
+//    public void scheduleJob(JobDetail jobDetail, Set<? extends Trigger> triggersForJob,boolean replace) throws SchedulerException {
+//        Map<JobDetail, Set<? extends Trigger>> triggersAndJobs = new HashMap<JobDetail, Set<? extends Trigger>>();
+//        triggersAndJobs.put(jobDetail, triggersForJob);
+//        scheduleJobs(triggersAndJobs, replace);
+//    }
+//
+//    @Override
+//    public boolean unscheduleJobs(List<Key> keys) throws SchedulerException  {
+//        validateState();
+//        boolean result = false;
+//        result = resources.getJobStore().removeTriggers(keys);
+//        notifySchedulerThread(0L);
+////        for(Key k: keys){
+////            notifySchedulerListenersUnscheduled(k);
+////        }
+//        return result;
+//    }
+//
+//    /**
+//     * <p>
+//     * Remove the indicated <code>{@link org.quartz.Trigger}</code> from the
+//     * scheduler.
+//     * </p>
+//     */
+//    @Override
+//    public boolean unscheduleJob(Key key) throws SchedulerException {
+//        validateState();
+//        if (resources.getJobStore().removeTrigger(key)) {
+//            notifySchedulerThread(0L);
+////            notifySchedulerListenersUnscheduled(key);
+//        } else {
+//            return false;
 //        }
-        return result;
-    }
-    @Override
-    public void scheduleJobs(Map<JobDetail, Set<? extends Trigger>> triggersAndJobs, boolean replace)  throws SchedulerException  {
-        validateState();
-        // make sure all triggers refer to their associated job
-        for(Entry<JobDetail, Set<? extends Trigger>> e: triggersAndJobs.entrySet()) {
-            JobDetail job = e.getKey();
-            if(job == null) // there can be one of these (for adding a bulk set of triggers for pre-existing jobs)
-            {
-                continue;
-            }
-            Set<? extends Trigger> triggers = e.getValue();
-            if(triggers == null) // this is possible because the job may be durable, and not yet be having triggers
-            {
-                continue;
-            }
-            for(Trigger trigger: triggers) {
-                OperableTrigger opt = (OperableTrigger)trigger;
-//                opt.setJobKey(job.getKey());
-                opt.setKey(job.getKey());
-                opt.validate();
-                Calendar cal = null;
-//                if (trigger.getCalendarName() != null) {
-//                    cal = resources.getJobStore().retrieveCalendar(trigger.getCalendarName());
-//                    if(cal == null) {
-//                        throw new SchedulerException("Calendar '" + trigger.getCalendarName() + "' not found for trigger: " + trigger.getKey());
-//                    }
-//                }
-                Date ft = opt.computeFirstFireTime(cal);
-                if (ft == null) {
-                    throw new SchedulerException("Based on configured schedule, the given trigger will never fire.");
-                }                
-            }
-        }
-        resources.getJobStore().storeJobsAndTriggers(triggersAndJobs, replace);
-        notifySchedulerThread(0L);
-//        for (JobDetail job : triggersAndJobs.keySet()) {
-//          notifySchedulerListenersJobAdded(job);
-//          Set<? extends Trigger> triggers = triggersAndJobs.get(job);
-//          for (Trigger trigger : triggers) {
-//            notifySchedulerListenersSchduled(trigger);
-//          }
+//        return true;
+//    }
+
+//    /**
+//     * <p>
+//     * Remove (delete) the <code>{@link org.quartz.Trigger}</code> with the
+//     * given name, and store the new given one - which must be associated
+//     * with the same job.
+//     * </p>
+//     * @param newTrigger
+//     *          The new <code>Trigger</code> to be stored.
+//     *
+//     * @return <code>null</code> if a <code>Trigger</code> with the given
+//     *         name & group was not found and removed from the store, otherwise
+//     *         the first fire time of the newly scheduled trigger.
+//     */
+//    @Override
+//    public Date rescheduleJob(Key triggerKey,Trigger newTrigger) throws SchedulerException {
+//        validateState();
+//        if (triggerKey == null) {
+//            throw new IllegalArgumentException("triggerKey cannot be null");
 //        }
-    }
-
-    @Override
-    public void scheduleJob(JobDetail jobDetail, Set<? extends Trigger> triggersForJob,boolean replace) throws SchedulerException {
-        Map<JobDetail, Set<? extends Trigger>> triggersAndJobs = new HashMap<JobDetail, Set<? extends Trigger>>();
-        triggersAndJobs.put(jobDetail, triggersForJob);
-        scheduleJobs(triggersAndJobs, replace);
-    }
-
-    @Override
-    public boolean unscheduleJobs(List<Key> keys) throws SchedulerException  {
-        validateState();
-        boolean result = false;
-        result = resources.getJobStore().removeTriggers(keys);
-        notifySchedulerThread(0L);
-//        for(Key k: keys){
-//            notifySchedulerListenersUnscheduled(k);
+//        if (newTrigger == null) {
+//            throw new IllegalArgumentException("newTrigger cannot be null");
 //        }
-        return result;
-    }
-    
-    /**
-     * <p>
-     * Remove the indicated <code>{@link org.quartz.Trigger}</code> from the
-     * scheduler.
-     * </p>
-     */
-    @Override
-    public boolean unscheduleJob(Key key) throws SchedulerException {
-        validateState();
-        if (resources.getJobStore().removeTrigger(key)) {
-            notifySchedulerThread(0L);
-//            notifySchedulerListenersUnscheduled(key);
-        } else {
-            return false;
-        }
-        return true;
-    }
-
-
-    /**
-     * <p>
-     * Remove (delete) the <code>{@link org.quartz.Trigger}</code> with the
-     * given name, and store the new given one - which must be associated
-     * with the same job.
-     * </p>
-     * @param newTrigger
-     *          The new <code>Trigger</code> to be stored.
-     * 
-     * @return <code>null</code> if a <code>Trigger</code> with the given
-     *         name & group was not found and removed from the store, otherwise
-     *         the first fire time of the newly scheduled trigger.
-     */
-    @Override
-    public Date rescheduleJob(Key triggerKey,Trigger newTrigger) throws SchedulerException {
-        validateState();
-        if (triggerKey == null) {
-            throw new IllegalArgumentException("triggerKey cannot be null");
-        }
-        if (newTrigger == null) {
-            throw new IllegalArgumentException("newTrigger cannot be null");
-        }
-        OperableTrigger trig = (OperableTrigger)newTrigger;
-        Trigger oldTrigger = getTrigger(triggerKey);
-        if (oldTrigger == null) {
-            return null;
-        } else {
-            // todo ...
-//            trig.setJobKey(oldTrigger.getJobKey());
-            trig.setKey(oldTrigger.getKey());
-        }
-        trig.validate();
-        Calendar cal = null;
-//        if (newTrigger.getCalendarName() != null) {
-//            cal = resources.getJobStore().retrieveCalendar(newTrigger.getCalendarName());
+//        OperableTrigger trig = (OperableTrigger)newTrigger;
+//        Trigger oldTrigger = getTrigger(triggerKey);
+//        if (oldTrigger == null) {
+//            return null;
+//        } else {
+//            // todo ...
+////            trig.setJobKey(oldTrigger.getJobKey());
+//            trig.setKey(oldTrigger.getKey());
 //        }
-        Date ft = trig.computeFirstFireTime(cal);
-        if (ft == null) {
-            throw new SchedulerException("Based on configured schedule, the given trigger will never fire.");
-        }
-        if (resources.getJobStore().replaceTrigger(triggerKey, trig)) {
-            notifySchedulerThread(newTrigger.getNextFireTime().getTime());
-//            notifySchedulerListenersUnscheduled(triggerKey);
-//            notifySchedulerListenersSchduled(newTrigger);
-        } else {
-            return null;
-        }
-        return ft;
-        
-    }
-    
-    
-    private String newTriggerId() {
-        long r = random.nextLong();
-        if (r < 0) {
-            r = -r;
-        }
-        return "MT_"+ Long.toString(r, 30 + (int) (System.currentTimeMillis() % 7));
-    }
+//        trig.validate();
+//        Calendar cal = null;
+////        if (newTrigger.getCalendarName() != null) {
+////            cal = resources.getJobStore().retrieveCalendar(newTrigger.getCalendarName());
+////        }
+//        Date ft = trig.computeFirstFireTime(cal);
+//        if (ft == null) {
+//            throw new SchedulerException("Based on configured schedule, the given trigger will never fire.");
+//        }
+//        if (resources.getJobStore().replaceTrigger(triggerKey, trig)) {
+//            notifySchedulerThread(newTrigger.getNextFireTime().getTime());
+////            notifySchedulerListenersUnscheduled(triggerKey);
+////            notifySchedulerListenersSchduled(newTrigger);
+//        } else {
+//            return null;
+//        }
+//        return ft;
+//
+//    }
+//    private String newTriggerId() {
+//        long r = random.nextLong();
+//        if (r < 0) {
+//            r = -r;
+//        }
+//        return "MT_"+ Long.toString(r, 30 + (int) (System.currentTimeMillis() % 7));
+//    }
 
 //    /**
 //     * <p>
@@ -1179,20 +1175,20 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //        }
 //    }
 
-    /**
-     * <p>
-     * Pause the <code>{@link org.quartz.JobDetail}</code> with the given
-     * name - by pausing all of its current <code>Trigger</code>s.
-     * </p>
-     *  
-     */
-    @Override
-    public void pauseJob(Key key) throws SchedulerException {
-        validateState();
-        resources.getJobStore().pauseJob(key);
-        notifySchedulerThread(0L);
-//        notifySchedulerListenersPausedJob(key);
-    }
+//    /**
+//     * <p>
+//     * Pause the <code>{@link org.quartz.JobDetail}</code> with the given
+//     * name - by pausing all of its current <code>Trigger</code>s.
+//     * </p>
+//     *
+//     */
+//    @Override
+//    public void pauseJob(Key key) throws SchedulerException {
+//        validateState();
+//        resources.getJobStore().pauseJob(key);
+//        notifySchedulerThread(0L);
+////        notifySchedulerListenersPausedJob(key);
+//    }
 
     /**
      * <p>
@@ -1214,26 +1210,26 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //            notifySchedulerListenersPausedJobs(pausedGroup);
 //        }
     }
-
-    /**
-     * <p>
-     * Resume (un-pause) the <code>{@link Trigger}</code> with the given
-     * name.
-     * </p>
-     * 
-     * <p>
-     * If the <code>Trigger</code> missed one or more fire-times, then the
-     * <code>Trigger</code>'s misfire instruction will be applied.
-     * </p>
-     *  
-     */
-    @Override
-    public void resumeTrigger(Key triggerKey) throws SchedulerException {
-        validateState();
-        resources.getJobStore().resumeTrigger(triggerKey);
-        notifySchedulerThread(0L);
-//        notifySchedulerListenersResumedTrigger(triggerKey);
-    }
+//
+//    /**
+//     * <p>
+//     * Resume (un-pause) the <code>{@link Trigger}</code> with the given
+//     * name.
+//     * </p>
+//     *
+//     * <p>
+//     * If the <code>Trigger</code> missed one or more fire-times, then the
+//     * <code>Trigger</code>'s misfire instruction will be applied.
+//     * </p>
+//     *
+//     */
+//    @Override
+//    public void resumeTrigger(Key triggerKey) throws SchedulerException {
+//        validateState();
+//        resources.getJobStore().resumeTrigger(triggerKey);
+//        notifySchedulerThread(0L);
+////        notifySchedulerListenersResumedTrigger(triggerKey);
+//    }
 
 //    /**
 //     * <p>
@@ -1263,27 +1259,27 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //    public Set<String> getPausedTriggerGroups() throws SchedulerException {
 //        return resources.getJobStore().getPausedTriggerGroups();
 //    }
-    
-    /**
-     * <p>
-     * Resume (un-pause) the <code>{@link org.quartz.JobDetail}</code> with
-     * the given name.
-     * </p>
-     * 
-     * <p>
-     * If any of the <code>Job</code>'s<code>Trigger</code> s missed one
-     * or more fire-times, then the <code>Trigger</code>'s misfire
-     * instruction will be applied.
-     * </p>
-     *  
-     */
-    @Override
-    public void resumeJob(Key key) throws SchedulerException {
-        validateState();
-        resources.getJobStore().resumeJob(key);
-        notifySchedulerThread(0L);
-//        notifySchedulerListenersResumedJob(key);
-    }
+//
+//    /**
+//     * <p>
+//     * Resume (un-pause) the <code>{@link org.quartz.JobDetail}</code> with
+//     * the given name.
+//     * </p>
+//     *
+//     * <p>
+//     * If any of the <code>Job</code>'s<code>Trigger</code> s missed one
+//     * or more fire-times, then the <code>Trigger</code>'s misfire
+//     * instruction will be applied.
+//     * </p>
+//     *
+//     */
+//    @Override
+//    public void resumeJob(Key key) throws SchedulerException {
+//        validateState();
+//        resources.getJobStore().resumeJob(key);
+//        notifySchedulerThread(0L);
+////        notifySchedulerListenersResumedJob(key);
+//    }
 
     /**
      * <p>
@@ -1323,7 +1319,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
      * </p>
      * 
      * @see #resumeAll()
-     * @see #pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
+//     * @see #pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
      * @see #standby()
      */
     public void pauseAll() throws SchedulerException {
@@ -1478,18 +1474,18 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         return resources.getJobStore().checkTriggerExists(triggerKey);
     }
     
-    /**
-     * Clears (deletes!) all scheduling data - all {@link Job}s, {@link Trigger}s
-     * {@link Calendar}s.
-     * 
-     * @throws SchedulerException
-     */
-    @Override
-    public void clear() throws SchedulerException {
-        validateState();
-        resources.getJobStore().clearAllSchedulingData();
-//        notifySchedulerListenersUnscheduled(null);
-    }
+//    /**
+//     * Clears (deletes!) all scheduling data - all {@link Job}s, {@link Trigger}s
+//     * {@link Calendar}s.
+//     *
+//     * @throws SchedulerException
+//     */
+//    @Override
+//    public void clear() throws SchedulerException {
+//        validateState();
+//        resources.getJobStore().clearAllSchedulingData();
+////        notifySchedulerListenersUnscheduled(null);
+//    }
     
     
     /**
@@ -1704,26 +1700,26 @@ J     *
 //            return internalSchedulerListeners.remove(schedulerListener);
 //        }
 //    }
+//
+//    /**
+//     * <p>
+//     * Get a List containing all of the <i>internal</i> <code>{@link SchedulerListener}</code>s
+//     * registered with the <code>Scheduler</code>.
+//     * </p>
+//     */
+//    public List<SchedulerListener> getInternalSchedulerListeners() {
+//        synchronized (internalSchedulerListeners) {
+//            return java.util.Collections.unmodifiableList(new ArrayList<SchedulerListener>(internalSchedulerListeners));
+//        }
+//    }
 
-    /**
-     * <p>
-     * Get a List containing all of the <i>internal</i> <code>{@link SchedulerListener}</code>s
-     * registered with the <code>Scheduler</code>.
-     * </p>
-     */
-    public List<SchedulerListener> getInternalSchedulerListeners() {
-        synchronized (internalSchedulerListeners) {
-            return java.util.Collections.unmodifiableList(new ArrayList<SchedulerListener>(internalSchedulerListeners));
-        }
-    }
+//    protected void notifyJobStoreJobComplete(OperableTrigger trigger, JobDetail detail, CompletedExecutionInstruction instCode) {
+//        resources.getJobStore().triggeredJobComplete(trigger, detail, instCode);
+//    }
 
-    protected void notifyJobStoreJobComplete(OperableTrigger trigger, JobDetail detail, CompletedExecutionInstruction instCode) {
-        resources.getJobStore().triggeredJobComplete(trigger, detail, instCode);
-    }
-
-    protected void notifyJobStoreJobVetoed(OperableTrigger trigger, JobDetail detail, CompletedExecutionInstruction instCode) {
-        resources.getJobStore().triggeredJobComplete(trigger, detail, instCode);
-    }
+//    protected void notifyJobStoreJobVetoed(OperableTrigger trigger, JobDetail detail, CompletedExecutionInstruction instCode) {
+//        resources.getJobStore().triggeredJobComplete(trigger, detail, instCode);
+//    }
 
     protected void notifySchedulerThread(long candidateNewNextFireTime) {
         if (isSignalOnSchedulingChange()) {

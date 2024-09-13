@@ -203,10 +203,10 @@ public interface Scheduler {
      */
     String getSchedulerName() throws SchedulerException;
 
-    /**
-     * Returns the instance Id of the <code>Scheduler</code>.
-     */
-    String getSchedulerInstanceId() throws SchedulerException;
+//    /**
+//     * Returns the instance Id of the <code>Scheduler</code>.
+//     */
+//    String getSchedulerInstanceId() throws SchedulerException;
 
     /**
      * Returns the <code>SchedulerContext</code> of the <code>Scheduler</code>.
@@ -334,16 +334,16 @@ public interface Scheduler {
      */
     boolean isShutdown() throws SchedulerException;
 
-    /**
-     * Get a <code>SchedulerMetaData</code> object describing the settings
-     * and capabilities of the scheduler instance.
-     * 
-     * <p>
-     * Note that the data returned is an 'instantaneous' snap-shot, and that as
-     * soon as it's returned, the meta data values may be different.
-     * </p>
-     */
-    SchedulerMetaData getMetaData() throws SchedulerException;
+//    /**
+//     * Get a <code>SchedulerMetaData</code> object describing the settings
+//     * and capabilities of the scheduler instance.
+//     *
+//     * <p>
+//     * Note that the data returned is an 'instantaneous' snap-shot, and that as
+//     * soon as it's returned, the meta data values may be different.
+//     * </p>
+//     */
+//    SchedulerMetaData getMetaData() throws SchedulerException;
 
     /**
      * Return a list of <code>JobExecutionContext</code> objects that
@@ -405,98 +405,98 @@ public interface Scheduler {
     ///
     ///////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Add the given <code>{@link org.quartz.JobDetail}</code> to the
-     * Scheduler, and associate the given <code>{@link Trigger}</code> with
-     * it.
-     * 
-     * <p>
-     * If the given Trigger does not reference any <code>Job</code>, then it
-     * will be set to reference the Job passed with it into this method.
-     * </p>
-     * 
-     * @throws SchedulerException
-     *           if the Job or Trigger cannot be added to the Scheduler, or
-     *           there is an internal Scheduler error.
-     */
-    Date scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException;
+//    /**
+//     * Add the given <code>{@link org.quartz.JobDetail}</code> to the
+//     * Scheduler, and associate the given <code>{@link Trigger}</code> with
+//     * it.
+//     *
+//     * <p>
+//     * If the given Trigger does not reference any <code>Job</code>, then it
+//     * will be set to reference the Job passed with it into this method.
+//     * </p>
+//     *
+//     * @throws SchedulerException
+//     *           if the Job or Trigger cannot be added to the Scheduler, or
+//     *           there is an internal Scheduler error.
+//     */
+//    Date scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException;
 //    default Date scheduleJobAndExecute(JobCfg jobCfg, ExecuteCfg executeCfg) throws SchedulerException{
 //        throw new SchedulerException("Undefined logic!");
 //    }
-
-    /**
-     * Schedule the given <code>{@link org.quartz.Trigger}</code> with the
-     * <code>Job</code> identified by the <code>Trigger</code>'s settings.
-     * 
-     * @throws SchedulerException
-     *           if the indicated Job does not exist, or the Trigger cannot be
-     *           added to the Scheduler, or there is an internal Scheduler
-     *           error.
-     */
-    Date scheduleJob(Trigger trigger) throws SchedulerException;
-
-    /**
-     * Schedule all of the given jobs with the related set of triggers.
-     * 
-     * <p>If any of the given jobs or triggers already exist (or more
-     * specifically, if the keys are not unique) and the replace 
-     * parameter is not set to true then an exception will be thrown.</p>
-     * 
-     * @throws ObjectAlreadyExistsException if the job/trigger keys
-     * are not unique and the replace flag is not set to true. 
-     */
-    void scheduleJobs(Map<JobDetail, Set<? extends Trigger>> triggersAndJobs, boolean replace) throws SchedulerException;
+//
+//    /**
+//     * Schedule the given <code>{@link org.quartz.Trigger}</code> with the
+//     * <code>Job</code> identified by the <code>Trigger</code>'s settings.
+//     *
+//     * @throws SchedulerException
+//     *           if the indicated Job does not exist, or the Trigger cannot be
+//     *           added to the Scheduler, or there is an internal Scheduler
+//     *           error.
+//     */
+//    Date scheduleJob(Trigger trigger) throws SchedulerException;
+//
+//    /**
+//     * Schedule all of the given jobs with the related set of triggers.
+//     *
+//     * <p>If any of the given jobs or triggers already exist (or more
+//     * specifically, if the keys are not unique) and the replace
+//     * parameter is not set to true then an exception will be thrown.</p>
+//     *
+//     * @throws ObjectAlreadyExistsException if the job/trigger keys
+//     * are not unique and the replace flag is not set to true.
+//     */
+//    void scheduleJobs(Map<JobDetail, Set<? extends Trigger>> triggersAndJobs, boolean replace) throws SchedulerException;
     
-    /**
-     * Schedule the given job with the related set of triggers.
-     * 
-     * <p>If any of the given job or triggers already exist (or more
-     * specifically, if the keys are not unique) and the replace 
-     * parameter is not set to true then an exception will be thrown.</p>
-     * 
-     * @throws ObjectAlreadyExistsException if the job/trigger keys
-     * are not unique and the replace flag is not set to true. 
-     */
-    void scheduleJob(JobDetail jobDetail, Set<? extends Trigger> triggersForJob, boolean replace) throws SchedulerException;
+//    /**
+//     * Schedule the given job with the related set of triggers.
+//     *
+//     * <p>If any of the given job or triggers already exist (or more
+//     * specifically, if the keys are not unique) and the replace
+//     * parameter is not set to true then an exception will be thrown.</p>
+//     *
+//     * @throws ObjectAlreadyExistsException if the job/trigger keys
+//     * are not unique and the replace flag is not set to true.
+//     */
+//    void scheduleJob(JobDetail jobDetail, Set<? extends Trigger> triggersForJob, boolean replace) throws SchedulerException;
     
-    /**
-     * Remove the indicated <code>{@link Trigger}</code> from the scheduler.
-     * 
-     * <p>If the related job does not have any other triggers, and the job is
-     * not durable, then the job will also be deleted.</p>
-     */
-    boolean unscheduleJob(Key triggerKey) throws SchedulerException;
+//    /**
+//     * Remove the indicated <code>{@link Trigger}</code> from the scheduler.
+//     *
+//     * <p>If the related job does not have any other triggers, and the job is
+//     * not durable, then the job will also be deleted.</p>
+//     */
+//    boolean unscheduleJob(Key triggerKey) throws SchedulerException;
 
-    /**
-     * Remove all of the indicated <code>{@link Trigger}</code>s from the scheduler.
-     * 
-     * <p>If the related job does not have any other triggers, and the job is
-     * not durable, then the job will also be deleted.</p>
-     * 
-     * <p>Note that while this bulk operation is likely more efficient than
-     * invoking <code>unscheduleJob(TriggerKey triggerKey)</code> several
-     * times, it may have the adverse affect of holding data locks for a
-     * single long duration of time (rather than lots of small durations
-     * of time).</p> 
-     */
-    boolean unscheduleJobs(List<Key> keys) throws SchedulerException;
+//    /**
+//     * Remove all of the indicated <code>{@link Trigger}</code>s from the scheduler.
+//     *
+//     * <p>If the related job does not have any other triggers, and the job is
+//     * not durable, then the job will also be deleted.</p>
+//     *
+//     * <p>Note that while this bulk operation is likely more efficient than
+//     * invoking <code>unscheduleJob(TriggerKey triggerKey)</code> several
+//     * times, it may have the adverse affect of holding data locks for a
+//     * single long duration of time (rather than lots of small durations
+//     * of time).</p>
+//     */
+//    boolean unscheduleJobs(List<Key> keys) throws SchedulerException;
     
-    /**
-     * Remove (delete) the <code>{@link org.quartz.Trigger}</code> with the
-     * given key, and store the new given one - which must be associated
-     * with the same job (the new trigger must have the job name & group specified) 
-     * - however, the new trigger need not have the same name as the old trigger.
-     * 
-     * @param triggerKey identity of the trigger to replace
-     * @param newTrigger
-     *          The new <code>Trigger</code> to be stored.
-     * 
-     * @return <code>null</code> if a <code>Trigger</code> with the given
-     *         name & group was not found and removed from the store (and the 
-     *         new trigger is therefore not stored), otherwise
-     *         the first fire time of the newly scheduled trigger is returned.
-     */
-    Date rescheduleJob(Key triggerKey, Trigger newTrigger) throws SchedulerException;
+//    /**
+//     * Remove (delete) the <code>{@link org.quartz.Trigger}</code> with the
+//     * given key, and store the new given one - which must be associated
+//     * with the same job (the new trigger must have the job name & group specified)
+//     * - however, the new trigger need not have the same name as the old trigger.
+//     *
+//     * @param triggerKey identity of the trigger to replace
+//     * @param newTrigger
+//     *          The new <code>Trigger</code> to be stored.
+//     *
+//     * @return <code>null</code> if a <code>Trigger</code> with the given
+//     *         name & group was not found and removed from the store (and the
+//     *         new trigger is therefore not stored), otherwise
+//     *         the first fire time of the newly scheduled trigger is returned.
+//     */
+//    Date rescheduleJob(Key triggerKey, Trigger newTrigger) throws SchedulerException;
     
 //    /**
 //     * Add the given <code>Job</code> to the Scheduler - with no associated
@@ -517,56 +517,56 @@ public interface Scheduler {
 //     *           <code>replace</code> is <code>false</code>.
 //     */
 //    void addJob(JobDetail jobDetail, boolean replace) throws SchedulerException;
-
-    /**
-     * Add the given <code>Job</code> to the Scheduler - with no associated
-     * <code>Trigger</code>. The <code>Job</code> will be 'dormant' until
-     * it is scheduled with a <code>Trigger</code>, or <code>Scheduler.triggerJob()</code>
-     * is called for it.
-     * 将给定的作业添加到调度器中，但不关联触发器。作业将处于“休眠”状态，直到使用触发器或Scheduler对其进行调度。为此调用了triggerJob（）。
-     *
-     * <p>
-     * With the <code>storeNonDurableWhileAwaitingScheduling</code> parameter
-     * set to <code>true</code>, a non-durable job can be stored.  Once it is
-     * scheduled, it will resume normal non-durable behavior (i.e. be deleted
-     * once there are no remaining associated triggers).
-     * </p>
-     * 将storeNonDurableWhileAwaiting调度参数设置为true时，可以存储非持久作业。一旦被安排，它将恢复正常的非持久行为（即一旦没有剩余的相关触发器，它就会被删除）。
-     *
-     * @throws SchedulerException
-     *           if there is an internal Scheduler error, or if the Job is not
-     *           durable, or a Job with the same name already exists, and
-     *           <code>replace</code> is <code>false</code>.
-     *           SchedulerException-如果存在内部调度器错误，或者作业不持久，或者已经存在同名作业，并且replace为false。
-     */
-    void addJob(JobDetail jobDetail, boolean replace, boolean storeNonDurableWhileAwaitingScheduling) throws SchedulerException;
-
-    /**
-     * Delete the identified <code>Job</code> from the Scheduler - and any
-     * associated <code>Trigger</code>s.
-     * 
-     * @return true if the Job was found and deleted.
-     * @throws SchedulerException
-     *           if there is an internal Scheduler error.
-     */
-    boolean deleteJob(Key jobKey) throws SchedulerException;
-
-    /**
-     * Delete the identified <code>Job</code>s from the Scheduler - and any
-     * associated <code>Trigger</code>s.
-     * 
-     * <p>Note that while this bulk operation is likely more efficient than
-     * invoking <code>deleteJob(Key Key)</code> several
-     * times, it may have the adverse affect of holding data locks for a
-     * single long duration of time (rather than lots of small durations
-     * of time).</p>
-     *  
-     * @return true if all of the Jobs were found and deleted, false if 
-     * one or more were not deleted.
-     * @throws SchedulerException
-     *           if there is an internal Scheduler error.
-     */
-    boolean deleteJobs(List<Key> keys) throws SchedulerException;
+//
+//    /**
+//     * Add the given <code>Job</code> to the Scheduler - with no associated
+//     * <code>Trigger</code>. The <code>Job</code> will be 'dormant' until
+//     * it is scheduled with a <code>Trigger</code>, or <code>Scheduler.triggerJob()</code>
+//     * is called for it.
+//     * 将给定的作业添加到调度器中，但不关联触发器。作业将处于“休眠”状态，直到使用触发器或Scheduler对其进行调度。为此调用了triggerJob（）。
+//     *
+//     * <p>
+//     * With the <code>storeNonDurableWhileAwaitingScheduling</code> parameter
+//     * set to <code>true</code>, a non-durable job can be stored.  Once it is
+//     * scheduled, it will resume normal non-durable behavior (i.e. be deleted
+//     * once there are no remaining associated triggers).
+//     * </p>
+//     * 将storeNonDurableWhileAwaiting调度参数设置为true时，可以存储非持久作业。一旦被安排，它将恢复正常的非持久行为（即一旦没有剩余的相关触发器，它就会被删除）。
+//     *
+//     * @throws SchedulerException
+//     *           if there is an internal Scheduler error, or if the Job is not
+//     *           durable, or a Job with the same name already exists, and
+//     *           <code>replace</code> is <code>false</code>.
+//     *           SchedulerException-如果存在内部调度器错误，或者作业不持久，或者已经存在同名作业，并且replace为false。
+//     */
+//    void addJob(JobDetail jobDetail, boolean replace, boolean storeNonDurableWhileAwaitingScheduling) throws SchedulerException;
+//
+//    /**
+//     * Delete the identified <code>Job</code> from the Scheduler - and any
+//     * associated <code>Trigger</code>s.
+//     *
+//     * @return true if the Job was found and deleted.
+//     * @throws SchedulerException
+//     *           if there is an internal Scheduler error.
+//     */
+//    boolean deleteJob(Key jobKey) throws SchedulerException;
+//
+//    /**
+//     * Delete the identified <code>Job</code>s from the Scheduler - and any
+//     * associated <code>Trigger</code>s.
+//     *
+//     * <p>Note that while this bulk operation is likely more efficient than
+//     * invoking <code>deleteJob(Key Key)</code> several
+//     * times, it may have the adverse affect of holding data locks for a
+//     * single long duration of time (rather than lots of small durations
+//     * of time).</p>
+//     *
+//     * @return true if all of the Jobs were found and deleted, false if
+//     * one or more were not deleted.
+//     * @throws SchedulerException
+//     *           if there is an internal Scheduler error.
+//     */
+//    boolean deleteJobs(List<Key> keys) throws SchedulerException;
     
 //    /**
 //     * Trigger the identified <code>{@link org.quartz.JobDetail}</code>
@@ -582,13 +582,13 @@ public interface Scheduler {
 //     * associated with the trigger that fires the job immediately.
 //     */
 //    void triggerJob(Key jobKey, JobDataMap data) throws SchedulerException;
-
-    /**
-     * Pause the <code>{@link org.quartz.JobDetail}</code> with the given
-     * key - by pausing all of its current <code>Trigger</code>s.
-     * 
-     */
-    void pauseJob(Key key) throws SchedulerException;
+//
+//    /**
+//     * Pause the <code>{@link org.quartz.JobDetail}</code> with the given
+//     * key - by pausing all of its current <code>Trigger</code>s.
+//     *
+//     */
+//    void pauseJob(Key key) throws SchedulerException;
 
     /**
      * Pause all of the <code>{@link org.quartz.JobDetail}s</code> in the
@@ -653,19 +653,19 @@ public interface Scheduler {
 //     * @see #resumeTriggers(org.quartz.impl.matchers.GroupMatcher)
 //     */
 //    void pauseTriggers(GroupMatcher<TriggerKey> matcher) throws SchedulerException;
-
-    /**
-     * Resume (un-pause) the <code>{@link org.quartz.JobDetail}</code> with
-     * the given key.
-     * 
-     * <p>
-     * If any of the <code>Job</code>'s<code>Trigger</code> s missed one
-     * or more fire-times, then the <code>Trigger</code>'s misfire
-     * instruction will be applied.
-     * </p>
-     * 
-     */
-    void resumeJob(Key key)throws SchedulerException;
+//
+//    /**
+//     * Resume (un-pause) the <code>{@link org.quartz.JobDetail}</code> with
+//     * the given key.
+//     *
+//     * <p>
+//     * If any of the <code>Job</code>'s<code>Trigger</code> s missed one
+//     * or more fire-times, then the <code>Trigger</code>'s misfire
+//     * instruction will be applied.
+//     * </p>
+//     *
+//     */
+//    void resumeJob(Key key)throws SchedulerException;
 
     /**
      * Resume (un-pause) all of the <code>{@link org.quartz.JobDetail}s</code>
@@ -682,19 +682,19 @@ public interface Scheduler {
      * @see #pauseJobs(GroupMatcher)
      */
     void resumeJobs(final String triggerName) throws SchedulerException;
-
-    /**
-     * Resume (un-pause) the <code>{@link Trigger}</code> with the given
-     * key.
-     * 
-     * <p>
-     * If the <code>Trigger</code> missed one or more fire-times, then the
-     * <code>Trigger</code>'s misfire instruction will be applied.
-     * </p>
-     * 
-     * @see #pauseTrigger(TriggerKey)
-     */
-    void resumeTrigger(Key triggerKey) throws SchedulerException;
+//
+//    /**
+//     * Resume (un-pause) the <code>{@link Trigger}</code> with the given
+//     * key.
+//     *
+//     * <p>
+//     * If the <code>Trigger</code> missed one or more fire-times, then the
+//     * <code>Trigger</code>'s misfire instruction will be applied.
+//     * </p>
+//     *
+//     * @see #pauseTrigger(TriggerKey)
+//     */
+//    void resumeTrigger(Key triggerKey) throws SchedulerException;
 
 //    /**
 //     * Resume (un-pause) all of the <code>{@link Trigger}s</code> in matching groups.
@@ -949,14 +949,14 @@ public interface Scheduler {
      * @throws SchedulerException 
      */
     boolean checkTriggerExists(Key triggerKey) throws SchedulerException;
-    
-    /**
-     * Clears (deletes!) all scheduling data - all {@link Job}s, {@link Trigger}s
-     * {@link Calendar}s.
-     * 
-     * @throws SchedulerException
-     */
-    void clear() throws SchedulerException;
+//
+//    /**
+//     * Clears (deletes!) all scheduling data - all {@link Job}s, {@link Trigger}s
+//     * {@link Calendar}s.
+//     *
+//     * @throws SchedulerException
+//     */
+//    void clear() throws SchedulerException;
 
 
 }

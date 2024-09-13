@@ -304,7 +304,7 @@ public class QuartzSchedulerThread extends Thread {
                         _stop=_stop>10?1:1+_stop;
                         try {
                             // 适当延长等待时间，减少空转
-                            sigLock.wait(LOOP_INTERVAL*(_stop%3==0?2:1)-LOOP_WINDOW);
+                            sigLock.wait(LOOP_INTERVAL*(_stop/3!=0?2:1)-LOOP_WINDOW);
                             _ts = System.currentTimeMillis(); // 必须要重置，否则获取执行信息会出现时间误差
                         } catch (InterruptedException ignore) {
                         }
@@ -312,9 +312,9 @@ public class QuartzSchedulerThread extends Thread {
                         // 暂停时重置失败计数器，这样我们就不会在取消暂停后再次等待
                         acquiresFailed = 0;
                     }
-//                    if (halted.get()) {
-//                        break;
-//                    }
+                    if (halted.get()) {
+                        break;
+                    }
                 }
 
 //                // wait a bit, if reading from job store is consistently 如果从作业存储中读取的内容一致，请稍等
@@ -344,24 +344,9 @@ public class QuartzSchedulerThread extends Thread {
                     // 清除调度信号变更
                     clearSignaledSchedulingChange();
                     try {
-                        // 这里面做这几件事儿 (JobStoreSupport:acquireNextTrigger)：
-                        //      1.从 job_cfg 中获取 state=WAITING 且 nextFiretime=now+30S 的所有记录
-                        //      2.检查并发状态(true:一个job同时只能支持一个执行时间执行 )
-                        //      3.更新每一条对应 job_cfg 中的记录的状态为 state=ACQUIRED(获得/正常执行)
-                        //      4.trigger设置fireInstanceId
-                        //      5.记录写入 FIRED_TRIGGERS 表且状态为 state=ACQUIRED(获得/正常执行)
-                        //      6.返回已更新 job_cfg 的记录
-                        // noLaterThan: now + 30S
-                        // maxCount: Math.min(availThreadCount, qsRsrcs.getMaxBatchSize()) maxBatchSize:默认是1且可配置 org.quartz.scheduler.batchTriggerAcquisitionMaxCount
-                        // timeWindow: qsRsrcs.getBatchTimeWindow()
-//                        executeList = qsRsrcs.getJobStore().acquireNextTriggers(now + idleWaitTime, Math.min(availThreadCount, qsRsrcs.getMaxBatchSize()), qsRsrcs.getBatchTimeWindow());
                         executeList = qsRsrcs.getJobStore().acquireNextTriggers(application,now,_tew);
                         acquiresFailed = 0;
                         if (executeList == null || executeList.isEmpty()) {
-//                            long w = 0;
-//                            if((w = (System.currentTimeMillis()-now-6)) >0 ){
-//                                Thread.sleep(w);
-//                            }
                             continue;
                         }
                     } catch (JobPersistenceException | RuntimeException jpe) {
@@ -429,7 +414,7 @@ public class QuartzSchedulerThread extends Thread {
                             //1.判断是否是本次执行
                             //2.修改下一次执行时间(next_file_time)
                             if( !tryAcquireLockAndUpdate(ce) && null!=ce.setFireTime(System.currentTimeMillis()) ){
-                                log.info("任务未能获取执行锁:{},{}-{}",ce.getId(),ce.getJobType(),ce.getJob().getJobClass()+"#"+ce.getExecuteIdx());
+                                log.info("任务未能获取执行锁:{},{}-{}",ce.getId(),ce.getJobType(),ce.getJob().getJobClass());
                                 continue;
                             }
 //                            log.error("=>已执行:{}->{},{}<=",ce.getId(),ce.getJobType(),ce.getJob().getJobClass()+"#"+ce.getExecuteIdx());
@@ -531,7 +516,7 @@ public class QuartzSchedulerThread extends Thread {
         long old_next_time = ce.getNextFireTime();
         final String old_state = ce.getState();
         Date nextFireTime = new Date(ce.getNextFireTime());
-        QrtzExecute newCe = new QrtzExecute(ce.getId(),ce.getPid(),ce.getExecuteIdx(),ce.getJobType(),ce.getState(),ce.getCron(),ce.getZoneId(),ce.getRepeatCount(),ce.getRepeatInterval(),ce.getTimeTriggered(),ce.getPrevFireTime(),ce.getNextFireTime(),ce.getHostIp(),ce.getHostName(),ce.getStartTime(),ce.getEndTime());
+        QrtzExecute newCe = new QrtzExecute(ce.getId(),ce.getPid(),ce.getJobType(),ce.getState(),ce.getCron(),ce.getZoneId(),ce.getRepeatCount(),ce.getRepeatInterval(),ce.getTimeTriggered(),ce.getPrevFireTime(),ce.getNextFireTime(),ce.getHostIp(),ce.getHostName(),ce.getStartTime(),ce.getEndTime());
         try {
             if ("CRON".equals(jobType)) {
                 CronTriggerImpl cronTrigger = new CronTriggerImpl()

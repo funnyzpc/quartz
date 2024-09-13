@@ -39,7 +39,9 @@ import org.slf4j.LoggerFactory;
  * the UserTransaction, be sure to always call returnUserTransaction() when
  * you are done with the UserTransaction. 
  * </p>
- * 
+ *  用于获取UserTransaction句柄的助手。。。
+ * 为确保正确清理用于创建/查找UserTransaction的InitalContext，请务必在完成UserTransaction后始终调用returnUserTransaction()。
+ *
  * @author James House
  */
 public class UserTransactionHelper {
@@ -190,27 +192,27 @@ public class UserTransactionHelper {
         }
         
         // Wrapper methods that just delegate to the underlying UserTransaction
-        
+        @Override
         public void begin() throws NotSupportedException, SystemException {
             userTransaction.begin();
         }
-
+        @Override
         public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
             userTransaction.commit();        
         }
-
+        @Override
         public void rollback() throws IllegalStateException, SecurityException, SystemException {
             userTransaction.rollback();
         }
-
+        @Override
         public void setRollbackOnly() throws IllegalStateException, SystemException {
             userTransaction.setRollbackOnly();
         }
-
+        @Override
         public int getStatus() throws SystemException {
             return userTransaction.getStatus();
         }
-
+        @Override
         public void setTransactionTimeout(int seconds) throws SystemException {
             userTransaction.setTransactionTimeout(seconds);
         }

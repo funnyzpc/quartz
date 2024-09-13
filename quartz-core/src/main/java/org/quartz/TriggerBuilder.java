@@ -107,7 +107,7 @@ public class TriggerBuilder<T extends Trigger> {
 //            key = new TriggerKey(Key.createUniqueName(null), null);
             key = new Key( null);
         }
-        trig.setKey(key);
+//        trig.setKey(key);
 //        if(jobKey != null)
 //            trig.setJobKey(jobKey);
         trig.setPriority(priority);
@@ -321,25 +321,25 @@ public class TriggerBuilder<T extends Trigger> {
 //        this.jobKey = new JobKey(jobName, jobGroup);
 //        return this;
 //    }
-    
-    /**
-     * Set the identity of the Job which should be fired by the produced 
-     * Trigger, by extracting the JobKey from the given job.
-     * 
-     * @param jobDetail the Job to fire.
-     * @return the updated TriggerBuilder
-     * @see Trigger#getJobKey()
-     */
-    public TriggerBuilder<T> forJob(JobDetail jobDetail) {
-//        JobKey k = jobDetail.getKey();
-        Key k = jobDetail.getKey();
-        if(k.getName() == null){
-            throw new IllegalArgumentException("The given job has not yet had a name assigned to it.");
-        }
-//        this.jobKey = k;
-        this.key = k;
-        return this;
-    }
+//
+//    /**
+//     * Set the identity of the Job which should be fired by the produced
+//     * Trigger, by extracting the JobKey from the given job.
+//     *
+//     * @param jobDetail the Job to fire.
+//     * @return the updated TriggerBuilder
+//     * @see Trigger#getJobKey()
+//     */
+//    public TriggerBuilder<T> forJob(JobDetail jobDetail) {
+////        JobKey k = jobDetail.getKey();
+//        Key k = jobDetail.getKey();
+//        if(k.getName() == null){
+//            throw new IllegalArgumentException("The given job has not yet had a name assigned to it.");
+//        }
+////        this.jobKey = k;
+//        this.key = k;
+//        return this;
+//    }
 
 //    /**
 //     * Add the given key-value pair to the Trigger's {@link JobDataMap}.

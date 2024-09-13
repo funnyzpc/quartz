@@ -220,35 +220,35 @@ public interface DriverDelegate {
     // jobs
     //---------------------------------------------------------------------------
 
-    /**
-     * <p>
-     * Insert the job detail record.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param job
-     *          the job to insert
-     * @return number of rows inserted
-     * @throws IOException
-     *           if there were problems serializing the JobDataMap
-     */
-    int insertJobDetail(Connection conn, JobDetail job) throws IOException, SQLException;
-
-    /**
-     * <p>
-     * Update the job detail record.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param job
-     *          the job to update
-     * @return number of rows updated
-     * @throws IOException
-     *           if there were problems serializing the JobDataMap
-     */
-    int updateJobDetail(Connection conn, JobDetail job) throws IOException, SQLException;
+//    /**
+//     * <p>
+//     * Insert the job detail record.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param job
+//     *          the job to insert
+//     * @return number of rows inserted
+//     * @throws IOException
+//     *           if there were problems serializing the JobDataMap
+//     */
+//    int insertJobDetail(Connection conn, JobDetail job) throws IOException, SQLException;
+//
+//    /**
+//     * <p>
+//     * Update the job detail record.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param job
+//     *          the job to update
+//     * @return number of rows updated
+//     * @throws IOException
+//     *           if there were problems serializing the JobDataMap
+//     */
+//    int updateJobDetail(Connection conn, JobDetail job) throws IOException, SQLException;
 
     /**
      * <p>
@@ -300,21 +300,21 @@ public interface DriverDelegate {
      */
     boolean jobDetailExists(Connection conn, Key jobKey) throws SQLException;
 
-    /**
-     * <p>
-     * Update the job data map for the given job.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param job
-     *          the job to update
-     * @return the number of rows updated
-     * @throws IOException
-     *           if there were problems serializing the JobDataMap
-     */
-    int updateJobData(Connection conn, JobDetail job) throws IOException, SQLException;
-
+//    /**
+//     * <p>
+//     * Update the job data map for the given job.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param job
+//     *          the job to update
+//     * @return the number of rows updated
+//     * @throws IOException
+//     *           if there were problems serializing the JobDataMap
+//     */
+//    int updateJobData(Connection conn, JobDetail job) throws IOException, SQLException;
+//
 //    /**
 //     * <p>
 //     * Select the JobDetail object for a given job name / group name.
@@ -370,41 +370,41 @@ public interface DriverDelegate {
 
     //  selectJobsInGroup -> selectAllJobsInSched
     Set<Key> selectAllJobsInSched(Connection conn,final String triggerName) throws SQLException;
-
-    //---------------------------------------------------------------------------
-    // triggers
-    //---------------------------------------------------------------------------
-
-    /**
-     * <p>
-     * Insert the base trigger data.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param trigger
-     *          the trigger to insert
-     * @param state
-     *          the state that the trigger should be stored in
-     * @return the number of rows inserted
-     */
-    int insertTrigger(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException;
-
-    /**
-     * <p>
-     * Update the base trigger data.
-     * </p>
-     *
-     * @param conn
-     *          the DB Connection
-     * @param trigger
-     *          the trigger to insert
-     * @param state
-     *          the state that the trigger should be stored in
-     * @return the number of rows updated
-     */
-//    int updateTrigger(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException;
-    int updateJobCfg(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException;
+//
+//    //---------------------------------------------------------------------------
+//    // triggers
+//    //---------------------------------------------------------------------------
+//
+//    /**
+//     * <p>
+//     * Insert the base trigger data.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param trigger
+//     *          the trigger to insert
+//     * @param state
+//     *          the state that the trigger should be stored in
+//     * @return the number of rows inserted
+//     */
+//    int insertTrigger(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException;
+//
+//    /**
+//     * <p>
+//     * Update the base trigger data.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param trigger
+//     *          the trigger to insert
+//     * @param state
+//     *          the state that the trigger should be stored in
+//     * @return the number of rows updated
+//     */
+////    int updateTrigger(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException;
+//    int updateJobCfg(Connection conn, OperableTrigger trigger, String state,JobDetail jobDetail) throws SQLException, IOException;
 
     /**
      * <p>
@@ -515,73 +515,73 @@ public interface DriverDelegate {
 //     * @throws SQLException
 //     */
 //    int updateTriggerGroupStateFromOtherState(Connection conn, GroupMatcher<Key<?>> matcher, String newState, String oldState) throws SQLException;
-
-    /**
-     * <p>
-     * Update the states of all triggers associated with the given job.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * 
-     * @param state
-     *          the new state for the triggers
-     * @return the number of rows updated
-     */
-    int updateTriggerStatesForJob(Connection conn,Key jobKey,String state) throws SQLException;
-
-    /**
-     * <p>
-     * Update the states of any triggers associated with the given job, that
-     * are the given current state.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * 
-     * @param state
-     *          the new state for the triggers
-     * @param oldState
-     *          the old state of the triggers
-     * @return the number of rows updated
-     */
-    int updateTriggerStatesForJobFromOtherState(Connection conn,Key jobKey, String state, String oldState) throws SQLException;
-
-    /**
-     * <p>
-     * Delete the base trigger data for a trigger.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * 
-     * @return the number of rows deleted
-     */
-    int deleteTrigger(Connection conn,Key key) throws SQLException;
-
-    /**
-     * <p>
-     * Select the number of triggers associated with a given job.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @return the number of triggers for the given job
-     */
-    int selectNumTriggersForJob(Connection conn,Key jobKey) throws SQLException;
-
-    /**
-     * <p>
-     * Select the job to which the trigger is associated.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * 
-     * @return the <code>{@link org.quartz.JobDetail}</code> object
-     *         associated with the given trigger
-     */
-    JobDetail selectJobForTrigger(Connection conn, ClassLoadHelper loadHelper,Key triggerKey) throws ClassNotFoundException, SQLException;
+//
+//    /**
+//     * <p>
+//     * Update the states of all triggers associated with the given job.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     *
+//     * @param state
+//     *          the new state for the triggers
+//     * @return the number of rows updated
+//     */
+//    int updateTriggerStatesForJob(Connection conn,Key jobKey,String state) throws SQLException;
+//
+//    /**
+//     * <p>
+//     * Update the states of any triggers associated with the given job, that
+//     * are the given current state.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     *
+//     * @param state
+//     *          the new state for the triggers
+//     * @param oldState
+//     *          the old state of the triggers
+//     * @return the number of rows updated
+//     */
+//    int updateTriggerStatesForJobFromOtherState(Connection conn,Key jobKey, String state, String oldState) throws SQLException;
+//
+//    /**
+//     * <p>
+//     * Delete the base trigger data for a trigger.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     *
+//     * @return the number of rows deleted
+//     */
+//    int deleteTrigger(Connection conn,Key key) throws SQLException;
+//
+//    /**
+//     * <p>
+//     * Select the number of triggers associated with a given job.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @return the number of triggers for the given job
+//     */
+//    int selectNumTriggersForJob(Connection conn,Key jobKey) throws SQLException;
+//
+//    /**
+//     * <p>
+//     * Select the job to which the trigger is associated.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     *
+//     * @return the <code>{@link org.quartz.JobDetail}</code> object
+//     *         associated with the given trigger
+//     */
+//    JobDetail selectJobForTrigger(Connection conn, ClassLoadHelper loadHelper,Key triggerKey) throws ClassNotFoundException, SQLException;
 
     /**
      * <p>
@@ -930,36 +930,36 @@ public interface DriverDelegate {
      */
     List<Key> selectTriggerToAcquire(Connection conn, long noLaterThan, long noEarlierThan, int maxCount) throws SQLException;
 
-    /**
-     * <p>
-     * Insert a fired trigger.
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param trigger
-     *          the trigger
-     * @param state
-     *          the state that the trigger should be stored in
-     * @return the number of rows inserted
-     */
-    int insertFiredTrigger(Connection conn, OperableTrigger trigger,String state, JobDetail jobDetail) throws SQLException;
-
-    /**
-     * <p>
-     * Update a fired trigger record.  Will update the fields  
-     * "firing instance", "fire time", and "state".
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @param trigger
-     *          the trigger
-     * @param state
-     *          the state that the trigger should be stored in
-     * @return the number of rows inserted
-     */
-    int updateFiredTrigger(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException;
+//    /**
+//     * <p>
+//     * Insert a fired trigger.
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param trigger
+//     *          the trigger
+//     * @param state
+//     *          the state that the trigger should be stored in
+//     * @return the number of rows inserted
+//     */
+//    int insertFiredTrigger(Connection conn, OperableTrigger trigger,String state, JobDetail jobDetail) throws SQLException;
+//
+//    /**
+//     * <p>
+//     * Update a fired trigger record.  Will update the fields
+//     * "firing instance", "fire time", and "state".
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @param trigger
+//     *          the trigger
+//     * @param state
+//     *          the state that the trigger should be stored in
+//     * @return the number of rows inserted
+//     */
+//    int updateFiredTrigger(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException;
 
     /**
      * <p>

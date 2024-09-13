@@ -57,19 +57,19 @@ public class SimpleJobFactory implements JobFactory {
         }
     }
 
-    @Override
-    public Job newJob(Scheduler Scheduler,JobDetail jobDetail) throws SchedulerException {
-//        JobDetail jobDetail = bundle.getJobDetail();
-        Class<? extends Job> jobClass = jobDetail.getJobClass();
-        try {
-            if(log.isDebugEnabled()) {
-                log.debug("Producing instance of Job '" + jobDetail.getKey() + "', class=" + jobClass.getName());
-            }
-            return jobClass.newInstance();
-        } catch (Exception e) {
-            SchedulerException se = new SchedulerException("Problem instantiating class '" + jobDetail.getJobClassName() + "'", e);
-            throw se;
-        }
-    }
+//    @Override
+//    public Job newJob(Scheduler Scheduler,JobDetail jobDetail) throws SchedulerException {
+////        JobDetail jobDetail = bundle.getJobDetail();
+//        Class<? extends Job> jobClass = jobDetail.getJobClass();
+//        try {
+//            if(log.isDebugEnabled()) {
+//                log.debug("Producing instance of Job '" + jobDetail.getKey() + "', class=" + jobClass.getName());
+//            }
+//            return jobClass.newInstance();
+//        } catch (Exception e) {
+//            SchedulerException se = new SchedulerException("Problem instantiating class '" + jobDetail.getJobClassName() + "'", e);
+//            throw se;
+//        }
+//    }
 
 }

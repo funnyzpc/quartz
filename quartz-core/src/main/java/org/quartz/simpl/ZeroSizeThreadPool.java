@@ -82,34 +82,34 @@ public class ZeroSizeThreadPool implements ThreadPool {
     public Logger getLog() {
         return log;
     }
-
+    @Override
     public int getPoolSize() {
         return 0;
     }
-
+    @Override
     public void initialize() throws SchedulerConfigException {
     }
 
     public void shutdown() {
         shutdown(true);
     }
-
+    @Override
     public void shutdown(boolean waitForJobsToComplete) {
         getLog().debug("shutdown complete");
     }
-
+    @Override
     public boolean runInThread(Runnable runnable) {
         throw new UnsupportedOperationException("This ThreadPool should not be used on Scheduler instances that are start()ed.");
     }
-
+    @Override
     public int blockForAvailableThreads() {
         throw new UnsupportedOperationException("This ThreadPool should not be used on Scheduler instances that are start()ed.");
     }
-
+    @Override
     public void setInstanceId(String schedInstId) {
     }
-
-    public void setInstanceName(String schedName) {
+    @Override
+    public void setApplication(String schedName) {
     }
 
 }

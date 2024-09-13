@@ -28,6 +28,7 @@ import java.io.Serializable;
  * 
  * @author <a href="mailto:jeff@binaryfeed.org">Jeffrey Wescott</a>
  */
+@Deprecated
 public class Key<T>  implements Serializable, Comparable<Key<T>> {
   
     private static final long serialVersionUID = -7141167957642391350L;

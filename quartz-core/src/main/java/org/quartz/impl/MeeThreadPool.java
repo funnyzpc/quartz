@@ -58,7 +58,10 @@ public class MeeThreadPool implements ThreadPool {
 
     private ThreadPoolExecutor poolExecutor = null;
 
-    private String schedulerInstanceName;
+    private String application;
+    // instanceId
+    private String threadNamePrefix;
+
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -190,11 +193,15 @@ public class MeeThreadPool implements ThreadPool {
         this.makeThreadsDaemons = makeThreadsDaemons;
     }
     @Override
-    public void setInstanceId(String schedInstId) {
+    public void setInstanceId(String instanceId) {
+        this.threadNamePrefix=instanceId+"-";
+    }
+    public String getThreadNamePrefix() {
+        return threadNamePrefix;
     }
     @Override
-    public void setInstanceName(String schedName) {
-        schedulerInstanceName = schedName;
+    public void setApplication(String schedName) {
+        this.application = schedName;
     }
     @Override
     public void initialize() throws SchedulerConfigException {
@@ -218,7 +225,7 @@ public class MeeThreadPool implements ThreadPool {
                 threadGroup = parent;
                 parent = threadGroup.getParent();
             }
-            threadGroup = new ThreadGroup(parent, schedulerInstanceName + "-SimpleThreadPool");
+            threadGroup = new ThreadGroup(parent, application + "-SimpleThreadPool");
             if (isMakeThreadsDaemons()) {
                 threadGroup.setDaemon(true);
             }
@@ -233,9 +240,9 @@ public class MeeThreadPool implements ThreadPool {
     protected void createWorkerThreads(final int createCount) {
         int cct = this.count = createCount<1? Runtime.getRuntime().availableProcessors() :createCount;
 //        final String threadPrefix = schedulerInstanceName + "_QRTZ_";
-        final String threadPrefix = "MEE_QRTZ_";
-        final MyThreadFactory myThreadFactory = new MyThreadFactory(threadPrefix, this);
-        this.poolExecutor = new ThreadPoolExecutor(cct<4?1:cct/8+1,cct,3L, TimeUnit.SECONDS, new LinkedBlockingDeque(cct*2),myThreadFactory);
+//        final String threadPrefix = "MEE_QRTZ_";
+        final MyThreadFactory myThreadFactory = new MyThreadFactory(this.getThreadNamePrefix(), this);
+        this.poolExecutor = new ThreadPoolExecutor(cct<4?1:cct/8+1,cct,8L, TimeUnit.SECONDS, new LinkedBlockingDeque(cct*2),myThreadFactory);
     }
 
     private final class MyThreadFactory implements ThreadFactory {

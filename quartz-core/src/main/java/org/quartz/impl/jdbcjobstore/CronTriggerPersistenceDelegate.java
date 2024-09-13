@@ -15,7 +15,6 @@
  */
 package org.quartz.impl.jdbcjobstore;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,8 +22,6 @@ import java.sql.SQLException;
 import java.util.TimeZone;
 
 import org.quartz.CronScheduleBuilder;
-import org.quartz.CronTrigger;
-import org.quartz.JobDetail;
 import org.quartz.impl.triggers.CronTriggerImpl;
 import org.quartz.spi.OperableTrigger;
 import org.quartz.utils.Key;
@@ -46,35 +43,35 @@ public class CronTriggerPersistenceDelegate implements TriggerPersistenceDelegat
     public boolean canHandleTriggerType(OperableTrigger trigger) {
         return ((trigger instanceof CronTriggerImpl) /*&& !((CronTriggerImpl)trigger).hasAdditionalProperties()*/);
     }
-    @Override
-    public int deleteExtendedTriggerProperties(Connection conn, Key key) throws SQLException {
-        PreparedStatement ps = null;
-        try {
-            // DELETE FROM QRTZ_CRON_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-            ps = conn.prepareStatement(Util.rtp(DELETE_CRON_TRIGGER, tablePrefix, schedNameLiteral));
-            ps.setString(1, key.getName());
-//            ps.setString(2, triggerKey.getGroup());
-            return ps.executeUpdate();
-        } finally {
-            Util.closeStatement(ps);
-        }
-    }
-    @Override
-    public int insertExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
-        CronTrigger cronTrigger = (CronTrigger)trigger;
-        PreparedStatement ps = null;
-        try {
-            // INSERT INTO QRTZ_CRON_TRIGGERS (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP, CRON_EXPRESSION, TIME_ZONE_ID)  VALUES('MEE_QUARTZ', ?, ?, ?, ?)
-            ps = conn.prepareStatement(Util.rtp(INSERT_CRON_TRIGGER, tablePrefix, schedNameLiteral));
-            ps.setString(1, trigger.getKey().getName());
-//            ps.setString(2, trigger.getKey().getGroup());
-            ps.setString(2, cronTrigger.getCronExpression());
-            ps.setString(3, cronTrigger.getTimeZone().getID());
-            return ps.executeUpdate();
-        } finally {
-            Util.closeStatement(ps);
-        }
-    }
+//    @Override
+//    public int deleteExtendedTriggerProperties(Connection conn, Key key) throws SQLException {
+//        PreparedStatement ps = null;
+//        try {
+//            // DELETE FROM QRTZ_CRON_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
+//            ps = conn.prepareStatement(Util.rtp(DELETE_CRON_TRIGGER, tablePrefix, schedNameLiteral));
+//            ps.setString(1, key.getName());
+////            ps.setString(2, triggerKey.getGroup());
+//            return ps.executeUpdate();
+//        } finally {
+//            Util.closeStatement(ps);
+//        }
+//    }
+//    @Override
+//    public int insertExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
+//        CronTrigger cronTrigger = (CronTrigger)trigger;
+//        PreparedStatement ps = null;
+//        try {
+//            // INSERT INTO QRTZ_CRON_TRIGGERS (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP, CRON_EXPRESSION, TIME_ZONE_ID)  VALUES('MEE_QUARTZ', ?, ?, ?, ?)
+//            ps = conn.prepareStatement(Util.rtp(INSERT_CRON_TRIGGER, tablePrefix, schedNameLiteral));
+//            ps.setString(1, trigger.getKey().getName());
+////            ps.setString(2, trigger.getKey().getGroup());
+//            ps.setString(2, cronTrigger.getCronExpression());
+//            ps.setString(3, cronTrigger.getTimeZone().getID());
+//            return ps.executeUpdate();
+//        } finally {
+//            Util.closeStatement(ps);
+//        }
+//    }
     @Override
     public TriggerPropertyBundle loadExtendedTriggerProperties(Connection conn,Key triggerKey) throws SQLException {
         PreparedStatement ps = null;
@@ -104,26 +101,26 @@ public class CronTriggerPersistenceDelegate implements TriggerPersistenceDelegat
         }
     }
 
-    @Override
-    public int updateExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
-        CronTrigger cronTrigger = (CronTrigger)trigger;
-        PreparedStatement ps = null;
-        try {
-            // UPDATE QRTZ_CRON_TRIGGERS SET CRON_EXPRESSION = ?, TIME_ZONE_ID = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-//            ps = conn.prepareStatement(Util.rtp(UPDATE_CRON_TRIGGER, tablePrefix, schedNameLiteral));
-            ps = conn.prepareStatement(Util.rtp(UPDATE_EXECUTE_CFG, tablePrefix, schedNameLiteral));
-            ps.setString(1, cronTrigger.getCronExpression());
-            ps.setString(2, cronTrigger.getTimeZone().getID());
-            ps.setString(3, trigger.getKey().getName());
-            ps.setString(4, trigger.getKey().getType());
-//            ps.setString(4, trigger.getKey().getGroup());
-            return ps.executeUpdate();
-        } catch (Exception e){
-            e.printStackTrace();
-            throw e;
-        }finally {
-            Util.closeStatement(ps);
-        }
-    }
+//    @Override
+//    public int updateExtendedTriggerProperties(Connection conn, OperableTrigger trigger, String state, JobDetail jobDetail) throws SQLException, IOException {
+//        CronTrigger cronTrigger = (CronTrigger)trigger;
+//        PreparedStatement ps = null;
+//        try {
+//            // UPDATE QRTZ_CRON_TRIGGERS SET CRON_EXPRESSION = ?, TIME_ZONE_ID = ? WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
+////            ps = conn.prepareStatement(Util.rtp(UPDATE_CRON_TRIGGER, tablePrefix, schedNameLiteral));
+//            ps = conn.prepareStatement(Util.rtp(UPDATE_EXECUTE_CFG, tablePrefix, schedNameLiteral));
+//            ps.setString(1, cronTrigger.getCronExpression());
+//            ps.setString(2, cronTrigger.getTimeZone().getID());
+//            ps.setString(3, trigger.getKey().getName());
+//            ps.setString(4, trigger.getKey().getType());
+////            ps.setString(4, trigger.getKey().getGroup());
+//            return ps.executeUpdate();
+//        } catch (Exception e){
+//            e.printStackTrace();
+//            throw e;
+//        }finally {
+//            Util.closeStatement(ps);
+//        }
+//    }
 
 }

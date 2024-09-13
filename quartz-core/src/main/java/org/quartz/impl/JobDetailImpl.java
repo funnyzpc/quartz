@@ -20,7 +20,6 @@ package org.quartz.impl;
 
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
-import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
@@ -91,7 +90,9 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
 
 //    private transient JobKey key = null;
     @Deprecated
-    private transient Key key = null;
+    private transient Key key2 = null;
+    private transient String key = null;
+    private transient String keyNote = null;
     private transient QrtzExecute eJob;
 
     /*
@@ -125,23 +126,23 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
 //        this.setKey(new Key(triggerName));
 //        setJobClass(jobClass);
     }
-    /**
-     * <p>
-     * Create a <code>JobDetail</code> with the given name, given class, default group,
-     * and the default settings of all the other properties.
-     * </p>
-     *
-     * @exception IllegalArgumentException
-     *              if name is null or empty, or the group is an empty string.
-     *
-     * @deprecated use {@link JobBuilder}
-     */
-    public JobDetailImpl(String triggerName, Class<? extends Job> jobClass) {
-//        setName(name);
-        this.setKey(new Key(triggerName));
-        setJobClass(jobClass);
-        this.eJob=null;
-    }
+//    /**
+//     * <p>
+//     * Create a <code>JobDetail</code> with the given name, given class, default group,
+//     * and the default settings of all the other properties.
+//     * </p>
+//     *
+//     * @exception IllegalArgumentException
+//     *              if name is null or empty, or the group is an empty string.
+//     *
+//     * @deprecated use {@link JobBuilder}
+//     */
+//    public JobDetailImpl(String triggerName, Class<? extends Job> jobClass) {
+////        setName(name);
+//        this.setKey(new Key(triggerName));
+//        setJobClass(jobClass);
+//        this.eJob=null;
+//    }
 
 //    /**
 //     * <p>
@@ -264,32 +265,47 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
     /* (non-Javadoc)
      * @see org.quartz.JobDetailI#getKey()
      */
+//    @Override
+//    public Key getKey() {
+////        if(key == null) {
+//////            if(getName() == null){
+//////                return null;
+//////            }
+//////            key = new JobKey(getName(), getGroup());
+////            key = new Key(getName());
+////        }
+//        return this.key;
+//    }
+
+    /**
+     * 任务唯一标志 QRTZ_JOB:ID+#+QRTZ_EXECUTE:ID+#+QRTZ_JOB:JOB_CLASS
+     * @return
+     */
     @Override
-    public Key getKey() {
-//        if(key == null) {
-////            if(getName() == null){
-////                return null;
-////            }
-////            key = new JobKey(getName(), getGroup());
-//            key = new Key(getName());
-//        }
-        return this.key;
+    public String getKey() {
+//        return null!=key?key:(key=eJob.getJob().getId()+"#"+ eJob.getId()+"#"+eJob.getJob().getJobClass());
+        return null!=key?key:(key=eJob.getJob().getId()+"#"+ eJob.getId());
     }
-    
+    @Override
+    public String getKeyNote() {
+        return null!=keyNote?keyNote:(keyNote=eJob.getJob().getId()+"#"+ eJob.getId()+"#"+eJob.getJob().getJobClass());
+//        return null!=key?key:(key=eJob.getJob().getId()+"#"+ eJob.getId());
+    }
+    @Deprecated
     public JobDetailImpl setKey(Key key) {
         if(key == null){
             throw new IllegalArgumentException("Key cannot be null!");
         }
 //        setName(key.getName());
 //        setGroup(key.getGroup());
-        this.key = key;
+        this.key2 = key;
         return this;
     }
     public JobDetailImpl setKey(String triggerName) {
         if(triggerName == null){
             throw new IllegalArgumentException("triggerName cannot be null!");
         }
-        this.key = new Key(triggerName);
+        this.key2 = new Key(triggerName);
         return this;
     }
     /* (non-Javadoc)
@@ -476,8 +492,10 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
     @Override
     public int hashCode() {
 //        JobKey key = getKey();
-        Key key = getKey();
+        // todo ...
+//        Key key = getKey();
         return key == null ? 0 : getKey().hashCode();
+//        return  key.equals(getKey().hashCode())?
     }
     
     @Override
@@ -493,17 +511,17 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
         }
         return copy;
     }
-    @Override
-    public JobBuilder getJobBuilder() {
-        JobBuilder b = JobBuilder.newJob()
-            .ofType(getJobClass())
-            .requestRecovery(requestsRecovery())
-//            .storeDurably(isDurable())
-            .usingJobData(getJobDataMap())
-            .withDescription(getDescription())
-            .withIdentity(getKey());
-        return b;
-    }
+//    @Override
+//    public JobBuilder getJobBuilder() {
+//        JobBuilder b = JobBuilder.newJob()
+//            .ofType(getJobClass())
+//            .requestRecovery(requestsRecovery())
+////            .storeDurably(isDurable())
+//            .usingJobData(getJobDataMap())
+//            .withDescription(getDescription())
+//            .withIdentity(getKey());
+//        return b;
+//    }
     @Override
     public QrtzExecute getEJob() {
         return eJob;

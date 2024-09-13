@@ -21,15 +21,13 @@ import java.util.Date;
 
 import org.quartz.Calendar;
 import org.quartz.CronTrigger;
-import org.quartz.JobDataMap;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerUtils;
-import org.quartz.utils.Key;
 
 public interface MutableTrigger extends Trigger {
 
-    void setKey(Key key);
+//    void setKey(Key key);
 
 //    @Deprecated
 //    public void setJobKey(Key key);

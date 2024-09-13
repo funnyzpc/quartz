@@ -26,10 +26,10 @@ public class QrtzJob implements Serializable {
      * 任务状态
      */
     private String state;
-    /**
-     * 任务
-     */
-    private Integer jobIdx;
+//    /**
+//     * 任务编号
+//     */
+//    private Integer jobIdx;
     /**
      * 任务全类名
      */
@@ -44,11 +44,11 @@ public class QrtzJob implements Serializable {
     private String jobDescription;
     private Long updateTime;
 
-    public QrtzJob(Long id, String application, String state, Integer jobIdx, String jobClass, String jobData, String jobDescription,Long updateTime) {
+    public QrtzJob(Long id, String application, String state, /*Integer jobIdx,*/ String jobClass, String jobData, String jobDescription,Long updateTime) {
         this.id = id;
         this.application = application;
         this.state = state;
-        this.jobIdx = jobIdx;
+//        this.jobIdx = jobIdx;
         this.jobClass = jobClass;
         this.jobData = jobData;
         this.jobDescription = jobDescription;
@@ -77,14 +77,6 @@ public class QrtzJob implements Serializable {
 
     public void setState(String state) {
         this.state = state;
-    }
-
-    public Integer getJobIdx() {
-        return jobIdx;
-    }
-
-    public void setJobIdx(Integer jobIdx) {
-        this.jobIdx = jobIdx;
     }
 
     public String getJobClass() {
@@ -125,7 +117,6 @@ public class QrtzJob implements Serializable {
                 "id=" + id +
                 ", application='" + application + '\'' +
                 ", state='" + state + '\'' +
-                ", jobIdx=" + jobIdx +
                 ", jobClass='" + jobClass + '\'' +
                 ", jobData='" + jobData + '\'' +
                 ", jobDescription='" + jobDescription + '\'' +

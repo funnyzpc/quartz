@@ -111,16 +111,16 @@ public interface OperableTrigger extends MutableTrigger {
     void updateWithNewCalendar(Calendar cal, long misfireThreshold);
 
     
-    /**
-     * <p>
-     * Validates whether the properties of the <code>JobDetail</code> are
-     * valid for submission into a <code>Scheduler</code>.
-     * 
-     * @throws IllegalStateException
-     *           if a required property (such as Name, Group, Class) is not
-     *           set.
-     */
-    void validate() throws SchedulerException;
+//    /**
+//     * <p>
+//     * Validates whether the properties of the <code>JobDetail</code> are
+//     * valid for submission into a <code>Scheduler</code>.
+//     *
+//     * @throws IllegalStateException
+//     *           if a required property (such as Name, Group, Class) is not
+//     *           set.
+//     */
+//    void validate() throws SchedulerException;
     
 
     /**

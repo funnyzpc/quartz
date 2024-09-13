@@ -108,6 +108,7 @@ public class JTAJobRunShell extends JobRunShell {
         // one.  This is necessary because there are paths through JobRunShell.run()
         // where begin() can be called multiple times w/o complete being called in
         // between.
+        // 在未确保已清除旧UserTransaction的情况下，不要获取新的UserTransaction。这是必要的，因为在JobRunShell.run()中存在一些路径，在这些路径中，begin()可以被多次调用，而不会在调用之间完全调用。
         cleanupUserTransaction();
         boolean beganSuccessfully = false;
         try {
@@ -133,8 +134,7 @@ public class JTAJobRunShell extends JobRunShell {
     }
 
     @Override
-    protected void complete(boolean successfulExecution)
-        throws SchedulerException {
+    protected void complete(boolean successfulExecution) throws SchedulerException {
         if (ut == null) {
             return;
         }

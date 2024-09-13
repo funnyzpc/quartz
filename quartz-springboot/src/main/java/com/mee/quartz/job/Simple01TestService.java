@@ -17,7 +17,7 @@ public class Simple01TestService implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         QrtzExecute eJob = context.getJobDetail().getEJob();
-        LOGGER.info("=>>{}.{}-{}#{}",eJob.getId(),eJob.getJobType(),eJob.getJob().getJobClass(),eJob.getExecuteIdx());
+        LOGGER.info("=>>{}-{}.{}-{}",eJob.getJob().getId(),eJob.getId(),eJob.getJobType(),eJob.getJob().getJobClass());
         try {
             TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException e) {

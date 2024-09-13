@@ -22,7 +22,6 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.quartz.ExecuteCfg;
@@ -73,9 +72,9 @@ public interface RemotableQuartzScheduler extends Remote {
 
     String getVersion() throws RemoteException;
 
-    int numJobsExecuted() throws RemoteException;
+//    int numJobsExecuted() throws RemoteException;
 
-    Class<?> getJobStoreClass() throws RemoteException;
+//    Class<?> getJobStoreClass() throws RemoteException;
 
     boolean supportsPersistence() throws RemoteException;
 
@@ -85,26 +84,26 @@ public interface RemotableQuartzScheduler extends Remote {
 
     int getThreadPoolSize() throws RemoteException;
 
-    void clear() throws SchedulerException, RemoteException;
+//    void clear() throws SchedulerException, RemoteException;
     
     List<JobExecutionContext> getCurrentlyExecutingJobs() throws SchedulerException, RemoteException;
 
-    Date scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException, RemoteException;
+//    Date scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException, RemoteException;
     default Date scheduleJob(JobCfg jobCfg, ExecuteCfg executeCfg) throws SchedulerException, RemoteException{
         throw new SchedulerException("Undefined logic!");
     }
 
-    Date scheduleJob(Trigger trigger) throws SchedulerException, RemoteException;
+//    Date scheduleJob(Trigger trigger) throws SchedulerException, RemoteException;
 
-    void addJob(JobDetail jobDetail, boolean replace) throws SchedulerException, RemoteException;
+//    void addJob(JobDetail jobDetail, boolean replace) throws SchedulerException, RemoteException;
 
-    void addJob(JobDetail jobDetail, boolean replace, boolean storeNonDurableWhileAwaitingScheduling) throws SchedulerException, RemoteException;
+//    void addJob(JobDetail jobDetail, boolean replace, boolean storeNonDurableWhileAwaitingScheduling) throws SchedulerException, RemoteException;
 
-    boolean deleteJob(Key jobKey) throws SchedulerException, RemoteException;
+//    boolean deleteJob(Key jobKey) throws SchedulerException, RemoteException;
 
-    boolean unscheduleJob(Key triggerKey) throws SchedulerException, RemoteException;
+//    boolean unscheduleJob(Key triggerKey) throws SchedulerException, RemoteException;
 
-    Date rescheduleJob(Key triggerKey, Trigger newTrigger) throws SchedulerException, RemoteException;
+//    Date rescheduleJob(Key triggerKey, Trigger newTrigger) throws SchedulerException, RemoteException;
         
 //    void triggerJob(Key jobKey, JobDataMap data) throws SchedulerException, RemoteException;
 
@@ -114,17 +113,17 @@ public interface RemotableQuartzScheduler extends Remote {
 
 //    void pauseTriggers(GroupMatcher<TriggerKey> matcher) throws SchedulerException, RemoteException;
 
-    void pauseJob(Key key) throws SchedulerException, RemoteException;
+//    void pauseJob(Key key) throws SchedulerException, RemoteException;
 
     void pauseJobs(final String triggerName) throws SchedulerException, RemoteException;
 
-    void resumeTrigger(Key triggerKey) throws SchedulerException, RemoteException;
+//    void resumeTrigger(Key triggerKey) throws SchedulerException, RemoteException;
 
 //    void resumeTriggers(Key key) throws SchedulerException, RemoteException;
 
 //    Set<String> getPausedTriggerGroups() throws SchedulerException, RemoteException;
     
-    void resumeJob(Key key) throws SchedulerException, RemoteException;
+//    void resumeJob(Key key) throws SchedulerException, RemoteException;
 
     void resumeJobs(final String triggerName) throws SchedulerException, RemoteException;
 
@@ -167,12 +166,12 @@ public interface RemotableQuartzScheduler extends Remote {
    
     boolean checkTriggerExists(Key triggerKey) throws SchedulerException,RemoteException;
  
-    boolean deleteJobs(List<Key> jobKeys) throws SchedulerException,RemoteException;
+//    boolean deleteJobs(List<Key> jobKeys) throws SchedulerException,RemoteException;
 
-    void scheduleJobs(Map<JobDetail, Set<? extends Trigger>> triggersAndJobs, boolean replace) throws SchedulerException,RemoteException;
+//    void scheduleJobs(Map<JobDetail, Set<? extends Trigger>> triggersAndJobs, boolean replace) throws SchedulerException,RemoteException;
 
-    void scheduleJob(JobDetail jobDetail, Set<? extends Trigger> triggersForJob, boolean replace) throws SchedulerException,RemoteException;
+//    void scheduleJob(JobDetail jobDetail, Set<? extends Trigger> triggersForJob, boolean replace) throws SchedulerException,RemoteException;
 
-    boolean unscheduleJobs(List<Key> keys) throws SchedulerException,RemoteException;
+//    boolean unscheduleJobs(List<Key> keys) throws SchedulerException,RemoteException;
     
 }

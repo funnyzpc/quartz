@@ -84,7 +84,7 @@ public class SimpleThreadPool implements ThreadPool {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     
-    private String schedulerInstanceName;
+    private String application;
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,10 +179,6 @@ public class SimpleThreadPool implements ThreadPool {
         return prio;
     }
 
-//    public void setThreadNamePrefix(String prfx) {
-//        this.threadNamePrefix = prfx;
-//    }
-
     public String getThreadNamePrefix() {
         return threadNamePrefix;
     }
@@ -228,11 +224,12 @@ public class SimpleThreadPool implements ThreadPool {
         this.makeThreadsDaemons = makeThreadsDaemons;
     }
     @Override
-    public void setInstanceId(String schedInstId) {
+    public void setInstanceId(String instanceId) {
+        this.threadNamePrefix=instanceId;
     }
     @Override
-    public void setInstanceName(String schedName) {
-        schedulerInstanceName = schedName;
+    public void setApplication(String schedName) {
+        this.application = schedName;
     }
     @Override
     public void initialize() throws SchedulerConfigException {
@@ -256,7 +253,7 @@ public class SimpleThreadPool implements ThreadPool {
                 threadGroup = parent;
                 parent = threadGroup.getParent();
             }
-            threadGroup = new ThreadGroup(parent, schedulerInstanceName + "-SimpleThreadPool");
+            threadGroup = new ThreadGroup(parent, application + "-SimpleThreadPool");
             if (isMakeThreadsDaemons()) {
                 threadGroup.setDaemon(true);
             }
@@ -278,7 +275,7 @@ public class SimpleThreadPool implements ThreadPool {
         for (int i = 1; i<= createCount; ++i) {
             String threadPrefix = getThreadNamePrefix();
             if (threadPrefix == null) {
-                threadPrefix = schedulerInstanceName + "_Worker";
+                threadPrefix = application + "_Worker";
             }
             WorkerThread wt = new WorkerThread(
                     this,

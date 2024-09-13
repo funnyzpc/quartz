@@ -41,7 +41,8 @@ class SchedulerDetailsSetter {
     }
 
     static void setDetails(Object target, String schedulerName,String schedulerId) throws SchedulerException {
-        set(target, "setInstanceName", schedulerName);
+//        set(target, "setInstanceName", schedulerName);
+        set(target, "setApplication", schedulerName);
         set(target, "setInstanceId", schedulerId);
     }
 

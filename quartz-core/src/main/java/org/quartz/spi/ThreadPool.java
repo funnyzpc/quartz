@@ -129,7 +129,7 @@ public interface ThreadPool {
      *
      * @since 1.7
      */
-    void setInstanceId(String schedInstId);
+    void setInstanceId(String instanceId);
 
     /**
      * <p>Inform the <code>ThreadPool</code> of the Scheduler instance's name,
@@ -139,6 +139,6 @@ public interface ThreadPool {
      *
      * @since 1.7
      */
-    void setInstanceName(String schedName);
+    void setApplication(String schedName);
 
 }

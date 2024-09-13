@@ -18,8 +18,6 @@
 
 package org.quartz;
 
-import org.quartz.utils.Key;
-
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Date;
@@ -88,6 +86,15 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
      *
      * <p><code>SET_ALL_JOB_TRIGGERS_ERROR</code> Instructs the <code>{@link Scheduler}</code> that 
      * the <code>Trigger</code> should be put in the <code>ERROR</code> state.</p>
+     *
+     * NOOP指示调度器触发器没有进一步的指令。
+     * RE_EXECUTE_JOB指示调度器触发器希望JobDetail立即重新执行。如果不是在“恢复”或“失败”的情况下，执行上下文将被重新使用（使作业能够“看到”上次执行时放置在上下文中的任何内容）。
+     * SET_TRIGGER_COMPLETE指示调度程序应将触发器置于“完成”状态。
+     * DELETE_TRIGGER指示调度程序删除触发器。
+     * SET_ALL_JOB_TRIGGERS_COMPLETE指示调度器，所有引用与此相同JobDetail的触发器都应处于COMPLETE状态。
+     * SET_TRIGGER_ERROR指示调度程序将引用与此相同JobDetail的所有触发器置于ERROR状态。
+     * SET_ALL_JOB_TRIGGERS_ERROR指示调度程序应将触发器置于错误状态。
+     *
      */
     public enum CompletedExecutionInstruction { NOOP, RE_EXECUTE_JOB, SET_TRIGGER_COMPLETE, DELETE_TRIGGER, 
         SET_ALL_JOB_TRIGGERS_COMPLETE, SET_TRIGGER_ERROR, SET_ALL_JOB_TRIGGERS_ERROR }
@@ -133,7 +140,9 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
      */
     public static final int DEFAULT_PRIORITY = 5;
 
-    Key getKey();
+//    Key getKey();
+    String getKey();
+//    String getKeyNote();
 
 //    JobKey getJobKey();
     
@@ -272,7 +281,7 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
      * @see #getScheduleBuilder()
      */
     default TriggerBuilder<? extends Trigger> getTriggerBuilder(){
-        System.out.println("method getTriggerBuilder is not defined!");
+        System.out.println(" org.quartz.Trigger:getTriggerBuilder() is not defined!");
         return null;
     }
     
@@ -319,7 +328,8 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
         
         // This static method exists for comparator in TC clustered quartz
 //        public static int compare(Date nextFireTime1, int priority1, TriggerKey key1, Date nextFireTime2, int priority2, TriggerKey key2) {
-        public static int compare(Date nextFireTime1, int priority1,Key key1, Date nextFireTime2, int priority2,Key key2) {
+//        public static int compare(Date nextFireTime1, int priority1,Key key1, Date nextFireTime2, int priority2,Key key2) {
+        public static int compare(Date nextFireTime1, int priority1,String key1, Date nextFireTime2, int priority2,String key2) {
             if (nextFireTime1 != null || nextFireTime2 != null) {
                 if (nextFireTime1 == null) {
                     return 1;
