@@ -17,19 +17,12 @@
 
 package org.quartz.impl;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerContext;
 import org.quartz.SchedulerException;
-import org.quartz.SchedulerMetaData;
-import org.quartz.Trigger;
-import org.quartz.UnableToInterruptJobException;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.core.QuartzScheduler;
 import org.quartz.spi.JobFactory;
@@ -114,17 +107,17 @@ public class StdScheduler implements Scheduler {
 //                sched.getThreadPoolSize(), sched.getVersion());
 //
 //    }
-
-    /**
-     * <p>
-     * Returns the <code>SchedulerContext</code> of the <code>Scheduler</code>.
-     * </p>
-     */
-    @Override
-    public SchedulerContext getContext() throws SchedulerException {
-        return sched.getSchedulerContext();
-    }
-
+//
+//    /**
+//     * <p>
+//     * Returns the <code>SchedulerContext</code> of the <code>Scheduler</code>.
+//     * </p>
+//     */
+//    @Override
+//    public SchedulerContext getContext() throws SchedulerException {
+//        return sched.getSchedulerContext();
+//    }
+//
     ///////////////////////////////////////////////////////////////////////////
     ///
     /// Schedululer State Management Methods
@@ -509,16 +502,16 @@ public class StdScheduler implements Scheduler {
 //    public Set<Key> getTriggerKeys(GroupMatcher<TriggerKey> matcher) throws SchedulerException {
 //        return sched.getTriggerKeys(matcher);
 //    }
-
-    /**
-     * <p>
-     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
-     * </p>
-     */
-    @Override
-    public JobDetail getJobDetail(Key jobKey)throws SchedulerException {
-        return sched.getJobDetail(jobKey);
-    }
+//
+//    /**
+//     * <p>
+//     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
+//     * </p>
+//     */
+//    @Override
+//    public JobDetail getJobDetail(Key jobKey)throws SchedulerException {
+//        return sched.getJobDetail(jobKey);
+//    }
 //
 //    /**
 //     * <p>
@@ -643,14 +636,14 @@ public class StdScheduler implements Scheduler {
 //    public ListenerManager getListenerManager() throws SchedulerException {
 //        return sched.getListenerManager();
 //    }
-    @Override
-    public boolean interrupt(Key jobKey) throws UnableToInterruptJobException {
-        return sched.interrupt(jobKey);
-    }
-    @Override
-    public boolean interrupt(String fireInstanceId) throws UnableToInterruptJobException {
-        return sched.interrupt(fireInstanceId);
-    }
+//    @Override
+//    public boolean interrupt(Key jobKey) throws UnableToInterruptJobException {
+//        return sched.interrupt(jobKey);
+//    }
+//    @Override
+//    public boolean interrupt(String fireInstanceId) throws UnableToInterruptJobException {
+//        return sched.interrupt(fireInstanceId);
+//    }
 
   
 }

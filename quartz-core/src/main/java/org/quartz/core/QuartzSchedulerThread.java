@@ -400,9 +400,6 @@ public class QuartzSchedulerThread extends Thread {
                             // 延迟
                             long w = 0;
                             if((w = (ce.getNextFireTime()-System.currentTimeMillis()-6)) >0 ){
-//                                if(now%3==0) {
-//                                    System.out.println("=>休眠时间：" + (w));
-//                                }
                                 try {
                                     Thread.sleep(w);
                                 }catch (Exception e){
@@ -428,6 +425,7 @@ public class QuartzSchedulerThread extends Thread {
                                 // 2.设置JobExecutionContext
                                 shell.initialize(qs);
                             } catch (SchedulerException se) {
+                                se.printStackTrace();
                                 // todo： 是否重试需要根据job配置来,同时重试后仍然失败是否需要将state改为ERROR？。。。这里暂且如此
                                 continue;
                             }

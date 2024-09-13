@@ -208,16 +208,18 @@ public class QuartzInitializerListener implements ServletContextListener {
             }
 
             String factoryKey = servletContext.getInitParameter("quartz:servlet-context-factory-key");
-            if(factoryKey == null)
+            if(factoryKey == null) {
                 factoryKey = servletContext.getInitParameter("servlet-context-factory-key");
+            }
             if (factoryKey == null) {
                 factoryKey = QUARTZ_FACTORY_KEY;
             }
             log.info("Storing the Quartz Scheduler Factory in the servlet context at key: " + factoryKey);
             servletContext.setAttribute(factoryKey, factory);
             String servletCtxtKey = servletContext.getInitParameter("quartz:scheduler-context-servlet-context-key");
-            if(servletCtxtKey == null)
+            if(servletCtxtKey == null) {
                 servletCtxtKey = servletContext.getInitParameter("scheduler-context-servlet-context-key");
+            }
             if (servletCtxtKey != null) {
                 log.info("Storing the ServletContext in the scheduler context at key: " + servletCtxtKey);
                 scheduler.getContext().put(servletCtxtKey, servletContext);

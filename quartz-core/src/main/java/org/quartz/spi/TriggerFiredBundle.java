@@ -17,8 +17,6 @@
 
 package org.quartz.spi;
 
-import java.util.Date;
-
 import org.quartz.JobDetail;
 
 /**
@@ -43,21 +41,16 @@ public class TriggerFiredBundle implements java.io.Serializable {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    private JobDetail job;
+    private JobDetail jobDetail;
 
     private OperableTrigger trigger;
 
 //    private Calendar cal;
-
 //    private boolean jobIsRecovering;
-
-    private Date fireTime;
-
-    private Date scheduledFireTime;
-
-    private Date prevFireTime;
-
-    private Date nextFireTime;
+//    private Date fireTime;
+//    private Date scheduledFireTime;
+//    private Date prevFireTime;
+//    private Date nextFireTime;
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,14 +73,14 @@ public class TriggerFiredBundle implements java.io.Serializable {
 //        this.nextFireTime = nextFireTime;
 //    }
 
-    public TriggerFiredBundle(JobDetail job, OperableTrigger trigger,Date scheduledFireTime, Date prevFireTime, Date nextFireTime) {
-        this.job = job;
+    public TriggerFiredBundle(JobDetail jobDetail, OperableTrigger trigger/*,Date scheduledFireTime, Date prevFireTime, Date nextFireTime*/) {
+        this.jobDetail = jobDetail;
         this.trigger = trigger;
 //        this.cal = cal;
 //        this.jobIsRecovering = jobIsRecovering;
-        this.scheduledFireTime = scheduledFireTime;
-        this.prevFireTime = prevFireTime;
-        this.nextFireTime = nextFireTime;
+//        this.scheduledFireTime = scheduledFireTime;
+//        this.prevFireTime = prevFireTime;
+//        this.nextFireTime = nextFireTime;
     }
 
     /*
@@ -99,7 +92,7 @@ public class TriggerFiredBundle implements java.io.Serializable {
      */
 
     public JobDetail getJobDetail() {
-        return job;
+        return jobDetail;
     }
 
     public OperableTrigger getTrigger() {
@@ -114,45 +107,45 @@ public class TriggerFiredBundle implements java.io.Serializable {
 //        return jobIsRecovering;
 //    }
 
-    /**
-     * @return Returns the fireTime.
-     */
-    public Date getFireTime() {
-        return fireTime;
-    }
-
-    /**
-     * @return Returns the nextFireTime.
-     */
-    public Date getNextFireTime() {
-        return nextFireTime;
-    }
-
-    /**
-     * @return Returns the prevFireTime.
-     */
-    public Date getPrevFireTime() {
-        return prevFireTime;
-    }
-
-    /**
-     * @return Returns the scheduledFireTime.
-     */
-    public Date getScheduledFireTime() {
-        return scheduledFireTime;
-    }
+//    /**
+//     * @return Returns the fireTime.
+//     */
+//    public Date getFireTime() {
+//        return fireTime;
+//    }
+//
+//    /**
+//     * @return Returns the nextFireTime.
+//     */
+//    public Date getNextFireTime() {
+//        return nextFireTime;
+//    }
+//
+//    /**
+//     * @return Returns the prevFireTime.
+//     */
+//    public Date getPrevFireTime() {
+//        return prevFireTime;
+//    }
+//
+//    /**
+//     * @return Returns the scheduledFireTime.
+//     */
+//    public Date getScheduledFireTime() {
+//        return scheduledFireTime;
+//    }
 
     @Override
     public String toString() {
         return "TriggerFiredBundle{" +
-                "job=" + job +
+                "jobDetail=" + jobDetail +
                 ", trigger=" + trigger +
 //                ", cal=" + cal +
 //                ", jobIsRecovering=" + jobIsRecovering +
-                ", fireTime=" + fireTime +
-                ", scheduledFireTime=" + scheduledFireTime +
-                ", prevFireTime=" + prevFireTime +
-                ", nextFireTime=" + nextFireTime +
+//                ", fireTime=" + fireTime +
+//                ", scheduledFireTime=" + scheduledFireTime +
+//                ", prevFireTime=" + prevFireTime +
+//                ", nextFireTime=" + nextFireTime +
                 '}';
     }
 }

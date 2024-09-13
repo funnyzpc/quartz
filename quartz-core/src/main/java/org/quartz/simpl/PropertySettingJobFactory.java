@@ -27,9 +27,7 @@ import java.util.Map;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerContext;
 import org.quartz.SchedulerException;
 import org.quartz.spi.TriggerFiredBundle;
 
@@ -69,7 +67,7 @@ public class PropertySettingJobFactory extends SimpleJobFactory {
         Job job = super.newJob(bundle, scheduler);
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.putAll(scheduler.getContext());
-        jobDataMap.putAll(bundle.getJobDetail().getJobDataMap());
+//        jobDataMap.putAll(bundle.getJobDetail().getJobDataMap());
 //        jobDataMap.putAll(bundle.getTrigger().getJobDataMap());
         setBeanProps(job, jobDataMap);
         return job;
@@ -95,7 +93,8 @@ public class PropertySettingJobFactory extends SimpleJobFactory {
         PropertyDescriptor[] propDescs = bi.getPropertyDescriptors();
         // Get the wrapped entry set so don't have to incur overhead of wrapping for
         // dirty flag checking since this is read only access
-        for (Iterator<?> entryIter = data.getWrappedMap().entrySet().iterator(); entryIter.hasNext();) {
+//        for (Iterator<?> entryIter = data.getWrappedMap().entrySet().iterator(); entryIter.hasNext();) {
+        for (Iterator<?> entryIter = data.entrySet().iterator(); entryIter.hasNext();) {
             Map.Entry<?,?> entry = (Map.Entry<?,?>)entryIter.next();
             String name = (String)entry.getKey();
             String c = name.substring(0, 1).toUpperCase(Locale.US);
@@ -106,7 +105,7 @@ public class PropertySettingJobFactory extends SimpleJobFactory {
             try {
                 if (setMeth == null) {
                     handleError(
-                        "No setter on Job class " + obj.getClass().getName() + 
+                        "No setter on Job class " + obj.getClass().getName() +
                         " for property '" + name + "'");
                     continue;
                 }
@@ -116,13 +115,13 @@ public class PropertySettingJobFactory extends SimpleJobFactory {
                 if (paramType.isPrimitive()) {
                     if (o == null) {
                         handleError(
-                            "Cannot set primitive property '" + name + 
-                            "' on Job class " + obj.getClass().getName() + 
+                            "Cannot set primitive property '" + name +
+                            "' on Job class " + obj.getClass().getName() +
                             " to null.");
                         continue;
                     }
                     if (paramType.equals(int.class)) {
-                        if (o instanceof String) {                            
+                        if (o instanceof String) {
                             parm = Integer.valueOf((String)o);
                         } else if (o instanceof Integer) {
                             parm = o;
@@ -176,39 +175,39 @@ public class PropertySettingJobFactory extends SimpleJobFactory {
                 } else if ((o != null) && (paramType.isAssignableFrom(o.getClass()))) {
                     parm = o;
                 }
-                // If the parameter wasn't originally null, but we didn't find a 
+                // If the parameter wasn't originally null, but we didn't find a
                 // matching parameter, then we are stuck.
                 if ((o != null) && (parm == null)) {
                     handleError(
-                        "The setter on Job class " + obj.getClass().getName() + 
-                        " for property '" + name + 
-                        "' expects a " + paramType + 
+                        "The setter on Job class " + obj.getClass().getName() +
+                        " for property '" + name +
+                        "' expects a " + paramType +
                         " but was given " + o.getClass().getName());
                     continue;
                 }
-                                
+
                 setMeth.invoke(obj, new Object[]{ parm });
             } catch (NumberFormatException nfe) {
                 handleError(
-                    "The setter on Job class " + obj.getClass().getName() + 
-                    " for property '" + name + 
-                    "' expects a " + paramType + 
+                    "The setter on Job class " + obj.getClass().getName() +
+                    " for property '" + name +
+                    "' expects a " + paramType +
                     " but was given " + o.getClass().getName(), nfe);
             } catch (IllegalArgumentException e) {
                 handleError(
-                    "The setter on Job class " + obj.getClass().getName() + 
-                    " for property '" + name + 
-                    "' expects a " + paramType + 
+                    "The setter on Job class " + obj.getClass().getName() +
+                    " for property '" + name +
+                    "' expects a " + paramType +
                     " but was given " + o.getClass().getName(), e);
             } catch (IllegalAccessException e) {
                 handleError(
-                    "The setter on Job class " + obj.getClass().getName() + 
-                    " for property '" + name + 
+                    "The setter on Job class " + obj.getClass().getName() +
+                    " for property '" + name +
                     "' could not be accessed.", e);
             } catch (InvocationTargetException e) {
                 handleError(
-                    "The setter on Job class " + obj.getClass().getName() + 
-                    " for property '" + name + 
+                    "The setter on Job class " + obj.getClass().getName() +
+                    " for property '" + name +
                     "' could not be invoked.", e);
             }
         }

@@ -210,8 +210,12 @@ public interface Scheduler {
 
     /**
      * Returns the <code>SchedulerContext</code> of the <code>Scheduler</code>.
+     *  ###仅用于springboot starter接入用，不做逻辑处理###
      */
-    SchedulerContext getContext() throws SchedulerException;
+    default SchedulerContext getContext() throws SchedulerException{
+//        System.out.println("org.quartz.Scheduler::getContext method is not defined...");
+        return new SchedulerContext();
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     ///
@@ -785,18 +789,18 @@ public interface Scheduler {
 //     * Get the names of all <code>{@link Trigger}</code> groups that are paused.
 //     */
 //    Set<String> getPausedTriggerGroups() throws SchedulerException;
-    
-    /**
-     * Get the <code>{@link JobDetail}</code> for the <code>Job</code>
-     * instance with the given key.
-     * 
-     * <p>The returned JobDetail object will be a snap-shot of the actual stored
-     * JobDetail.  If you wish to modify the JobDetail, you must re-store the
-     * JobDetail afterward (e.g. see {@link #addJob(JobDetail, boolean)}).
-     * </p>
-     * 
-     */
-    JobDetail getJobDetail(Key jobKey) throws SchedulerException;
+//
+//    /**
+//     * Get the <code>{@link JobDetail}</code> for the <code>Job</code>
+//     * instance with the given key.
+//     *
+//     * <p>The returned JobDetail object will be a snap-shot of the actual stored
+//     * JobDetail.  If you wish to modify the JobDetail, you must re-store the
+//     * JobDetail afterward (e.g. see {@link #addJob(JobDetail, boolean)}).
+//     * </p>
+//     *
+//     */
+//    JobDetail getJobDetail(Key jobKey) throws SchedulerException;
 //
 //    /**
 //     * Get the <code>{@link Trigger}</code> instance with the given key.
@@ -875,60 +879,60 @@ public interface Scheduler {
 //     * Get the names of all registered <code>{@link Calendar}s</code>.
 //     */
 //    List<String> getCalendarNames() throws SchedulerException;
-
-    /**
-     * Request the interruption, within this Scheduler instance, of all 
-     * currently executing instances of the identified <code>Job</code>, which 
-     * must be an implementor of the <code>InterruptableJob</code> interface.
-     * 
-     * <p>
-     * If more than one instance of the identified job is currently executing,
-     * the <code>InterruptableJob#interrupt()</code> method will be called on
-     * each instance.  However, there is a limitation that in the case that  
-     * <code>interrupt()</code> on one instances throws an exception, all 
-     * remaining  instances (that have not yet been interrupted) will not have 
-     * their <code>interrupt()</code> method called.
-     * </p>
-     * 
-     * <p>
-     * This method is not cluster aware.  That is, it will only interrupt 
-     * instances of the identified InterruptableJob currently executing in this 
-     * Scheduler instance, not across the entire cluster.
-     * </p>
-     * 
-     * @return true if at least one instance of the identified job was found
-     * and interrupted.
-     * @throws UnableToInterruptJobException if the job does not implement
-     * <code>InterruptableJob</code>, or there is an exception while 
-     * interrupting the job.
-     * @see InterruptableJob#interrupt()
-     * @see #getCurrentlyExecutingJobs()
-     * @see #interrupt(String)
-     */
-    boolean interrupt(Key jobKey) throws UnableToInterruptJobException;
-    
-    /**
-     * Request the interruption, within this Scheduler instance, of the 
-     * identified executing <code>Job</code> instance, which 
-     * must be an implementor of the <code>InterruptableJob</code> interface.
-     * 
-     * <p>
-     * This method is not cluster aware.  That is, it will only interrupt 
-     * instances of the identified InterruptableJob currently executing in this 
-     * Scheduler instance, not across the entire cluster.
-     * </p>
-     * 
-     * @param fireInstanceId the unique identifier of the job instance to
-     * be interrupted (see {@link JobExecutionContext#getFireInstanceId()}
-     * @return true if the identified job instance was found and interrupted.
-     * @throws UnableToInterruptJobException if the job does not implement
-     * <code>InterruptableJob</code>, or there is an exception while 
-     * interrupting the job.
-     * @see InterruptableJob#interrupt()
-     * @see #getCurrentlyExecutingJobs()
-     * @see JobExecutionContext#getFireInstanceId()
-     */
-    boolean interrupt(String fireInstanceId) throws UnableToInterruptJobException;
+//
+//    /**
+//     * Request the interruption, within this Scheduler instance, of all
+//     * currently executing instances of the identified <code>Job</code>, which
+//     * must be an implementor of the <code>InterruptableJob</code> interface.
+//     *
+//     * <p>
+//     * If more than one instance of the identified job is currently executing,
+//     * the <code>InterruptableJob#interrupt()</code> method will be called on
+//     * each instance.  However, there is a limitation that in the case that
+//     * <code>interrupt()</code> on one instances throws an exception, all
+//     * remaining  instances (that have not yet been interrupted) will not have
+//     * their <code>interrupt()</code> method called.
+//     * </p>
+//     *
+//     * <p>
+//     * This method is not cluster aware.  That is, it will only interrupt
+//     * instances of the identified InterruptableJob currently executing in this
+//     * Scheduler instance, not across the entire cluster.
+//     * </p>
+//     *
+//     * @return true if at least one instance of the identified job was found
+//     * and interrupted.
+//     * @throws UnableToInterruptJobException if the job does not implement
+//     * <code>InterruptableJob</code>, or there is an exception while
+//     * interrupting the job.
+//     * @see InterruptableJob#interrupt()
+//     * @see #getCurrentlyExecutingJobs()
+//     * @see #interrupt(String)
+//     */
+//    boolean interrupt(Key jobKey) throws UnableToInterruptJobException;
+//
+//    /**
+//     * Request the interruption, within this Scheduler instance, of the
+//     * identified executing <code>Job</code> instance, which
+//     * must be an implementor of the <code>InterruptableJob</code> interface.
+//     *
+//     * <p>
+//     * This method is not cluster aware.  That is, it will only interrupt
+//     * instances of the identified InterruptableJob currently executing in this
+//     * Scheduler instance, not across the entire cluster.
+//     * </p>
+//     *
+//     * @param fireInstanceId the unique identifier of the job instance to
+//     * be interrupted (see {@link JobExecutionContext#getFireInstanceId()}
+//     * @return true if the identified job instance was found and interrupted.
+//     * @throws UnableToInterruptJobException if the job does not implement
+//     * <code>InterruptableJob</code>, or there is an exception while
+//     * interrupting the job.
+//     * @see InterruptableJob#interrupt()
+//     * @see #getCurrentlyExecutingJobs()
+//     * @see JobExecutionContext#getFireInstanceId()
+//     */
+//    boolean interrupt(String fireInstanceId) throws UnableToInterruptJobException;
     
     /**
      * Determine whether a {@link Job} with the given identifier already 

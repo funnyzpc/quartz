@@ -1361,39 +1361,39 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //        return (getDelegate().deleteTrigger(conn, key) > 0);
 //    }
 //
-    /**
-     * <p>
-     * Retrieve the <code>{@link org.quartz.JobDetail}</code> for the given
-     * <code>{@link org.quartz.Job}</code>.
-     * 检索给定作业的JobDetail。
-     * </p>
-     * 
-     * @return The desired <code>Job</code>, or null if there is no match.
-     */
-    @Override
-    public JobDetail retrieveJob(final Key jobKey) throws JobPersistenceException {
-        return (JobDetail)executeWithoutLock( // no locks necessary for read...
-            new TransactionCallback() {
-                @Override
-                public Object execute(Connection conn) throws JobPersistenceException {
-                    return retrieveJob(conn, jobKey);
-                }
-            });
-    }
-    
-    protected JobDetail retrieveJob(Connection conn, Key key) throws JobPersistenceException {
-        try {
-//            return getDelegate().selectJobDetail(conn, key,getClassLoadHelper());
-            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-            return getDelegate().selectJobCfg(conn, key,getClassLoadHelper());
-        } catch (ClassNotFoundException e) {
-            throw new JobPersistenceException("Couldn't retrieve job because a required class was not found: " + e.getMessage(), e);
-        } catch (IOException e) {
-            throw new JobPersistenceException("Couldn't retrieve job because the BLOB couldn't be deserialized: " + e.getMessage(), e);
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't retrieve job: " + e.getMessage(), e);
-        }
-    }
+//    /**
+//     * <p>
+//     * Retrieve the <code>{@link org.quartz.JobDetail}</code> for the given
+//     * <code>{@link org.quartz.Job}</code>.
+//     * 检索给定作业的JobDetail。
+//     * </p>
+//     *
+//     * @return The desired <code>Job</code>, or null if there is no match.
+//     */
+//    @Override
+//    public JobDetail retrieveJob(final Key jobKey) throws JobPersistenceException {
+//        return (JobDetail)executeWithoutLock( // no locks necessary for read...
+//            new TransactionCallback() {
+//                @Override
+//                public Object execute(Connection conn) throws JobPersistenceException {
+//                    return retrieveJob(conn, jobKey);
+//                }
+//            });
+//    }
+//
+//    protected JobDetail retrieveJob(Connection conn, Key key) throws JobPersistenceException {
+//        try {
+////            return getDelegate().selectJobDetail(conn, key,getClassLoadHelper());
+//            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
+//            return getDelegate().selectJobCfg(conn, key,getClassLoadHelper());
+//        } catch (ClassNotFoundException e) {
+//            throw new JobPersistenceException("Couldn't retrieve job because a required class was not found: " + e.getMessage(), e);
+//        } catch (IOException e) {
+//            throw new JobPersistenceException("Couldn't retrieve job because the BLOB couldn't be deserialized: " + e.getMessage(), e);
+//        } catch (SQLException e) {
+//            throw new JobPersistenceException("Couldn't retrieve job: " + e.getMessage(), e);
+//        }
+//    }
 //
 //    /**
 //     * <p>

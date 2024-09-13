@@ -52,26 +52,27 @@ import java.io.Serializable;
 public interface JobDetail extends Serializable, Cloneable {
 
 //    Key getKey();
-    String getKey();
+//    String getKey();
     String getKeyNote();
-
-    /**
-     * <p>
-     * Return the description given to the <code>Job</code> instance by its
-     * creator (if any).
-     * </p>
-     * 
-     * @return null if no description was set.
-     */
-    String getDescription();
+//
+//    /**
+//     * <p>
+//     * Return the description given to the <code>Job</code> instance by its
+//     * creator (if any).
+//     * </p>
+//     *
+//     * @return null if no description was set.
+//     */
+//    String getDescription();
+    String getJobClassName();
 
     /**
      * <p>
      * Get the instance of <code>Job</code> that will be executed.
      * </p>
+     *  这个参数是必要的
      */
     Class<? extends Job> getJobClass();
-    String getJobClassName();
 
     /**
      * <p>
@@ -101,33 +102,33 @@ public interface JobDetail extends Serializable, Cloneable {
 //     *         如果作业在成为孤立作业后应保持持久化，则为true。
 //     */
 //    boolean isDurable();
-
-    /**
-     * @see PersistJobDataAfterExecution
-     * @return whether the associated Job class carries the {@link PersistJobDataAfterExecution} annotation.
-     */
-    boolean isPersistJobDataAfterExecution();
-
-    /**
-     * @see DisallowConcurrentExecution
-     * @return whether the associated Job class carries the {@link DisallowConcurrentExecution} annotation.
-     */
-    boolean isConcurrentExectionDisallowed();
-
-    /**
-     * <p>
-     * Instructs the <code>Scheduler</code> whether or not the <code>Job</code>
-     * should be re-executed if a 'recovery' or 'fail-over' situation is
-     * encountered.
-     * </p>
-     * 
-     * <p>
-     * If not explicitly set, the default value is <code>false</code>.
-     * </p>
-     * 
-     * @see JobExecutionContext#isRecovering()
-     */
-    boolean requestsRecovery();
+//
+//    /**
+//     * @see PersistJobDataAfterExecution
+//     * @return whether the associated Job class carries the {@link PersistJobDataAfterExecution} annotation.
+//     */
+//    boolean isPersistJobDataAfterExecution();
+//
+//    /**
+//     * @see DisallowConcurrentExecution
+//     * @return whether the associated Job class carries the {@link DisallowConcurrentExecution} annotation.
+//     */
+//    boolean isConcurrentExectionDisallowed();
+//
+//    /**
+//     * <p>
+//     * Instructs the <code>Scheduler</code> whether or not the <code>Job</code>
+//     * should be re-executed if a 'recovery' or 'fail-over' situation is
+//     * encountered.
+//     * </p>
+//     *
+//     * <p>
+//     * If not explicitly set, the default value is <code>false</code>.
+//     * </p>
+//     *
+//     * @see JobExecutionContext#isRecovering()
+//     */
+//    boolean requestsRecovery();
 
     Object clone();
     
@@ -137,6 +138,6 @@ public interface JobDetail extends Serializable, Cloneable {
 //     */
 //    JobBuilder getJobBuilder();
 
-    QrtzExecute getEJob();
+//    QrtzExecute getEJob();
 
 }

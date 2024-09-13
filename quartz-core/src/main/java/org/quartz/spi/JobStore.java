@@ -163,14 +163,14 @@ public interface JobStore {
 //    boolean removeJob(Key jobKey) throws JobPersistenceException;
     
 //    boolean removeJobs(List<Key> keys) throws JobPersistenceException;
-    
-    /**
-     * Retrieve the <code>{@link org.quartz.JobDetail}</code> for the given
-     * <code>{@link org.quartz.Job}</code>.
-     *
-     * @return The desired <code>Job</code>, or null if there is no match.
-     */
-    JobDetail retrieveJob(Key jobKey) throws JobPersistenceException;
+//
+//    /**
+//     * Retrieve the <code>{@link org.quartz.JobDetail}</code> for the given
+//     * <code>{@link org.quartz.Job}</code>.
+//     *
+//     * @return The desired <code>Job</code>, or null if there is no match.
+//     */
+//    JobDetail retrieveJob(Key jobKey) throws JobPersistenceException;
 //
 //    /**
 //     * Store the given <code>{@link org.quartz.Trigger}</code>.

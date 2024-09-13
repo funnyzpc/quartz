@@ -19,40 +19,41 @@
 package org.quartz.impl;
 
 import java.util.Date;
-import java.util.HashMap;
 
 import org.quartz.Job;
-import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 import org.quartz.Trigger;
 import org.quartz.spi.OperableTrigger;
-import org.quartz.spi.TriggerFiredBundle;
 
-
+/**
+* 执行器上下文参数
+* @className    JobExecutionContextImpl
+* @author       shadow
+* @date         2024/9/13 15:23
+* @version      1.0
+*/
 public class JobExecutionContextImpl implements java.io.Serializable, JobExecutionContext {
 
     private static final long serialVersionUID = -8139417614523942021L;
-    
+
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     * 
+     *
      * Data members.
-     * 
+     *
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
     private transient Scheduler scheduler;
 
-    private Trigger trigger;
-
-    private JobDetail jobDetail;
-    
-    private JobDataMap jobDataMap;
+//    private Trigger trigger;
+//    private JobDetail jobDetail;
+//    private JobDataMap jobDataMap;
 
     private transient Job job;
-    
+
 //    private Calendar calendar;
 
 //    private boolean recovering = false;
@@ -63,22 +64,27 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
 
     private Date scheduledFireTime;
 
-    private Date prevFireTime;
+    private final Date prevFireTime;
 
-    private Date nextFireTime;
-    
+    private final Date nextFireTime;
+
     private long jobRunTime = -1;
-    
+
     private Object result;
-    
-    private HashMap<Object, Object> data = new HashMap<Object, Object>();
-    private String dataStr;
+
+    //    private HashMap<Object, Object> data = new HashMap<Object, Object>();
+    private final String jobData;
+    private final String jobType;
+    private final String keyNote;
+    private final Long jobId;
+    private final Long executeId;
+    private final String jobClassName;
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     * 
+     *
      * Constructors.
-     * 
+     *
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
@@ -104,21 +110,27 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
 //        this.jobDataMap.putAll(jobDetail.getJobDataMap());
 ////        this.jobDataMap.putAll(trigger.getJobDataMap());
 //    }
-    public JobExecutionContextImpl(Scheduler scheduler, TriggerFiredBundle firedBundle, Job job) {
-        this.scheduler = scheduler;
-        this.trigger = firedBundle.getTrigger();
-//        this.calendar = firedBundle.getCalendar();
-        this.jobDetail = firedBundle.getJobDetail();
-        this.job = job;
-//        this.recovering = firedBundle.isRecovering();
-        this.fireTime = firedBundle.getFireTime();
-        this.scheduledFireTime = firedBundle.getScheduledFireTime();
-        this.prevFireTime = firedBundle.getPrevFireTime();
-        this.nextFireTime = firedBundle.getNextFireTime();
 
-        this.jobDataMap = new JobDataMap();
-        this.jobDataMap.putAll(jobDetail.getJobDataMap());
-//        this.jobDataMap.putAll(trigger.getJobDataMap());
+    /**
+     *  cc
+     * @param scheduler scheduler
+     * @param job   job
+     * @param eJob  eJob
+     * @param keyNote   keyNote
+     */
+    public JobExecutionContextImpl(Scheduler scheduler,Job job,String keyNote,QrtzExecute eJob) {
+        this.scheduler = scheduler;
+        this.job = job;
+        this.jobId = eJob.getJob().getId();
+        this.executeId = eJob.getId();
+        this.fireTime = eJob.getFireTime();
+        this.scheduledFireTime=eJob.getScheduledFireTime();
+        this.prevFireTime=new Date(eJob.getPrevFireTime());
+        this.nextFireTime=new Date(eJob.getNextFireTime());
+        this.keyNote = keyNote;
+        this.jobData = eJob.getJob().getJobData();
+        this.jobType=eJob.getJobType();
+        this.jobClassName=eJob.getJob().getJobClass();
     }
 
 //    public JobExecutionContextImpl(Scheduler scheduler,JobDetail jobDetail, Job job) {
@@ -139,9 +151,9 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     * 
+     *
      * Interface.
-     * 
+     *
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
@@ -153,13 +165,13 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
         return scheduler;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Trigger getTrigger() {
-        return trigger;
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public Trigger getTrigger() {
+//        return trigger;
+//    }
 //
 //    /**
 //     * {@inheritDoc}
@@ -186,7 +198,7 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
 //            throw new IllegalStateException("Not a recovering job");
 //        }
 //    }
-    
+
     public void incrementRefireCount() {
         numRefires++;
     }
@@ -198,22 +210,22 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
     public int getRefireCount() {
         return numRefires;
     }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public JobDataMap getMergedJobDataMap() {
+//        return jobDataMap;
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public JobDataMap getMergedJobDataMap() {
-        return jobDataMap;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public JobDetail getJobDetail() {
-        return jobDetail;
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public JobDetail getJobDetail() {
+//        return jobDetail;
+//    }
 
     /**
      * {@inheritDoc}
@@ -262,7 +274,7 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
     public Object getResult() {
         return result;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -270,7 +282,7 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
     public void setResult(Object result) {
         this.result = result;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -278,52 +290,75 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
     public long getJobRunTime() {
         return jobRunTime;
     }
-    
+
     /**
      * @param jobRunTime The jobRunTime to set.
      */
     public void setJobRunTime(long jobRunTime) {
         this.jobRunTime = jobRunTime;
     }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void put(Object key, Object value) {
+//        data.put(key, value);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public Object get(Object key) {
+//        return data.get(key);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public String getFireInstanceId() {
+//        return ((OperableTrigger)trigger).getFireInstanceId();
+//    }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void put(Object key, Object value) {
-        data.put(key, value);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object get(Object key) {
-        return data.get(key);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getFireInstanceId() {
-        return ((OperableTrigger)trigger).getFireInstanceId();
+    public Job getJob() {
+        return job;
     }
     @Override
-    public String getDataStr(){
-        return dataStr;
+    public Date getPrevFireTime() {
+        return prevFireTime;
     }
-
+    @Override
+    public String getJobData() {
+        return jobData;
+    }
+    @Override
+    public String getJobType() {
+        return jobType;
+    }
+    @Override
+    public String getKeyNote() {
+        return keyNote;
+    }
+    @Override
+    public Long getJobId() {
+        return jobId;
+    }
+    @Override
+    public Long getExecuteId() {
+        return executeId;
+    }
+    @Override
+    public String getJobClassName(){
+        return this.jobClassName;
+    }
     @Override
     public String toString() {
         return "JobExecutionContextImpl{" +
                 "scheduler=" + scheduler +
-                ", trigger=" + trigger +
-                ", jobDetail=" + jobDetail +
-                ", jobDataMap=" + jobDataMap +
                 ", job=" + job +
-//                ", calendar=" + calendar +
-//                ", recovering=" + recovering +
                 ", numRefires=" + numRefires +
                 ", fireTime=" + fireTime +
                 ", scheduledFireTime=" + scheduledFireTime +
@@ -331,7 +366,11 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
                 ", nextFireTime=" + nextFireTime +
                 ", jobRunTime=" + jobRunTime +
                 ", result=" + result +
-                ", data=" + data +
+                ", jobData='" + jobData + '\'' +
+                ", jobType='" + jobType + '\'' +
+                ", keyNote='" + keyNote + '\'' +
+                ", jobId=" + jobId +
+                ", executeId=" + executeId +
                 '}';
     }
 }

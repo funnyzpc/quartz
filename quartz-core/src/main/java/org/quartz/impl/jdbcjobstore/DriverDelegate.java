@@ -329,7 +329,7 @@ public interface DriverDelegate {
 //     */
 //    @Deprecated
 //    JobDetail selectJobDetail(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException;
-    JobDetail selectJobCfg(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException;
+//    JobDetail selectJobCfg(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException;
     /**
      * <p>
      * Select the total number of jobs stored.
@@ -579,14 +579,14 @@ public interface DriverDelegate {
 //     *         associated with the given trigger
 //     */
 //    JobDetail selectJobForTrigger(Connection conn, ClassLoadHelper loadHelper,Key triggerKey) throws ClassNotFoundException, SQLException;
-
-    /**
-     * <p>
-     * Select the job to which the trigger is associated. Allow option to load actual job class or not. When case of
-     * remove, we do not need to load the class, which in many cases, it's no longer exists.
-     * </p>
-     */
-    JobDetail selectJobForTrigger(Connection conn, ClassLoadHelper loadHelper,Key key, boolean loadJobClass) throws ClassNotFoundException, SQLException;
+//
+//    /**
+//     * <p>
+//     * Select the job to which the trigger is associated. Allow option to load actual job class or not. When case of
+//     * remove, we do not need to load the class, which in many cases, it's no longer exists.
+//     * </p>
+//     */
+//    JobDetail selectJobForTrigger(Connection conn, ClassLoadHelper loadHelper,Key key, boolean loadJobClass) throws ClassNotFoundException, SQLException;
 //
 //    /**
 //     * <p>

@@ -50,26 +50,26 @@ public interface JobListener {
      */
     String getName();
 
-    /**
-     * <p>
-     * Called by the <code>{@link Scheduler}</code> when a <code>{@link org.quartz.JobDetail}</code>
-     * is about to be executed (an associated <code>{@link Trigger}</code>
-     * has occurred).
-     * </p>
-     * 
-     * <p>
-     * This method will not be invoked if the execution of the Job was vetoed
-     * by a <code>{@link TriggerListener}</code>.
-     * </p>
-     * 
-     * @see #jobExecutionVetoed(JobExecutionContext)
-     * 当JobDetail即将执行时（相关触发器已发生），由调度器调用。
-     * 如果作业的执行被TriggerListener否决，则不会调用此方法。
-     * 另请参见：
-     * 作业执行已被审查（作业执行上下文）
-     */
-    void jobToBeExecuted(JobExecutionContext context);
-
+//    /**
+//     * <p>
+//     * Called by the <code>{@link Scheduler}</code> when a <code>{@link org.quartz.JobDetail}</code>
+//     * is about to be executed (an associated <code>{@link Trigger}</code>
+//     * has occurred).
+//     * </p>
+//     *
+//     * <p>
+//     * This method will not be invoked if the execution of the Job was vetoed
+//     * by a <code>{@link TriggerListener}</code>.
+//     * </p>
+//     *
+//     * @see #jobExecutionVetoed(JobExecutionContext)
+//     * 当JobDetail即将执行时（相关触发器已发生），由调度器调用。
+//     * 如果作业的执行被TriggerListener否决，则不会调用此方法。
+//     * 另请参见：
+//     * 作业执行已被审查（作业执行上下文）
+//     */
+//    void jobToBeExecuted(JobExecutionContext context);
+//
 //    /**
 //     * <p>
 //     * Called by the <code>{@link Scheduler}</code> when a <code>{@link org.quartz.JobDetail}</code>

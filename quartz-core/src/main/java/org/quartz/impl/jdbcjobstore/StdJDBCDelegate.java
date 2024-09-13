@@ -915,42 +915,42 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //            closeStatement(ps);
 //        }
 //    }
-
-    @Override
-    public JobDetail selectJobCfg(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ?
-            ps = conn.prepareStatement(rtp(SELECT_JOB_CFG));
-            ps.setString(1, jobKey.getName());
-            ps.setString(2, jobKey.getType());
-            rs = ps.executeQuery();
-            JobDetailImpl job = null;
-            if (rs.next()) {
-                job = new JobDetailImpl();
-                job.setKey(new Key(rs.getString(COL_TRIGGER_NAME),rs.getString(COL_SCHEDULER_NAME),rs.getString(COL_TRIGGER_TYPE)));
-                job.setDescription(rs.getString(COL_DESCRIPTION));
-                job.setJobClass( loadHelper.loadClass(rs.getString(COL_JOB_CLASS), Job.class));
-                job.setRequestsRecovery(getBoolean(rs, COL_REQUESTS_RECOVERY));
-//                Map<?, ?> map = null;
-//                if (canUseProperties()) {
-//                    map = getMapFromProperties(rs);
-//                } else {
-//                    map = (Map<?, ?>) getObjectFromBlob(rs, COL_JOB_DATAMAP);
-//                }
-//                if (null != map) {
-//                    job.setJobDataMap(new JobDataMap(map));
-//                }
-                job.setJobData(rs.getString(COL_JOB_DATAMAP));
-            }
-            return job;
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-        }
-    }
-
+//
+//    @Override
+//    public JobDetail selectJobCfg(Connection conn,Key jobKey, ClassLoadHelper loadHelper) throws ClassNotFoundException, IOException, SQLException {
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ?
+//            ps = conn.prepareStatement(rtp(SELECT_JOB_CFG));
+//            ps.setString(1, jobKey.getName());
+//            ps.setString(2, jobKey.getType());
+//            rs = ps.executeQuery();
+//            JobDetailImpl job = null;
+//            if (rs.next()) {
+//                job = new JobDetailImpl();
+//                job.setKey(new Key(rs.getString(COL_TRIGGER_NAME),rs.getString(COL_SCHEDULER_NAME),rs.getString(COL_TRIGGER_TYPE)));
+//                job.setDescription(rs.getString(COL_DESCRIPTION));
+//                job.setJobClass( loadHelper.loadClass(rs.getString(COL_JOB_CLASS), Job.class));
+//                job.setRequestsRecovery(getBoolean(rs, COL_REQUESTS_RECOVERY));
+////                Map<?, ?> map = null;
+////                if (canUseProperties()) {
+////                    map = getMapFromProperties(rs);
+////                } else {
+////                    map = (Map<?, ?>) getObjectFromBlob(rs, COL_JOB_DATAMAP);
+////                }
+////                if (null != map) {
+////                    job.setJobDataMap(new JobDataMap(map));
+////                }
+//                job.setJobData(rs.getString(COL_JOB_DATAMAP));
+//            }
+//            return job;
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//        }
+//    }
+//
 //    /**
 //     * build Map from java.util.Properties encoding.
 //     */
@@ -1798,59 +1798,59 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //    public JobDetail selectJobForTrigger(Connection conn, ClassLoadHelper loadHelper,Key triggerKey) throws ClassNotFoundException, SQLException {
 //        return selectJobForTrigger(conn, loadHelper, triggerKey, true);
 //    }
-
-    /**
-     * <p>
-     * Select the job to which the trigger is associated. Allow option to load actual job class or not. When case of
-     * remove, we do not need to load the class, which in many cases, it's no longer exists.
-     *
-     * </p>
-     * 
-     * @param conn
-     *          the DB Connection
-     * @return the <code>{@link org.quartz.JobDetail}</code> object
-     *         associated with the given trigger
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     */
-    @Override
-    public JobDetail selectJobForTrigger(Connection conn, ClassLoadHelper loadHelper,Key key, boolean loadJobClass) throws ClassNotFoundException, SQLException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            // SELECT J.JOB_NAME, J.JOB_GROUP, J.IS_DURABLE, J.JOB_CLASS_NAME, J.REQUESTS_RECOVERY FROM QRTZ_TRIGGERS T, QRTZ_JOB_DETAILS J
-            // WHERE T.SCHED_NAME = 'MEE_QUARTZ' AND J.SCHED_NAME = 'MEE_QUARTZ' AND T.TRIGGER_NAME = ? AND T.TRIGGER_GROUP = ?
-            // AND T.JOB_NAME = J.JOB_NAME AND T.JOB_GROUP = J.JOB_GROUP
-            // 	1=>J.JOB_NAME,
-            //	2=>J.IS_DURABLE,
-            //	3=>J.JOB_CLASS_NAME,
-            //	4=>J.REQUESTS_RECOVERY
-            ps = conn.prepareStatement(rtp(SELECT_JOB_FOR_TRIGGER));
-            ps.setString(1, key.getName());
-//            ps.setString(2, triggerKey.getGroup());
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                JobDetailImpl job = new JobDetailImpl();
-                job.setKey(new Key(rs.getString(1),this.schedName));
-//                job.setName(rs.getString(1));
-//                job.setGroup(rs.getString(2));
-//                job.setDurability(getBoolean(rs, 2));
-                if (loadJobClass){
-                    job.setJobClass(loadHelper.loadClass(rs.getString(2), Job.class));
-                }
-                job.setRequestsRecovery(getBoolean(rs, 3));
-                return job;
-            } else {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("No job for trigger '" + key + "'.");
-                }
-                return null;
-            }
-        } finally {
-            closeResultSet(rs);
-            closeStatement(ps);
-        }
-    }
+//
+//    /**
+//     * <p>
+//     * Select the job to which the trigger is associated. Allow option to load actual job class or not. When case of
+//     * remove, we do not need to load the class, which in many cases, it's no longer exists.
+//     *
+//     * </p>
+//     *
+//     * @param conn
+//     *          the DB Connection
+//     * @return the <code>{@link org.quartz.JobDetail}</code> object
+//     *         associated with the given trigger
+//     * @throws SQLException
+//     * @throws ClassNotFoundException
+//     */
+//    @Override
+//    public JobDetail selectJobForTrigger(Connection conn, ClassLoadHelper loadHelper,Key key, boolean loadJobClass) throws ClassNotFoundException, SQLException {
+//        PreparedStatement ps = null;
+//        ResultSet rs = null;
+//        try {
+//            // SELECT J.JOB_NAME, J.JOB_GROUP, J.IS_DURABLE, J.JOB_CLASS_NAME, J.REQUESTS_RECOVERY FROM QRTZ_TRIGGERS T, QRTZ_JOB_DETAILS J
+//            // WHERE T.SCHED_NAME = 'MEE_QUARTZ' AND J.SCHED_NAME = 'MEE_QUARTZ' AND T.TRIGGER_NAME = ? AND T.TRIGGER_GROUP = ?
+//            // AND T.JOB_NAME = J.JOB_NAME AND T.JOB_GROUP = J.JOB_GROUP
+//            // 	1=>J.JOB_NAME,
+//            //	2=>J.IS_DURABLE,
+//            //	3=>J.JOB_CLASS_NAME,
+//            //	4=>J.REQUESTS_RECOVERY
+//            ps = conn.prepareStatement(rtp(SELECT_JOB_FOR_TRIGGER));
+//            ps.setString(1, key.getName());
+////            ps.setString(2, triggerKey.getGroup());
+//            rs = ps.executeQuery();
+//            if (rs.next()) {
+//                JobDetailImpl job = new JobDetailImpl();
+//                job.setKey(new Key(rs.getString(1),this.schedName));
+////                job.setName(rs.getString(1));
+////                job.setGroup(rs.getString(2));
+////                job.setDurability(getBoolean(rs, 2));
+//                if (loadJobClass){
+//                    job.setJobClass(loadHelper.loadClass(rs.getString(2), Job.class));
+//                }
+//                job.setRequestsRecovery(getBoolean(rs, 3));
+//                return job;
+//            } else {
+//                if (logger.isDebugEnabled()) {
+//                    logger.debug("No job for trigger '" + key + "'.");
+//                }
+//                return null;
+//            }
+//        } finally {
+//            closeResultSet(rs);
+//            closeStatement(ps);
+//        }
+//    }
 //
 //    /**
 //     * <p>
@@ -2823,32 +2823,32 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         return baos;
     }
 
-    /**
-     * <p>
-     * Remove the transient data from and then create a serialized <code>java.util.ByteArrayOutputStream</code>
-     * version of a <code>{@link org.quartz.JobDataMap}</code>.
-     * </p>
-     * 
-     * @param data
-     *          the JobDataMap to serialize
-     * @return the serialized ByteArrayOutputStream
-     * @throws IOException
-     *           if serialization causes an error
-     */
-    protected ByteArrayOutputStream serializeJobData(JobDataMap data) throws IOException {
-        if (canUseProperties()) {
-            return serializeProperties(data);
-        }
-        try {
-            return serializeObject(data);
-        } catch (NotSerializableException e) {
-            throw new NotSerializableException(
-                "Unable to serialize JobDataMap for insertion into " + 
-                "database because the value of property '" + 
-                getKeyOfNonSerializableValue(data) + 
-                "' is not serializable: " + e.getMessage());
-        }
-    }
+//    /**
+//     * <p>
+//     * Remove the transient data from and then create a serialized <code>java.util.ByteArrayOutputStream</code>
+//     * version of a <code>{@link org.quartz.JobDataMap}</code>.
+//     * </p>
+//     *
+//     * @param data
+//     *          the JobDataMap to serialize
+//     * @return the serialized ByteArrayOutputStream
+//     * @throws IOException
+//     *           if serialization causes an error
+//     */
+//    protected ByteArrayOutputStream serializeJobData(JobDataMap data) throws IOException {
+//        if (canUseProperties()) {
+//            return serializeProperties(data);
+//        }
+//        try {
+//            return serializeObject(data);
+//        } catch (NotSerializableException e) {
+//            throw new NotSerializableException(
+//                "Unable to serialize JobDataMap for insertion into " +
+//                "database because the value of property '" +
+//                getKeyOfNonSerializableValue(data) +
+//                "' is not serializable: " + e.getMessage());
+//        }
+//    }
 
     /**
      * Find the key of the first non-serializable value in the given Map.
@@ -2875,25 +2875,25 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         // not hit this case.
         return null;   
     }
-    
-    /**
-     * serialize the java.util.Properties
-     */
-    private ByteArrayOutputStream serializeProperties(JobDataMap data) throws IOException {
-        ByteArrayOutputStream ba = new ByteArrayOutputStream();
-        if (null != data) {
-            Properties properties = convertToProperty(data.getWrappedMap());
-            properties.store(ba, "");
-        }
-        return ba;
-    }
-
-    /**
-     * convert the JobDataMap into a list of properties
-     */
-    protected Map<?, ?> convertFromProperty(Properties properties) throws IOException {
-        return new HashMap<Object, Object>(properties);
-    }
+//
+//    /**
+//     * serialize the java.util.Properties
+//     */
+//    private ByteArrayOutputStream serializeProperties(JobDataMap data) throws IOException {
+//        ByteArrayOutputStream ba = new ByteArrayOutputStream();
+//        if (null != data) {
+//            Properties properties = convertToProperty(data.getWrappedMap());
+//            properties.store(ba, "");
+//        }
+//        return ba;
+//    }
+//
+//    /**
+//     * convert the JobDataMap into a list of properties
+//     */
+//    protected Map<?, ?> convertFromProperty(Properties properties) throws IOException {
+//        return new HashMap<Object, Object>(properties);
+//    }
 
     /**
      * convert the JobDataMap into a list of properties

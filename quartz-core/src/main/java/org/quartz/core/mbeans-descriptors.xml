@@ -7,7 +7,7 @@
 		<!-- ATTRIBUTES -->
 		<attribute name="schedulerName" description="The name of the scheduler." type="java.lang.String" writeable="false"/>
 		<attribute name="schedulerInstanceId" description="The instance Id of the scheduler." type="java.lang.String" writeable="false"/>
-		<attribute name="schedulerContext" description="The SchedulerContext of the scheduler." type="org.quartz.SchedulerContext" writeable="false"/>
+<!--		<attribute name="schedulerContext" description="The SchedulerContext of the scheduler." type="org.quartz.SchedulerContext" writeable="false"/>-->
 		<attribute name="inStandbyMode" description="Whether the scheduler is currently in standby (paused)." type="boolean" writeable="false" is="true"/>
 		<attribute name="shutdown" description="Whether the scheduler has been shutdown." type="boolean" writeable="false" is="true"/>
 		<attribute name="jobFactory" description="The JobFactory that will be responsible for producing instances of Job classes." type="org.quartz.spi.JobFactory" readable="false" writeable="true"/>

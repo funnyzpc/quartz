@@ -33,8 +33,6 @@ import org.quartz.spi.TriggerFiredBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-
 /**
  * <p>
  * JobRunShell instances are responsible for providing the 'safe' environment
@@ -149,17 +147,14 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
     public void initialize(QuartzScheduler sched) throws SchedulerException {
         this.qs = sched;
         Job job = null;
-        JobDetail jobDetail = new JobDetailImpl(this.eJob);
-        Date fireTime = this.eJob.getFireTime();
-        Date scheduledFireTime = this.eJob.getScheduledFireTime();
-        Date prevFireTime = new Date(this.eJob.getPrevFireTime());
-        Date nextFireTime = new Date(this.eJob.getNextFireTime());
-        OperableTrigger trigger = "CRON".equals(this.eJob.getJobType())?new CronTriggerImpl(): new SimpleTriggerImpl();
+        final String keyNote = this.eJob.getJob().getId()+"#"+ this.eJob.getId()+"#"+this.eJob.getJob().getJobClass();
+        final JobDetail jobDetail = new JobDetailImpl(this.eJob.getJobClazz(), this.eJob.getJob().getJobClass(), keyNote);
+        final OperableTrigger trigger = "CRON".equals(this.eJob.getJobType())?new CronTriggerImpl(): new SimpleTriggerImpl();
 //        TriggerFiredBundle bundle = new TriggerFiredBundle(jobDetail,trigger,null,fireTime,scheduledFireTime,prevFireTime,nextFireTime);
-        TriggerFiredBundle bundle = new TriggerFiredBundle(jobDetail,trigger,scheduledFireTime,prevFireTime,nextFireTime);
+        final TriggerFiredBundle bundle = new TriggerFiredBundle(jobDetail,trigger);
         try {
             // 创建job实例并补充上下文及参数
-            job = sched.getJobFactory().newJob(bundle, scheduler);
+            job = sched.getJobFactory().newJob(bundle,this.scheduler);
         } catch (SchedulerException se) {
             log.error("An error occured instantiating job to be executed. job= '" + jobDetail.getKeyNote() + "'", se);
             throw se;
@@ -167,7 +162,7 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
             SchedulerException se = new SchedulerException("Problem instantiating class '" + jobDetail.getJobClassName() + "' - ", ncdfe);
             throw se;
         }
-        this.jec = new JobExecutionContextImpl(scheduler,bundle,job);
+        this.jec = new JobExecutionContextImpl(this.scheduler,job,keyNote,this.eJob);
     }
 
     public void requestShutdown() {
@@ -179,14 +174,14 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
 //        qs.addInternalSchedulerListener(this);
         try {
 //            OperableTrigger trigger = (OperableTrigger) jec.getTrigger();
-            JobDetail jobDetail = jec.getJobDetail();
+//            JobDetail jobDetail = jec.getJobDetail();
             do {
                 JobExecutionException jobExEx = null;
                 Job job = jec.getJobInstance();
                 try {
                     begin();
                 } catch (SchedulerException se) {
-                    log.error("Error executing Job (" + jec.getJobDetail().getKey() + "): couldn't begin execution.", se);
+                    log.error("Error executing Job (" + jec.getKeyNote() + "): couldn't begin execution.", se);
 //                    qs.notifySchedulerListenersError("Error executing Job ("
 //                            + jec.getJobDetail().getKey()
 //                            + ": couldn't begin execution.", se);
@@ -198,16 +193,16 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
 
                 // execute the job
                 try {
-                    log.debug("Calling execute on job " + jobDetail.getKeyNote()); // JOB_ID#JOB_CLASS#EXECUTE_ID
+//                    log.debug("Calling execute on job " + jobDetail.getKeyNote()); // JOB_ID#JOB_CLASS#EXECUTE_ID
                     job.execute(jec); // 执行
                     endTime = System.currentTimeMillis();
                 } catch (JobExecutionException jee) {
                     endTime = System.currentTimeMillis();
                     jobExEx = jee;
-                    log.info("Job " + jobDetail.getKeyNote() + " threw a JobExecutionException: ", jobExEx);
+//                    log.info("Job " + jobDetail.getKeyNote() + " threw a JobExecutionException: ", jobExEx);
                 } catch (Throwable e) {
                     endTime = System.currentTimeMillis();
-                    log.error("Job " + jobDetail.getKeyNote() + " threw an unhandled Exception: ", e);
+//                    log.error("Job " + jobDetail.getKeyNote() + " threw an unhandled Exception: ", e);
                     SchedulerException se = new SchedulerException("Job threw an unhandled exception.", e);
                     jobExEx = new JobExecutionException(se, false);//第二个参数refireImmediately: true.立即点火 false.不点火
                 }
@@ -243,7 +238,7 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
                         complete(false);
                     } catch (SchedulerException se) {
                         se.printStackTrace();
-                        log.error("Error executing Job (" + jec.getJobDetail().getKey() + ": couldn't finalize execution.", se);
+//                        log.error("Error executing Job (" + jec.getJobDetail().getKey() + ": couldn't finalize execution.", se);
                     }
                     continue;
                 }
@@ -252,7 +247,7 @@ public class JobRunShell /*extends SchedulerListenerSupport*/ implements Runnabl
                 } catch (SchedulerException se) {
                     // 不管怎么样都得退出，否则会重复执行
                     se.printStackTrace();
-                    log.error("Error executing Job (" + jec.getJobDetail().getKey() + ": couldn't finalize execution.", se);
+//                    log.error("Error executing Job (" + jec.getJobDetail().getKey() + ": couldn't finalize execution.", se);
 //                    qs.notifySchedulerListenersError("Error executing Job (" + jec.getJobDetail().getKey() + ": couldn't finalize execution.", se);
 //                    continue;
                 }

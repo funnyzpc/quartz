@@ -1178,7 +1178,7 @@ public class StdSchedulerFactory implements SchedulerFactory {
 
             // set scheduler context data... 设置scheduler上下文数据
             for(Object key: schedCtxtProps.keySet()) {
-                String val = schedCtxtProps.getProperty((String) key);    
+                String val = schedCtxtProps.getProperty((String) key);
                 scheduler.getContext().put((String)key, val);
             }
     

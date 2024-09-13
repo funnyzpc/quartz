@@ -24,12 +24,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
-import org.quartz.SchedulerContext;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.UnableToInterruptJobException;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.utils.Key;
 
@@ -50,7 +46,7 @@ public interface RemotableQuartzScheduler extends Remote {
 
     String getSchedulerInstanceId() throws RemoteException;
 
-    SchedulerContext getSchedulerContext() throws SchedulerException, RemoteException;
+//    SchedulerContext getSchedulerContext() throws SchedulerException, RemoteException;
 
     void start() throws SchedulerException, RemoteException;
 
@@ -140,25 +136,25 @@ public interface RemotableQuartzScheduler extends Remote {
 
 //    Set<TriggerKey> getTriggerKeys(GroupMatcher<TriggerKey> matcher) throws SchedulerException, RemoteException;
 
-    JobDetail getJobDetail(Key jobKey) throws SchedulerException, RemoteException;
+//    JobDetail getJobDetail(Key jobKey) throws SchedulerException, RemoteException;
 
 //    Trigger getTrigger(Key triggerKey) throws SchedulerException, RemoteException;
 
     TriggerState getTriggerState(Key triggerKey) throws SchedulerException, RemoteException;
-
+//
 //    void resetTriggerFromErrorState(TriggerKey triggerKey) throws SchedulerException, RemoteException;
-
+//
 //    void addCalendar(String calName, Calendar calendar, boolean replace, boolean updateTriggers) throws SchedulerException, RemoteException;
-
+//
 //    boolean deleteCalendar(String calName) throws SchedulerException, RemoteException;
-
+//
 //    Calendar getCalendar(String calName) throws SchedulerException, RemoteException;
-
+//
 //    List<String> getCalendarNames() throws SchedulerException, RemoteException;
-
-    boolean interrupt(Key jobKey) throws UnableToInterruptJobException,RemoteException;
-
-    boolean interrupt(String fireInstanceId) throws UnableToInterruptJobException,RemoteException;
+//
+//    boolean interrupt(Key jobKey) throws UnableToInterruptJobException,RemoteException;
+//
+//    boolean interrupt(String fireInstanceId) throws UnableToInterruptJobException,RemoteException;
     
     boolean checkExists(Key jobKey) throws SchedulerException,RemoteException;
    

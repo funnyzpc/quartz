@@ -70,13 +70,13 @@ public interface JobExecutionContext {
      */
     Scheduler getScheduler();
 
-    /**
-     * <p>
-     * Get a handle to the <code>Trigger</code> instance that fired the
-     * <code>Job</code>.
-     * </p>
-     */
-    Trigger getTrigger();
+//    /**
+//     * <p>
+//     * Get a handle to the <code>Trigger</code> instance that fired the
+//     * <code>Job</code>.
+//     * </p>
+//     */
+//    Trigger getTrigger();
 //
 //    /**
 //     * <p>
@@ -115,35 +115,38 @@ public interface JobExecutionContext {
      * <p>
      * Get the convenience <code>JobDataMap</code> of this execution context.
      * </p>
-     * 
+     *
      * <p>
      * The <code>JobDataMap</code> found on this object serves as a convenience -
-     * it is a merge of the <code>JobDataMap</code> found on the 
-     * <code>JobDetail</code> and the one found on the <code>Trigger</code>, with 
+     * it is a merge of the <code>JobDataMap</code> found on the
+     * <code>JobDetail</code> and the one found on the <code>Trigger</code>, with
      * the value in the latter overriding any same-named values in the former.
      * <i>It is thus considered a 'best practice' that the execute code of a Job
      * retrieve data from the JobDataMap found on this object.</i>
      * </p>
-     * 
+     *
      * <p>NOTE: Do not expect value 'set' into this JobDataMap to somehow be set
      * or persisted back onto a job's own JobDataMap - even if it has the
      * <code>@PersistJobDataAfterExecution</code> annotation.
      * </p>
-     * 
+     *
      * <p>
-     * Attempts to change the contents of this map typically result in an 
+     * Attempts to change the contents of this map typically result in an
      * <code>IllegalStateException</code>.
      * </p>
-     * 
+     *  ###仅用于springboot starter接入用，不做逻辑处理###
+     *
      */
-    JobDataMap getMergedJobDataMap();
-
-    /**
-     * <p>
-     * Get the <code>JobDetail</code> associated with the <code>Job</code>.
-     * </p>
-     */
-    JobDetail getJobDetail();
+    default JobDataMap getMergedJobDataMap(){
+        return null;
+    }
+//
+//    /**
+//     * <p>
+//     * Get the <code>JobDetail</code> associated with the <code>Job</code>.
+//     * </p>
+//     */
+//    JobDetail getJobDetail();
 
     /**
      * <p>
@@ -182,15 +185,15 @@ public interface JobExecutionContext {
 
     Date getNextFireTime();
 
-    /**
-     * Get the unique Id that identifies this particular firing instance of the
-     * trigger that triggered this job execution.  It is unique to this 
-     * JobExecutionContext instance as well.
-     * 
-     * @return the unique fire instance id
-     * @see Scheduler#interrupt(String)
-     */
-    String getFireInstanceId();
+//    /**
+//     * Get the unique Id that identifies this particular firing instance of the
+//     * trigger that triggered this job execution.  It is unique to this
+//     * JobExecutionContext instance as well.
+//     *
+//     * @return the unique fire instance id
+//     * @see Scheduler#interrupt(String)
+//     */
+//    String getFireInstanceId();
     
     /**
      * Returns the result (if any) that the <code>Job</code> set before its 
@@ -231,25 +234,41 @@ public interface JobExecutionContext {
      */
     long getJobRunTime();
 
-    /**
-     * Put the specified value into the context's data map with the given key.
-     * Possibly useful for sharing data between listeners and jobs.
-     *
-     * <p>NOTE: this data is volatile - it is lost after the job execution
-     * completes, and all TriggerListeners and JobListeners have been 
-     * notified.</p> 
-     *  
-     * @param key the key for the associated value
-     * @param value the value to store
-     */
-    void put(Object key, Object value);
+//    /**
+//     * Put the specified value into the context's data map with the given key.
+//     * Possibly useful for sharing data between listeners and jobs.
+//     *
+//     * <p>NOTE: this data is volatile - it is lost after the job execution
+//     * completes, and all TriggerListeners and JobListeners have been
+//     * notified.</p>
+//     *
+//     * @param key the key for the associated value
+//     * @param value the value to store
+//     */
+//    void put(Object key, Object value);
+//
+//    /**
+//     * Get the value with the given key from the context's data map.
+//     *
+//     * @param key the key for the desired value
+//     */
+//    Object get(Object key);
+//    String getDataStr();
 
-    /**
-     * Get the value with the given key from the context's data map.
-     * 
-     * @param key the key for the desired value
-     */
-    Object get(Object key);
-    String getDataStr();
+
+
+    Job getJob();
+    Date getPrevFireTime();
+
+    String getJobData();
+
+    String getJobType();
+
+    String getKeyNote();
+
+    Long getJobId() ;
+
+    Long getExecuteId();
+    String getJobClassName();
 
 }
