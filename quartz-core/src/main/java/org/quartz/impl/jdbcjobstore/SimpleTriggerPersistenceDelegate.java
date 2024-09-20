@@ -15,19 +15,14 @@
  */
 package org.quartz.impl.jdbcjobstore;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.quartz.spi.OperableTrigger;
-import org.quartz.utils.Key;
 
 public class SimpleTriggerPersistenceDelegate implements TriggerPersistenceDelegate, StdJDBCConstants {
 
     protected String tablePrefix;
     protected String schedNameLiteral;
+    private static final String TTYPE_SIMPLE = "SIMPLE";
 
     @Override
     public void initialize(String theTablePrefix, String schedName) {

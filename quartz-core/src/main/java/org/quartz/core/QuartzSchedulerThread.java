@@ -304,7 +304,7 @@ public class QuartzSchedulerThread extends Thread {
                         _stop=_stop>10?1:1+_stop;
                         try {
                             // 适当延长等待时间，减少空转
-                            sigLock.wait(LOOP_INTERVAL*(_stop/3!=0?2:1)-LOOP_WINDOW);
+                            sigLock.wait(LOOP_INTERVAL*(_stop/3==0?1:2)-LOOP_WINDOW);
                             _ts = System.currentTimeMillis(); // 必须要重置，否则获取执行信息会出现时间误差
                         } catch (InterruptedException ignore) {
                         }
@@ -366,15 +366,17 @@ public class QuartzSchedulerThread extends Thread {
 
                     // 要重复检查是否暂停/停止
                     if (!"Y".equals(qsRsrcs.getJobStore().findNodeStateByPK(application,hostIP)) ){
-                        long w = 0;
-                        if((w = (System.currentTimeMillis()-now-8)) >0 ){
-                            Thread.sleep(w);
-                        }
+                        // 这里不处理 交给上方 while ... findNodeStateByPK 处理
+//                        long w = 0;
+//                        if((w = (System.currentTimeMillis()-now-8)) >0 ){
+//                            Thread.sleep(w);
+//                        }
                         continue;
                     }else{
                         // 循环等待
                         //1.直至误差时间内(6毫秒)
-                        final long ww = executeList.size()-1000<0 ? 6L : ((executeList.size()-1000L)/2000L)+6L ;
+                        long ww = executeList.size()-1000<0 ? 4L : ((executeList.size()-1000L)/2000L)+4L ;
+                        ww= Math.min(ww, 8L);
 //                        while( !executeList.isEmpty() && (System.currentTimeMillis()-now)<=LOOP_INTERVAL*2 ){
                         while( !executeList.isEmpty() && (System.currentTimeMillis()-now)<=LOOP_INTERVAL ){
                             long _et  = System.currentTimeMillis();
@@ -399,7 +401,8 @@ public class QuartzSchedulerThread extends Thread {
                             executeList.remove(ce); // 一定要移除，否则无法退出while循环!!!
                             // 延迟
                             long w = 0;
-                            if((w = (ce.getNextFireTime()-System.currentTimeMillis()-6)) >0 ){
+//                            if((w = (ce.getNextFireTime()-System.currentTimeMillis()-5)) >0 ){
+                            if((w = (ce.getNextFireTime()-System.currentTimeMillis()-ww)) >0 ){
                                 try {
                                     Thread.sleep(w);
                                 }catch (Exception e){
@@ -471,15 +474,17 @@ public class QuartzSchedulerThread extends Thread {
 
             } catch(RuntimeException re) {
                 log.error("Runtime error occurred in main trigger firing loop.", re);
-            } catch (InterruptedException e) {
-                log.error("Runtime error occurred in main trigger firing loop.",e);
-//                throw new RuntimeException(e);
-            }finally {
+            }
+//            catch (InterruptedException e) {
+//                log.error("Runtime error occurred in main trigger firing loop.",e);
+////                throw new RuntimeException(e);
+//            }
+            finally {
                 // 延迟
                 long st = 0;
                 // if ( (sleep_time = (TIME_CHECK_INTERVAL-(System.currentTimeMillis() - _start)-2))>0 )
 //                if((st = (LOOP_INTERVAL*2-(System.currentTimeMillis()-now)-4)) >0 ){
-                if((st = (LOOP_INTERVAL-(System.currentTimeMillis()-now)-3)) >0 ){
+                if((st = (LOOP_INTERVAL-(System.currentTimeMillis()-now)-2)) >0 ){
                     try {
                         Thread.sleep(st);
                     } catch (InterruptedException e) {
@@ -549,7 +554,7 @@ public class QuartzSchedulerThread extends Thread {
 //                Date _ds = nextFireTime;
                 nextFireTime = simpleTrigger.getFireTimeAfter(nextFireTime);
 //                System.out.println("CRON=>"+ (_ds.getTime()>now)+" | "+(nextFireTime.getTime()>now));
-                if (nextFireTime == null || (endTime > 0 && endTime < now) || newCe.getTimeTriggered() > newCe.getRepeatCount()) {
+                if (nextFireTime == null || (endTime > 0 && endTime < now) || (newCe.getRepeatCount()>0 && newCe.getTimeTriggered() > newCe.getRepeatCount())) {
 //                old_state = ce.getState();
                     newCe.setEndTime(now);
                     newCe.setState("COMPLETE");

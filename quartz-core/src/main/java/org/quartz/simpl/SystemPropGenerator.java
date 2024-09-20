@@ -1,7 +1,5 @@
 package org.quartz.simpl;
 
-import org.quartz.SchedulerException;
-
 import java.net.InetAddress;
 
 /**

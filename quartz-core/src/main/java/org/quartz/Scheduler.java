@@ -18,15 +18,10 @@
 
 package org.quartz;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import org.quartz.Trigger.TriggerState;
 import org.quartz.core.ListenerManagerImpl;
 import org.quartz.spi.JobFactory;
-import org.quartz.utils.Key;
 
 /**
  * This is the main interface of a Quartz Scheduler.
@@ -623,12 +618,12 @@ public interface Scheduler {
      */
     void pauseJobs(final String triggerName) throws SchedulerException;
 
-    /**
-     * Pause the <code>{@link Trigger}</code> with the given key.
-     * 
-     * @see #resumeTrigger(TriggerKey)
-     */
-    void pauseTrigger(Key triggerKey) throws SchedulerException;
+//    /**
+//     * Pause the <code>{@link Trigger}</code> with the given key.
+//     *
+//     * @see #resumeTrigger(TriggerKey)
+//     */
+//    void pauseTrigger(Key triggerKey) throws SchedulerException;
 
 //    /**
 //     * Pause all of the <code>{@link Trigger}s</code> in the groups matching.
@@ -749,15 +744,6 @@ public interface Scheduler {
 //     * groups.
 //     */
 //    List<String> getJobGroupNames() throws SchedulerException;
-
-    /**
-     * Get the keys of all the <code>{@link org.quartz.JobDetail}s</code>
-     * in the matching groups.
-     * @param matcher Matcher to evaluate against known groups
-     * @return Set of all keys matching
-     * @throws SchedulerException On error
-     */
-    Set<Key> getAllJobKeysInSched(final String triggerName) throws SchedulerException;
 //
 //    /**
 //     * Get all <code>{@link Trigger}</code> s that are associated with the
@@ -811,13 +797,6 @@ public interface Scheduler {
 //     * </p>
 //     */
 //    Trigger getTrigger(Key triggerKey) throws SchedulerException;
-
-    /**
-     * Get the current state of the identified <code>{@link Trigger}</code>.
-     * 
-     * @see Trigger.TriggerState
-     */
-    TriggerState getTriggerState(Key triggerKey) throws SchedulerException;
 
 //    /**
 //     * Reset the current state of the identified <code>{@link Trigger}</code>
@@ -933,26 +912,6 @@ public interface Scheduler {
 //     * @see JobExecutionContext#getFireInstanceId()
 //     */
 //    boolean interrupt(String fireInstanceId) throws UnableToInterruptJobException;
-    
-    /**
-     * Determine whether a {@link Job} with the given identifier already 
-     * exists within the scheduler.
-     * 
-     * @param jobKey the identifier to check for
-     * @return true if a Job exists with the given identifier
-     * @throws SchedulerException 
-     */
-    boolean checkExists(Key jobKey) throws SchedulerException;
-   
-    /**
-     * Determine whether a {@link Trigger} with the given identifier already 
-     * exists within the scheduler.
-     * 
-     * @param triggerKey the identifier to check for
-     * @return true if a Trigger exists with the given identifier
-     * @throws SchedulerException 
-     */
-    boolean checkTriggerExists(Key triggerKey) throws SchedulerException;
 //
 //    /**
 //     * Clears (deletes!) all scheduling data - all {@link Job}s, {@link Trigger}s

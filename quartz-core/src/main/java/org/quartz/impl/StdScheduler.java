@@ -345,17 +345,17 @@ public class StdScheduler implements Scheduler {
 //    public void triggerJob(Key jobKey, JobDataMap data) throws SchedulerException {
 //        sched.triggerJob(jobKey, data);
 //    }
-
-    /**
-     * <p>
-     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
-     * </p>
-     */
-    @Override
-    public void pauseTrigger(Key triggerKey) throws SchedulerException {
-        sched.pauseTrigger(triggerKey);
-    }
-
+//
+//    /**
+//     * <p>
+//     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
+//     * </p>
+//     */
+//    @Override
+//    public void pauseTrigger(Key triggerKey) throws SchedulerException {
+//        sched.pauseTrigger(triggerKey);
+//    }
+//
 //    /**
 //     * <p>
 //     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
@@ -474,16 +474,6 @@ public class StdScheduler implements Scheduler {
 //        return sched.getTriggersOfJob(jobKey);
 //    }
 
-    /**
-     * <p>
-     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
-     * </p>
-     */
-    @Override
-    public Set<Key> getAllJobKeysInSched(final String triggerName) throws SchedulerException {
-        return sched.getAllJobKeysInSched(triggerName);
-    }
-
 //    /**
 //     * <p>
 //     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
@@ -522,17 +512,6 @@ public class StdScheduler implements Scheduler {
 //    public Trigger getTrigger(Key triggerKey) throws SchedulerException {
 //        return sched.getTrigger(triggerKey);
 //    }
-
-    /**
-     * <p>
-     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
-     * </p>
-     */
-    @Override
-    public TriggerState getTriggerState(Key triggerKey) throws SchedulerException {
-        return sched.getTriggerState(triggerKey);
-    }
-
 //    /**
 //     * Reset the current state of the identified <code>{@link Trigger}</code>
 //     * from {@link TriggerState#ERROR} to {@link TriggerState#NORMAL} or
@@ -591,27 +570,6 @@ public class StdScheduler implements Scheduler {
 //    public List<String> getCalendarNames() throws SchedulerException {
 //        return sched.getCalendarNames();
 //    }
-
-    /**
-     * <p>
-     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
-     * </p>
-     */
-    @Override
-    public boolean checkExists(Key jobKey) throws SchedulerException {
-        return sched.checkExists(jobKey);
-    }
-    
-   
-    /**
-     * <p>
-     * Calls the equivalent method on the 'proxied' <code>QuartzScheduler</code>.
-     * </p>
-     */
-    @Override
-    public boolean checkTriggerExists(Key triggerKey) throws SchedulerException {
-        return sched.checkExists(triggerKey);
-    }
 
     ///////////////////////////////////////////////////////////////////////////
     ///

@@ -29,16 +29,6 @@ import java.util.concurrent.TimeUnit;
 public class StdJDBCConstantsTest {
 
     @Test
-    public void test01() throws NoSuchDelegateException {
-        StdJDBCDelegate stdJDBCDelegate = new StdJDBCDelegate();
-        stdJDBCDelegate.initialize(LoggerFactory.getLogger(getClass()), "QRTZ_", "MEE_QUARTZ", "INSTANCE", new SimpleClassLoadHelper(), false, "");
-        String sql = StdJDBCConstants.DELETE_SCHEDULER_STATE;
-        System.out.println(sql);
-        String rtp = stdJDBCDelegate.rtp(sql);
-        System.out.println(rtp);
-    }
-
-    @Test
     public void test02(){
         String s = Integer.toBinaryString(2147483647);
         System.out.println(s);

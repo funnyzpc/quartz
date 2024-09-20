@@ -18,18 +18,11 @@
 package org.quartz.spi;
 
 import java.util.List;
-import java.util.Set;
 
-import org.quartz.JobCfg;
-import org.quartz.JobDetail;
 import org.quartz.JobPersistenceException;
-import org.quartz.ObjectAlreadyExistsException;
 import org.quartz.SchedulerConfigException;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.Trigger.TriggerState;
 import org.quartz.impl.QrtzExecute;
-import org.quartz.utils.Key;
 
 /**
  * <p>
@@ -242,17 +235,6 @@ public interface JobStore {
 //     * @throws SchedulerException
 //     */
 //    boolean checkDetailExists(Key jobKey) throws JobPersistenceException;
-   
-    /**
-     * Determine whether a {@link Trigger} with the given identifier already 
-     * exists within the scheduler.
-     * 
-     * @param triggerKey the identifier to check for
-     * @return true if a Trigger exists with the given identifier
-     * @throws SchedulerException 
-     */
-    boolean checkTriggerExists(Key triggerKey) throws JobPersistenceException;
- 
 //    /**
 //     * Clear (delete!) all scheduling data - all {@link Job}s, {@link Trigger}s
 //     * {@link Calendar}s.
@@ -340,7 +322,6 @@ public interface JobStore {
 //     * </p>
 //     */
 //    Set<JobKey> getJobKeys(GroupMatcher<JobKey> matcher) throws JobPersistenceException;
-    Set<Key> getAllJobKeysInSched(final String triggerName) throws JobPersistenceException;
 
 //    /**
 //     * Get the names of all of the <code>{@link org.quartz.Trigger}</code> s
@@ -394,14 +375,6 @@ public interface JobStore {
 //     * </p>
 //     */
 //    List<OperableTrigger> getTriggersForJob(Key jobKey) throws JobPersistenceException;
-
-    /**
-     * Get the current state of the identified <code>{@link Trigger}</code>.
-     *
-     * @see Trigger.TriggerState
-     */
-    TriggerState getTriggerState(Key triggerKey) throws JobPersistenceException;
-
 //    /**
 //     * Reset the current state of the identified <code>{@link Trigger}</code>
 //     * from {@link TriggerState#ERROR} to {@link TriggerState#NORMAL} or
@@ -422,13 +395,6 @@ public interface JobStore {
     // Trigger State manipulation methods
     //
     /////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Pause the <code>{@link org.quartz.Trigger}</code> with the given key.
-     *
-     * @see #resumeTrigger(TriggerKey)
-     */
-    void pauseTrigger(Key triggerKey) throws JobPersistenceException;
 
 //    /**
 //     * Pause all of the <code>{@link org.quartz.Trigger}s</code> in the

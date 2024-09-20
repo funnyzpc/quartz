@@ -15,20 +15,14 @@
  */
 package org.quartz.impl.jdbcjobstore;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.TimeZone;
-
 import org.quartz.impl.triggers.CronTriggerImpl;
 import org.quartz.spi.OperableTrigger;
-import org.quartz.utils.Key;
 
 public class CronTriggerPersistenceDelegate implements TriggerPersistenceDelegate, StdJDBCConstants {
 
     protected String tablePrefix;
     protected String schedNameLiteral;
+    private static final String TTYPE_CRON="CRON";
     @Override
     public void initialize(String theTablePrefix, String schedName) {
         this.tablePrefix = theTablePrefix;

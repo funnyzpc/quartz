@@ -17,7 +17,6 @@
 
 package org.quartz.impl.jdbcjobstore;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -27,18 +26,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import org.quartz.Job;
-import org.quartz.JobCfg;
-import org.quartz.JobDetail;
 import org.quartz.JobPersistenceException;
 import org.quartz.SchedulerConfigException;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.Trigger.TriggerState;
 import org.quartz.impl.QrtzApp;
 import org.quartz.impl.QrtzExecute;
 import org.quartz.impl.QrtzJob;
@@ -48,12 +42,8 @@ import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.quartz.simpl.SystemPropGenerator;
 import org.quartz.spi.ClassLoadHelper;
 import org.quartz.spi.JobStore;
-import org.quartz.spi.OperableTrigger;
 import org.quartz.spi.SchedulerSignaler;
-import org.quartz.spi.TriggerFiredBundle;
-import org.quartz.spi.TriggerFiredResult;
 import org.quartz.utils.DBConnectionManager;
-import org.quartz.utils.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:jeff@binaryfeed.org">Jeffrey Wescott</a>
  * @author James House
  */
-public abstract class JobStoreSupport implements JobStore, Constants {
+public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,7 +80,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 
     protected String dsName;
 
-    protected String tablePrefix = DEFAULT_TABLE_PREFIX;
+    protected String tablePrefix = "QRTZ_";
 
     protected boolean useProperties = false;
 
@@ -115,7 +105,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 
     private boolean isClustered = false;
 
-    private boolean useDBLocks = false;
+    private boolean useDBLocks = true;
     
     private boolean lockOnInsert = true;
 
@@ -692,31 +682,31 @@ public abstract class JobStoreSupport implements JobStore, Constants {
             initializersLoader = Thread.currentThread().getContextClassLoader();
         }
         this.schedSignaler = signaler;
-        // If the user hasn't specified an explicit lock handler, then 
-        // choose one based on CMT/Clustered/UseDBLocks.
-        if (getLockHandler() == null) {
-            // If the user hasn't specified an explicit lock handler, 
-            // then we *must* use DB locks with clustering
-            if (isClustered()) {
-                setUseDBLocks(true);
-            }
-            if (getUseDBLocks()) {
-                if(getDriverDelegateClass() != null && getDriverDelegateClass().equals(MSSQLDelegate.class.getName())) {
-                    if(getSelectWithLockSQL() == null) {
-                        String msSqlDflt = "SELECT * FROM {0}LOCKS WITH (UPDLOCK,ROWLOCK) WHERE " + COL_SCHEDULER_NAME + " = {1} AND LOCK_NAME = ?";
-                        getLog().info("Detected usage of MSSQLDelegate class - defaulting 'selectWithLockSQL' to '" + msSqlDflt + "'.");
-                        setSelectWithLockSQL(msSqlDflt);
-                    }
-                }
-                getLog().info("Using db table-based data access locking (synchronization).");
-                setLockHandler(new StdRowLockSemaphore(getTablePrefix(), getInstanceName(), getSelectWithLockSQL()));
-//                setLockHandler(new UpdateLockRowSemaphore(getTablePrefix(), getInstanceName(), getSelectWithLockSQL()));
-            } else {
-                getLog().info("Using thread monitor-based data access locking (synchronization).");
-                setLockHandler(new SimpleSemaphore());
-            }
-        }
-
+//        // If the user hasn't specified an explicit lock handler, then
+//        // choose one based on CMT/Clustered/UseDBLocks.
+//        // 如果用户没有指定显式的锁处理程序，则根据CMT/Clustered/UseDBLocks选择一个。
+//        if (getLockHandler() == null) {
+//            // If the user hasn't specified an explicit lock handler,
+//            // then we *must* use DB locks with clustering
+//            if (isClustered()) {
+//                setUseDBLocks(true);
+//            }
+//            if (getUseDBLocks()) {
+//                if(getDriverDelegateClass() != null && getDriverDelegateClass().equals(MSSQLDelegate.class.getName())) {
+//                    if(getSelectWithLockSQL() == null) {
+//                        String msSqlDflt = "SELECT * FROM {0}LOCKS WITH (UPDLOCK,ROWLOCK) WHERE " + COL_SCHEDULER_NAME + " = {1} AND LOCK_NAME = ?";
+//                        getLog().info("Detected usage of MSSQLDelegate class - defaulting 'selectWithLockSQL' to '" + msSqlDflt + "'.");
+//                        setSelectWithLockSQL(msSqlDflt);
+//                    }
+//                }
+//                getLog().info("Using db table-based data access locking (synchronization).");
+//                setLockHandler(new StdRowLockSemaphore(getTablePrefix(), getInstanceName(), getSelectWithLockSQL()));
+////                setLockHandler(new UpdateLockRowSemaphore(getTablePrefix(), getInstanceName(), getSelectWithLockSQL()));
+//            } else {
+//                getLog().info("Using thread monitor-based data access locking (synchronization).");
+//                setLockHandler(new SimpleSemaphore());
+//            }
+//        }
     }
    
     /**
@@ -868,106 +858,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         }
     }
 
-//    /**
-//     * Recover any failed or misfired jobs and clean up the data store as
-//     * appropriate.
-//     *
-//     * @throws JobPersistenceException if jobs could not be recovered
-//     */
-//    protected void recoverJobs() throws JobPersistenceException {
-//        executeInNonManagedTXLock(
-//            LOCK_TRIGGER_ACCESS,
-//            new VoidTransactionCallback() {
-//                @Override
-//                public void executeVoid(Connection conn) throws JobPersistenceException {
-//                    recoverJobs(conn);
-//                }
-//            }, null);
-//    }
-//
-//    /**
-//     * <p>
-//     * Will recover any failed or misfired jobs and clean up the data store as
-//     * appropriate.
-//     * </p>
-//     *
-//     * @throws JobPersistenceException
-//     *           if jobs could not be recovered
-//     */
-//    protected void recoverJobs(Connection conn) throws JobPersistenceException {
-//        try {
-//            // update inconsistent job states
-//            int rows = getDelegate().updateTriggerStatesFromOtherStates(conn,STATE_WAITING, STATE_ACQUIRED, STATE_BLOCKED);
-//            rows += getDelegate().updateTriggerStatesFromOtherStates(conn,
-//                        STATE_PAUSED, STATE_PAUSED_BLOCKED, STATE_PAUSED_BLOCKED);
-//            getLog().info("Freed " + rows + " triggers from 'acquired' / 'blocked' state.");
-//            // clean up misfired jobs
-//            recoverMisfiredJobs(conn, true);
-//            // recover jobs marked for recovery that were not fully executed
-//            List<OperableTrigger> recoveringJobTriggers = getDelegate().selectTriggersForRecoveringJobs(conn);
-//            getLog().info("Recovering " + recoveringJobTriggers.size() + " jobs that were in-progress at the time of the last shut-down.");
-//
-//            for (OperableTrigger recoveringJobTrigger: recoveringJobTriggers) {
-//                // todo ...
-//                if (jobDetailExists(conn, recoveringJobTrigger.getKey())) {
-//                    recoveringJobTrigger.computeFirstFireTime(null);
-//                    storeTrigger(conn, recoveringJobTrigger, null, false, STATE_WAITING, false, true);
-//                }
-//            }
-//            getLog().info("Recovery complete.");
-//
-//            // remove lingering 'complete' triggers...
-//            List<Key> cts = getDelegate().selectTriggersInState(conn, STATE_COMPLETE);
-//            for(Key ct: cts) {
-//                removeTrigger(conn, ct);
-//            }
-//            getLog().info("Removed " + cts.size() + " 'complete' triggers.");
-//            // clean up any fired trigger entries
-//            int n = getDelegate().deleteFiredTriggers(conn);
-//            getLog().info("Removed " + n + " stale fired job entries.");
-//        } catch (JobPersistenceException e) {
-//            throw e;
-//        } catch (Exception e) {
-//            throw new JobPersistenceException("Couldn't recover jobs: " + e.getMessage(), e);
-//        }
-//    }
-
-    // return : now - 60s
-    protected long getMisfireTime() {
-        long misfireTime = System.currentTimeMillis();
-        // misfireThreshold: 60000L
-        if (getMisfireThreshold() > 0) {
-            misfireTime -= getMisfireThreshold();
-        }
-        return (misfireTime > 0) ? misfireTime : 0;
-    }
-
-    /**
-     * Helper class for returning the composite result of trying to recover misfired jobs.
-     * 用于返回尝试恢复不匹配的作业的合成结果的帮助程序类。
-     */
-    protected static class RecoverMisfiredJobsResult {
-        public static final RecoverMisfiredJobsResult NO_OP =new RecoverMisfiredJobsResult(false, 0, Long.MAX_VALUE);
-        private final boolean _hasMoreMisfiredTriggers; // _有更多误触发
-        private final int _processedMisfiredTriggerCount; //_已处理的误触发计数
-        private final long _earliestNewTime; // _最早的新时间
-        
-        public RecoverMisfiredJobsResult(boolean hasMoreMisfiredTriggers, int processedMisfiredTriggerCount, long earliestNewTime) {
-            _hasMoreMisfiredTriggers = hasMoreMisfiredTriggers;
-            _processedMisfiredTriggerCount = processedMisfiredTriggerCount;
-            _earliestNewTime = earliestNewTime;
-        }
-        
-        public boolean hasMoreMisfiredTriggers() {
-            return _hasMoreMisfiredTriggers;
-        }
-        public int getProcessedMisfiredTriggerCount() {
-            return _processedMisfiredTriggerCount;
-        } 
-        public long getEarliestNewTime() {
-            return _earliestNewTime;
-        } 
-    }
     // 恢复已经熄火的job
 //    protected RecoverMisfiredJobsResult recoverMisfiredJobs(Connection conn, boolean recovering) throws JobPersistenceException, SQLException {
 //        // If recovering, we want to handle all of the misfired triggers right away.
@@ -1163,453 +1053,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //        }
 //    }
 
-    /**
-     * <p>
-     * Check existence of a given job.
-     * </p>
-     */
-    protected boolean jobDetailExists(Connection conn, Key jobKey) throws JobPersistenceException {
-        try {
-            return getDelegate().jobDetailExists(conn, jobKey);
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't determine job existence (" + jobKey + "): " + e.getMessage(), e);
-        }
-    }
-//
-//    /**
-//     * <p>
-//     * Store the given <code>{@link org.quartz.Trigger}</code>.
-//     * </p>
-//     *
-//     * @param newTrigger
-//     *          The <code>Trigger</code> to be stored.
-//     * @param replaceExisting
-//     *          If <code>true</code>, any <code>Trigger</code> existing in
-//     *          the <code>JobStore</code> with the same name & group should
-//     *          be over-written.
-//     * @throws ObjectAlreadyExistsException
-//     *           if a <code>Trigger</code> with the same name/group already
-//     *           exists, and replaceExisting is set to false.
-//     */
-//    @Override
-//    public void storeTrigger(final OperableTrigger newTrigger,final boolean replaceExisting) throws JobPersistenceException {
-//        executeInLock(
-//            (isLockOnInsert() || replaceExisting) ? LOCK_TRIGGER_ACCESS : null,
-//            new VoidTransactionCallback() {
-//                @Override
-//                public void executeVoid(Connection conn) throws JobPersistenceException {
-//                    storeTrigger(conn, newTrigger, null, replaceExisting,STATE_WAITING, false, false);
-//                }
-//            });
-//    }
-    
-//    /**
-//     * <p>
-//     * Insert or update a trigger.
-//     * </p>
-//     */
-//    @SuppressWarnings("ConstantConditions")
-//    protected void storeTrigger(Connection conn,OperableTrigger newTrigger, JobDetail job, boolean replaceExisting, String state,boolean forceState, boolean recovering) throws JobPersistenceException {
-////        boolean existingTrigger = triggerExists(conn, newTrigger.getKey());
-//        boolean existingTrigger = jobCfgExists(conn, newTrigger.getKey());
-//        if ((existingTrigger) && (!replaceExisting)) {
-//            throw new ObjectAlreadyExistsException(newTrigger);
-//        }
-//        try {
-//            // 检索作业/获取 JOB_DETAILS
-//            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-//            if ( (job = retrieveJob(conn, newTrigger.getKey())) == null) {
-//                throw new JobPersistenceException("The job ("+ newTrigger.getKey()+ ") referenced by the trigger does not exist.");
-//            }
-//            // UPDATE {0}JOB_CFG SET ... WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-//            // UPDATE QRTZ_JOB_CFG SET DESCRIPTION = ?, NEXT_FIRE_TIME = ?, PREV_FIRE_TIME = ?, TRIGGER_STATE ='WAITING', TRIGGER_TYPE = ?,
-//            // START_TIME = ?, END_TIME = ?, CALENDAR_NAME = ?, MISFIRE_INSTR = ?, PRIORITY = ?
-//            // WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-//            getDelegate().updateJobCfg(conn, newTrigger, state, job);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw new JobPersistenceException("Couldn't store trigger '" + newTrigger.getKey() + "' for '" + newTrigger.getKey() + "' job:" + e.getMessage(), e);
-//        }
-//    }
-
-    /**
-     * <p>
-     * Check existence of a given trigger.
-     * 检查给定的trigger是否存在
-     * </p>
-     */
-    protected boolean jobCfgExists(Connection conn,Key key) throws JobPersistenceException {
-        try {
-//            return getDelegate().triggerExists(conn,key);
-            return getDelegate().jobCfgExists(conn,key);
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't determine trigger existence (" + key + "): " + e.getMessage(), e);
-        }
-    }
-
-//    /**
-//     * <p>
-//     * Remove (delete) the <code>{@link org.quartz.Job}</code> with the given
-//     * name, and any <code>{@link org.quartz.Trigger}</code> s that reference
-//     * it.
-//     * 移除（删除）具有给定名称的作业以及引用该作业的任何触发器。
-//     * </p>
-//     *
-//     * <p>
-//     * If removal of the <code>Job</code> results in an empty group, the
-//     * group should be removed from the <code>JobStore</code>'s list of
-//     * known group names.
-//     * 如果删除作业导致一个空组，则应将该组从JobStore的已知组名列表中删除。
-//     * </p>
-//     *
-//     * @return <code>true</code> if a <code>Job</code> with the given name &
-//     *         group was found and removed from the store.
-//     *         如果找到具有给定名称和组的作业并将其从存储中删除，则为true。
-//     */
-//    @Override
-//    public boolean removeJob(final Key jobKey) throws JobPersistenceException {
-//        return (Boolean) executeInLock(
-//                LOCK_TRIGGER_ACCESS,
-//                new TransactionCallback() {
-//                    @Override
-//                    public Object execute(Connection conn) throws JobPersistenceException {
-//                        return removeJob(conn, jobKey) ?
-//                                Boolean.TRUE : Boolean.FALSE;
-//                    }
-//                });
-//    }
-//
-//    protected boolean removeJob(Connection conn, final Key jobKey)throws JobPersistenceException {
-//        try {
-//            List<Key> jobTriggers = getDelegate().selectTriggerKeysForJob(conn, jobKey);
-//            for (Key jobTrigger: jobTriggers) {
-//                deleteTriggerAndChildren(conn, jobTrigger);
-//            }
-//            return deleteJobAndChildren(conn, jobKey);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't remove job: "+ e.getMessage(), e);
-//        }
-//    }
-//    @Override
-//    public boolean removeJobs(final List<Key> keys) throws JobPersistenceException {
-//        return (Boolean) executeInLock(
-//                LOCK_TRIGGER_ACCESS,
-//                new TransactionCallback() {
-//                    @Override
-//                    public Object execute(Connection conn) throws JobPersistenceException {
-//                        boolean allFound = true;
-//                        // FUTURE_TODO: make this more efficient with a true bulk operation...
-//                        for (Key k : keys){
-//                            allFound = removeJob(conn,k) && allFound;
-//                        }
-//                        return allFound ? Boolean.TRUE : Boolean.FALSE;
-//                    }
-//                });
-//    }
-//    @Override
-//    public boolean removeTriggers(final List<Key> keys) throws JobPersistenceException {
-//        return (Boolean) executeInLock(
-//                LOCK_TRIGGER_ACCESS,
-//                new TransactionCallback() {
-//                    @Override
-//                    public Object execute(Connection conn) throws JobPersistenceException {
-//                        boolean allFound = true;
-//                        // FUTURE_TODO: make this more efficient with a true bulk operation...
-//                        for (Key k : keys){
-//                            allFound = removeTrigger(conn,k) && allFound;
-//                        }
-//                        return allFound ? Boolean.TRUE : Boolean.FALSE;
-//                    }
-//                });
-//    }
-//    @Override
-//    public void storeJobsAndTriggers(final Map<JobDetail, Set<? extends Trigger>> triggersAndJobs, final boolean replace) throws JobPersistenceException {
-//        executeInLock(
-//                (isLockOnInsert() || replace) ? LOCK_TRIGGER_ACCESS : null,
-//                new VoidTransactionCallback() {
-//                    @Override
-//                    public void executeVoid(Connection conn) throws JobPersistenceException {
-//                        // FUTURE_TODO: make this more efficient with a true bulk operation...
-//                        for(JobDetail job: triggersAndJobs.keySet()) {
-//                            storeJob(conn, job, replace);
-//                            for(Trigger trigger: triggersAndJobs.get(job)) {
-//                                storeTrigger(conn, (OperableTrigger) trigger, job, replace,Constants.STATE_WAITING, false, false);
-//                            }
-//                        }
-//                    }
-//                });
-//    }
-//
-//    /**
-//     * Delete a job and its listeners.
-//     *
-//     * @see #removeJob(java.sql.Connection, JobKey)
-//     * @see #removeTrigger(Connection, TriggerKey)
-//     */
-//    private boolean deleteJobAndChildren(Connection conn,Key key) throws NoSuchDelegateException, SQLException {
-//        return (getDelegate().deleteJobDetail(conn, key) > 0);
-//    }
-//
-//    /**
-//     * Delete a trigger, its listeners, and its Simple/Cron/BLOB sub-table entry.
-//     *
-//     * @see #removeJob(java.sql.Connection, .JobKey)
-//     * @see #removeTrigger(Connection, TriggerKey)
-//     * @see #replaceTrigger(Connection, TriggerKey, OperableTrigger)
-//     */
-//    private boolean deleteTriggerAndChildren(Connection conn,Key key) throws SQLException, NoSuchDelegateException {
-//        return (getDelegate().deleteTrigger(conn, key) > 0);
-//    }
-//
-//    /**
-//     * <p>
-//     * Retrieve the <code>{@link org.quartz.JobDetail}</code> for the given
-//     * <code>{@link org.quartz.Job}</code>.
-//     * 检索给定作业的JobDetail。
-//     * </p>
-//     *
-//     * @return The desired <code>Job</code>, or null if there is no match.
-//     */
-//    @Override
-//    public JobDetail retrieveJob(final Key jobKey) throws JobPersistenceException {
-//        return (JobDetail)executeWithoutLock( // no locks necessary for read...
-//            new TransactionCallback() {
-//                @Override
-//                public Object execute(Connection conn) throws JobPersistenceException {
-//                    return retrieveJob(conn, jobKey);
-//                }
-//            });
-//    }
-//
-//    protected JobDetail retrieveJob(Connection conn, Key key) throws JobPersistenceException {
-//        try {
-////            return getDelegate().selectJobDetail(conn, key,getClassLoadHelper());
-//            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-//            return getDelegate().selectJobCfg(conn, key,getClassLoadHelper());
-//        } catch (ClassNotFoundException e) {
-//            throw new JobPersistenceException("Couldn't retrieve job because a required class was not found: " + e.getMessage(), e);
-//        } catch (IOException e) {
-//            throw new JobPersistenceException("Couldn't retrieve job because the BLOB couldn't be deserialized: " + e.getMessage(), e);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't retrieve job: " + e.getMessage(), e);
-//        }
-//    }
-//
-//    /**
-//     * <p>
-//     * Remove (delete) the <code>{@link org.quartz.Trigger}</code> with the
-//     * given name.
-//     *  删除（删除）具有给定名称的触发器。
-//     * </p>
-//     *
-//     * <p>
-//     * If removal of the <code>Trigger</code> results in an empty group, the
-//     * group should be removed from the <code>JobStore</code>'s list of
-//     * known group names.
-//     *  如果删除触发器导致组为空，则应从作业存储的已知组名称列表中删除该组。
-//     * </p>
-//     *
-//     * <p>
-//     * If removal of the <code>Trigger</code> results in an 'orphaned' <code>Job</code>
-//     * that is not 'durable', then the <code>Job</code> should be deleted
-//     * also.
-//     * 如果删除触发器会导致“孤立”作业，而该作业不是“持久的”，则也应删除该作业。
-//     * </p>
-//     *
-//     * @return <code>true</code> if a <code>Trigger</code> with the given
-//     *         name & group was found and removed from the store.
-//     *  如果找到了具有给定名称和组的触发器并从存储中删除，则为 true。
-//     */
-//    @Override
-//    public boolean removeTrigger(final Key k) throws JobPersistenceException {
-//        return (Boolean) executeInLock(
-//                LOCK_TRIGGER_ACCESS,
-//                new TransactionCallback() {
-//                    @Override
-//                    public Object execute(Connection conn) throws JobPersistenceException {
-//                        return removeTrigger(conn,k) ? Boolean.TRUE : Boolean.FALSE;
-//                    }
-//                });
-//    }
-//
-//    public boolean removeTrigger(Connection conn, Key key) throws JobPersistenceException {
-//        boolean removedTrigger;
-//        try {
-//            // this must be called before we delete the trigger, obviously 显然，在我们删除触发器之前，必须调用它
-//            // SELECT J.JOB_NAME, J.JOB_GROUP, J.IS_DURABLE, J.JOB_CLASS_NAME, J.REQUESTS_RECOVERY FROM QRTZ_TRIGGERS T, QRTZ_JOB_DETAILS J
-//            // WHERE T.SCHED_NAME = 'MEE_QUARTZ' AND J.SCHED_NAME = 'MEE_QUARTZ' AND T.TRIGGER_NAME = ? AND T.TRIGGER_GROUP = ?
-//            // AND T.JOB_NAME = J.JOB_NAME AND T.JOB_GROUP = J.JOB_GROUP
-//            JobDetail job = getDelegate().selectJobForTrigger(conn,getClassLoadHelper(), key, false);
-//            // DELETE FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ? AND TRIGGER_GROUP = ?
-//            removedTrigger = deleteTriggerAndChildren(conn, key);
-//            if (null != job /*&& !job.isDurable()*/ ) {
-//                // SELECT COUNT(TRIGGER_NAME) FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
-//                int numTriggers = getDelegate().selectNumTriggersForJob(conn,job.getKey());
-//                if (numTriggers == 0) {
-//                    // Don't call removeJob() because we don't want to check for
-//                    // triggers again.
-//                    // DELETE FROM QRTZ_JOB_DETAILS WHERE SCHED_NAME = 'MEE_QUARTZ' AND JOB_NAME = ? AND JOB_GROUP = ?
-//                    deleteJobAndChildren(conn, job.getKey());
-//                }
-//            }
-//        } catch (ClassNotFoundException e) {
-//            throw new JobPersistenceException("Couldn't remove trigger: "+ e.getMessage(), e);
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//            throw new JobPersistenceException("Couldn't remove trigger: " + e.getMessage(), e);
-//        }
-//        return removedTrigger;
-//    }
-
-//    /**
-//     * @see org.quartz.spi.JobStore#replaceTrigger(TriggerKey, OperableTrigger)
-//     */
-//    @Override
-//    public boolean replaceTrigger(final Key triggerKey,final OperableTrigger newTrigger) throws JobPersistenceException {
-//        return (Boolean) executeInLock(
-//                LOCK_TRIGGER_ACCESS,
-//                new TransactionCallback() {
-//                    @Override
-//                    public Object execute(Connection conn) throws JobPersistenceException {
-//                        return replaceTrigger(conn, triggerKey, newTrigger) ?
-//                                Boolean.TRUE : Boolean.FALSE;
-//                    }
-//                });
-//    }
-//
-//    protected boolean replaceTrigger(Connection conn,Key key, OperableTrigger newTrigger) throws JobPersistenceException {
-//        try {
-//            // this must be called before we delete the trigger, obviously
-//            JobDetail job = getDelegate().selectJobForTrigger(conn,getClassLoadHelper(), key);
-//            if (job == null) {
-//                return false;
-//            }
-////            if (!newTrigger.getJobKey().equals(job.getKey())) {
-//            if (!newTrigger.getKey().equals(job.getKey())) {
-//                throw new JobPersistenceException("New trigger is not related to the same job as the old trigger.");
-//            }
-//            boolean removedTrigger = deleteTriggerAndChildren(conn, key);
-//            storeTrigger(conn, newTrigger, job, false, STATE_WAITING, false, false);
-//            return removedTrigger;
-//        } catch (ClassNotFoundException e) {
-//            throw new JobPersistenceException("Couldn't remove trigger: " + e.getMessage(), e);
-//        } catch (SQLException e) {
-//            throw new JobPersistenceException("Couldn't remove trigger: " + e.getMessage(), e);
-//        }
-//    }
-//
-//    /**
-//     * <p>
-//     * Retrieve the given <code>{@link org.quartz.Trigger}</code>.
-//     * 检索给定的触发器。
-//     * </p>
-//     *
-//     * @return The desired <code>Trigger</code>, or null if there is no
-//     *         match.
-//     */
-//    @Override
-//    public OperableTrigger retrieveTrigger(final Key triggerKey) throws JobPersistenceException {
-//        return (OperableTrigger)executeWithoutLock( // no locks necessary for read...
-//            new TransactionCallback() {
-//                @Override
-//                public Object execute(Connection conn) throws JobPersistenceException {
-//                    return retrieveTrigger(conn, triggerKey);
-//                }
-//            });
-//    }
-//
-//    protected OperableTrigger retrieveTrigger(Connection conn,Key key) throws JobPersistenceException {
-//        try {
-//            //  SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-////            return getDelegate().selectTrigger(conn, key);
-//            // SELECT * FROM {0}JOB_CFG WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? and TRIGGER_TYPE = ?
-//            return getDelegate().selectJobCfgTrigger(conn, key);
-//        } catch (Exception e) {
-//            log.error("出现异常了:{}",key,e);
-//            throw new JobPersistenceException("Couldn't retrieve trigger: " + e.getMessage(), e);
-//        }
-//    }
-//
-    /**
-     * <p>
-     * Get the current state of the identified <code>{@link Trigger}</code>.
-     * 获取已标识触发器的当前状态。
-     * </p>
-     * 
-     * @see TriggerState#NORMAL
-     * @see TriggerState#PAUSED
-     * @see TriggerState#COMPLETE
-     * @see TriggerState#ERROR
-     * @see TriggerState#NONE
-     */
-    @Override
-    public TriggerState getTriggerState(final Key triggerKey) throws JobPersistenceException {
-        return (TriggerState)executeWithoutLock( // no locks necessary for read...
-                new TransactionCallback() {
-                    @Override
-                    public Object execute(Connection conn) throws JobPersistenceException {
-                        return getTriggerState(conn, triggerKey);
-                    }
-                });
-    }
-    
-    public TriggerState getTriggerState(Connection conn,Key key) throws JobPersistenceException {
-        try {
-            // SELECT TRIGGER_STATE FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ' AND TRIGGER_NAME = ?
-            String ts = getDelegate().selectTriggerState(conn, key);
-            if (ts == null) {
-                return TriggerState.NONE;
-            }
-            if (ts.equals(STATE_DELETED)) {
-                return TriggerState.NONE;
-            }
-            if (ts.equals(STATE_COMPLETE)) {
-                return TriggerState.COMPLETE;
-            }
-            if (ts.equals(STATE_PAUSED)) {
-                return TriggerState.PAUSED;
-            }
-            if (ts.equals(STATE_PAUSED_BLOCKED)) {
-                return TriggerState.PAUSED;
-            }
-            if (ts.equals(STATE_ERROR)) {
-                return TriggerState.ERROR;
-            }
-            if (ts.equals(STATE_BLOCKED)) {
-                return TriggerState.BLOCKED;
-            }
-            return TriggerState.NORMAL;
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't determine state of trigger (" + key + "): " + e.getMessage(), e);
-        }
-    }
-
-//    /**
-//     * <p>
-//     * Get the number of <code>{@link org.quartz.Job}</code> s that are
-//     * stored in the <code>JobStore</code>.
-//     *  获取存储在JobStore中的作业数。
-//     * </p>
-//     */
-//    @Override
-//    public int getNumberOfJobs() throws JobPersistenceException {
-//        return (Integer) executeWithoutLock( // no locks necessary for read...
-//                new TransactionCallback() {
-//                    @Override
-//                    public Object execute(Connection conn) throws JobPersistenceException {
-//                        return getNumberOfJobs(conn);
-//                    }
-//                });
-//    }
-    
-    protected int getNumberOfJobs(Connection conn) throws JobPersistenceException {
-        try {
-            // SELECT COUNT(JOB_NAME)  FROM QRTZ_JOB_DETAILS WHERE SCHED_NAME = 'MEE_QUARTZ'
-            return getDelegate().selectNumJobs(conn);
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't obtain number of jobs: " + e.getMessage(), e);
-        }
-    }
 //
 //    /**
 //     * <p>
@@ -1628,15 +1071,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //                    }
 //                });
 //    }
-    
-    protected int getNumberOfTriggers(Connection conn) throws JobPersistenceException {
-        try {
-            // SELECT COUNT(TRIGGER_NAME) FROM QRTZ_TRIGGERS WHERE SCHED_NAME = 'MEE_QUARTZ'
-            return getDelegate().selectNumTriggers(conn);
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't obtain number of triggers: " + e.getMessage(), e);
-        }
-    }
 
 //    /**
 //     * <p>
@@ -1665,95 +1099,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //        }
 //    }
 
-    /**
-     * <p>
-     * Get the names of all of the <code>{@link org.quartz.Job}</code> s that
-     * matcher the given groupMatcher.
-     *  获取与给定groupMatcher匹配的所有作业的名称。
-     * </p>
-     * 
-     * <p>
-     * If there are no jobs in the given group name, the result should be an empty Set
-     *   如果给定组名称中没有作业，则结果应为空Set
-     * </p>
-     *  getJobKeys -> getAllJobKeysInSched
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public Set<Key> getAllJobKeysInSched(final String triggerName) throws JobPersistenceException {
-        return (Set<Key>)executeWithoutLock( // no locks necessary for read...
-            new TransactionCallback() {
-                @Override
-                public Object execute(Connection conn) throws JobPersistenceException {
-                   return getTriggerNames(conn,triggerName);
-                }
-            });
-    }
-    // getJobNames -> getTriggerNames
-    protected Set<Key> getTriggerNames(Connection conn,final String triggerName) throws JobPersistenceException {
-        try {
-            return getDelegate().selectAllJobsInSched(conn,triggerName);
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't obtain job names: " + e.getMessage(), e);
-        }
-    }
-    
-    
-//    /**
-//     * Determine whether a {@link Job} with the given identifier already
-//     * exists within the scheduler.
-//     *  确定调度程序中是否已存在具有给定标识符的作业。
-//     *
-//     * @param jobKey the identifier to check for
-//     * @return true if a Job exists with the given identifier
-//     * @throws JobPersistenceException
-//     */
-//    @Override
-//    public boolean checkDetailExists(final Key k) throws JobPersistenceException {
-//        return (Boolean)executeWithoutLock( // no locks necessary for read...
-//                new TransactionCallback() {
-//                    @Override
-//                    public Object execute(Connection conn) throws JobPersistenceException {
-//                        return checkDetailExists(conn,k);
-//                    }
-//                });
-//    }
-   
-    protected boolean checkDetailExists(Connection conn,Key k) throws JobPersistenceException {
-        try {
-            return getDelegate().jobDetailExists(conn,k);
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't check for existence of job: " + e.getMessage(), e);
-        }
-    }
-    
-    /**
-     * Determine whether a {@link Trigger} with the given identifier already 
-     * exists within the scheduler.
-     *  确定调度程序中是否已经存在具有给定标识符的触发器。
-     *
-     * @param triggerKey the identifier to check for
-     * @return true if a Trigger exists with the given identifier
-     * @throws JobPersistenceException
-     */
-    @Override
-    public boolean checkTriggerExists(final Key triggerKey) throws JobPersistenceException {
-        return (Boolean)executeWithoutLock( // no locks necessary for read...
-                new TransactionCallback() {
-                    @Override
-                    public Object execute(Connection conn) throws JobPersistenceException {
-                        return checkTriggerExists(conn, triggerKey);
-                    }
-                });
-    }
-    
-    protected boolean checkTriggerExists(Connection conn,Key triggerKey) throws JobPersistenceException {
-        try {
-            return getDelegate().triggerExists(conn, triggerKey);
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't check for existence of job: " + e.getMessage(), e);
-        }
-    }
 
 //    /**
 //     * Clear (delete!) all scheduling data - all {@link Job}s, {@link Trigger}s
@@ -1812,48 +1157,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //        }
 //        return list;
 //    }
-
-    /**
-     * <p>
-     * Pause the <code>{@link org.quartz.Trigger}</code> with the given name.
-     *  暂停具有给定名称的触发器。
-     * </p>
-     * 
-     * @see #resumeTrigger(TriggerKey)
-     */
-    @Override
-    public void pauseTrigger(final Key triggerKey) throws JobPersistenceException {
-        executeInLock(
-            LOCK_TRIGGER_ACCESS,
-            new VoidTransactionCallback() {
-                @Override
-                public void executeVoid(Connection conn) throws JobPersistenceException {
-                    pauseTrigger(conn, triggerKey);
-                }
-            });
-    }
-    
-    /**
-     * <p>
-     * Pause the <code>{@link org.quartz.Trigger}</code> with the given name.
-     *  暂停具有给定名称的触发器。
-     * </p>
-     * 
-     * @see #resumeTrigger(Connection, TriggerKey)
-     */
-    public void pauseTrigger(Connection conn,Key triggerKey) throws JobPersistenceException {
-        try {
-            String oldState = getDelegate().selectTriggerState(conn,triggerKey);
-            if (oldState.equals(STATE_WAITING) || oldState.equals(STATE_ACQUIRED)) {
-                getDelegate().updateTriggerState(conn, triggerKey, STATE_PAUSED);
-            } else if (oldState.equals(STATE_BLOCKED)) {
-                getDelegate().updateTriggerState(conn, triggerKey, STATE_PAUSED_BLOCKED);
-            }
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't pause trigger '" + triggerKey + "': " + e.getMessage(), e);
-        }
-    }
-
 //    /**
 //     * <p>
 //     * Pause the <code>{@link org.quartz.Job}</code> with the given name - by
@@ -1910,35 +1213,6 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //            });
 //    }
 //
-    /**
-     * Determines if a Trigger for the given job should be blocked.
-     * 确定是否应阻止给定作业的触发器
-     * State can only transition to STATE_PAUSED_BLOCKED/BLOCKED from 
-     * PAUSED/STATE_WAITING respectively.
-     * 
-     * @return STATE_PAUSED_BLOCKED, BLOCKED, or the currentState. 
-     */
-    protected String checkBlockedState(Connection conn,Key jobKey, String currentState) throws JobPersistenceException {
-        // State can only transition to BLOCKED from PAUSED or WAITING.
-        // 状态只能从PAUSED或WAITING转换到BLOCKED。
-        if ((!currentState.equals(STATE_WAITING)) && (!currentState.equals(STATE_PAUSED))) {
-            return currentState;
-        }
-        // todo ... 考虑是否需要移除！
-        try {
-            // SELECT * FROM {0}FIRED_TRIGGERS WHERE SCHED_NAME = {1} AND TRIGGER_NAME = ? AND TRIGGER_TYPE = ?
-            List<FiredTriggerRecord> lst = getDelegate().selectFiredTriggerRecordsByJob(conn,jobKey/*,jobKey.getGroup()*/);
-            if (lst.size() > 0) {
-                FiredTriggerRecord rec = lst.get(0);
-                if (rec.isJobDisallowsConcurrentExecution()) { // OLD_TODO: worry about failed/recovering/volatile job  states?
-                    return (STATE_PAUSED.equals(currentState)) ? STATE_PAUSED_BLOCKED : STATE_BLOCKED;
-                }
-            }
-            return currentState;
-        } catch (SQLException e) {
-            throw new JobPersistenceException("Couldn't determine if trigger should be in a blocked state '" + jobKey + "': " + e.getMessage(), e);
-        }
-    }
 //
 //    /**
 //     * <p>
@@ -2245,7 +1519,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                 // 2. 根据任务时间配置计算膨胀任务
                 // 3. 返回记录
 //                List<Key> keys = getDelegate().selectTriggerToAcquire(conn, noLaterThan + timeWindow, getMisfireTime(), maxCount);
-                List<QrtzExecute> dataList = getDelegate().selectExecuteAndJobToAcquire(conn,application,_tsw,_tew,STATE_EXECUTING);
+                List<QrtzExecute> dataList = getDelegate().selectExecuteAndJobToAcquire(conn,application,_tsw,_tew,"EXECUTING");
                 // No trigger is ready to fire yet. 触发器还没有准备好点火
                 if (dataList == null || dataList.isEmpty()){
                     return executeList;
@@ -2255,9 +1529,12 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                 for( QrtzExecute item:dataList){
                     final String jobType = item.getJobType(); // SIMPLE、CRON
                     final Long endTime = item.getEndTime();
+                    final Integer repeatCount = item.getRepeatCount();
                     item.setHostIp(hostIP);
                     item.setHostName(hostName);
-                    item.setTimeTriggered( ("SIMPLE".equals(jobType))? (item.getTimeTriggered()+1) : item.getTimeTriggered());
+//                    item.setTimeTriggered( ("SIMPLE".equals(jobType))? (item.getTimeTriggered()+1) : item.getTimeTriggered());
+                    // timeTriggered 是与 repeatCount 绑定的，有指定重复次数才会更新已触发次数
+                    item.setTimeTriggered( repeatCount!=null && repeatCount>0 ? (item.getTimeTriggered()+1) : item.getTimeTriggered() );
                     item.setScheduledFireTime(scheduledFireTime);
                     // 类加载
                     final String jobClass = item.getJob().getJobClass();
@@ -2294,7 +1571,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                             Long nextFireTime = item.getNextFireTime();
                             Long startTime = item.getStartTime();
                             Long _endTime = endTime<=0?_tew:(endTime>_tew?null:endTime);
-                            Integer repeatCount = item.getRepeatCount();
+                            // Integer repeatCount = item.getRepeatCount();
                             Integer timeTriggered = item.getTimeTriggered();
                             Integer repeatInterval = item.getRepeatInterval();
                             if(!( _endTime!=null && timeTriggered<repeatCount
@@ -2752,25 +2029,25 @@ public abstract class JobStoreSupport implements JobStore, Constants {
 //            }
 //        }
 //    }
-
-    protected ThreadLocal<Long> sigChangeForTxCompletion = new ThreadLocal<Long>();
-    protected void signalSchedulingChangeOnTxCompletion(long candidateNewNextFireTime) {
-        Long sigTime = sigChangeForTxCompletion.get();
-        if(sigTime == null && candidateNewNextFireTime >= 0L){
-            sigChangeForTxCompletion.set(candidateNewNextFireTime);
-        }
-        else {
-            if(sigTime == null || candidateNewNextFireTime < sigTime){
-                sigChangeForTxCompletion.set(candidateNewNextFireTime);
-            }
-        }
-    }
-    
-    protected Long clearAndGetSignalSchedulingChangeOnTxCompletion() {
-        Long t = sigChangeForTxCompletion.get();
-        sigChangeForTxCompletion.set(null);
-        return t;
-    }
+//
+//    protected ThreadLocal<Long> sigChangeForTxCompletion = new ThreadLocal<Long>();
+//    protected void signalSchedulingChangeOnTxCompletion(long candidateNewNextFireTime) {
+//        Long sigTime = sigChangeForTxCompletion.get();
+//        if(sigTime == null && candidateNewNextFireTime >= 0L){
+//            sigChangeForTxCompletion.set(candidateNewNextFireTime);
+//        }
+//        else {
+//            if(sigTime == null || candidateNewNextFireTime < sigTime){
+//                sigChangeForTxCompletion.set(candidateNewNextFireTime);
+//            }
+//        }
+//    }
+//
+//    protected Long clearAndGetSignalSchedulingChangeOnTxCompletion() {
+//        Long t = sigChangeForTxCompletion.get();
+//        sigChangeForTxCompletion.set(null);
+//        return t;
+//    }
 
     protected void signalSchedulingChangeImmediately(long candidateNewNextFireTime) {
         schedSignaler.signalSchedulingChange(candidateNewNextFireTime);
@@ -3045,118 +2322,87 @@ public abstract class JobStoreSupport implements JobStore, Constants {
         
         abstract void executeVoid(Connection conn) throws JobPersistenceException;
     }
-
-    /**
-     * Execute the given callback in a transaction. Depending on the JobStore, 
-     * the surrounding transaction may be assumed to be already present 
-     * (managed).  
-     *  在事务中执行给定的回调。根据JobStore，可以假设周围的事务已经存在（管理）。
-     *
-     * <p>
-     * This method just forwards to executeInLock() with a null lockName.
-     *  此方法只是转发到具有null lockName的executeInLock（）。
-     * </p>
-     * 
-     * @see #executeInLock(String, TransactionCallback)
-     */
-    public <T> T executeWithoutLock(TransactionCallback<T> txCallback) throws JobPersistenceException {
-        return executeInLock(null, txCallback);
-    }
-
-    /**
-     * Execute the given callback having acquired the given lock.
-     * Depending on the JobStore, the surrounding transaction may be 
-     * assumed to be already present (managed).
-     *  获取给定锁后执行给定回调。根据JobStore，可以假设周围的事务已经存在（管理）。
-     *
-     * @param lockName The name of the lock to acquire, for example
-     * "TRIGGER_ACCESS".  If null, then no lock is acquired, but the
-     * lockCallback is still executed in a transaction.
-     *  lockName–要获取的锁的名称，例如“TRIGGER_ACCESS”。如果为null，则不会获取锁，但lockCallback仍在事务中执行。
-     *
-     */
-    protected abstract <T> T executeInLock(String lockName, TransactionCallback<T> txCallback) throws JobPersistenceException;
     
-    protected <T> T retryExecuteInNonManagedTXLock(String lockName, TransactionCallback<T> txCallback) {
-        for (int retry = 1; !shutdown; retry++) {
-            try {
-                return executeInNonManagedTXLock(lockName, txCallback, null);
-            } catch (JobPersistenceException jpe) {
-                if(retry % 4 == 0) {
-                    log.error("An error occurred while {},{} " ,txCallback, jpe);
-//                    schedSignaler.notifySchedulerListenersError("An error occurred while " + txCallback, jpe);
-                }
-            } catch (RuntimeException e) {
-                getLog().error("retryExecuteInNonManagedTXLock: RuntimeException " + e.getMessage(), e);
-            }
-            try {
-                Thread.sleep(getDbRetryInterval()); // retry every N seconds (the db connection must be failed)
-            } catch (InterruptedException e) {
-                throw new IllegalStateException("Received interrupted exception", e);
-            }
-        }
-        throw new IllegalStateException("JobStore is shutdown - aborting retry");
-    }
-    
-    /**
-     * Execute the given callback having optionally acquired the given lock.
-     * This uses the non-managed transaction connection.
-     *  执行给定的回调，可以选择获取给定的锁。这使用非托管事务连接。
-     *
-     * @param lockName The name of the lock to acquire, for example
-     * "TRIGGER_ACCESS".  If null, then no lock is acquired, but the
-     * lockCallback is still executed in a non-managed transaction.
-     *  lockName–要获取的锁的名称，例如“TRIGGER_ACCESS”。如果为null，则不会获取锁，但lockCallback仍在非托管事务中执行。
-     */
-    @Deprecated
-    protected <T> T executeInNonManagedTXLock(String lockName, TransactionCallback<T> txCallback, final TransactionValidator<T> txValidator) throws JobPersistenceException {
-        boolean transOwner = false;
-        Connection conn = null;
-        try {
-            if (lockName != null) {
-                // If we aren't using db locks, then delay getting DB connection 
-                // until after acquiring the lock since it isn't needed.
-                if (getLockHandler().requiresConnection()) {
-                    conn = getNonManagedTXConnection();
-                }
-                transOwner = getLockHandler().obtainLock(conn, lockName);
-            }
-            if (conn == null) {
-                conn = getNonManagedTXConnection();
-            }
-            final T result = txCallback.execute(conn);
-            try {
-                commitConnection(conn);
-            } catch (JobPersistenceException e) {
-                rollbackConnection(conn);
-                if (txValidator == null || !retryExecuteInNonManagedTXLock(lockName, new TransactionCallback<Boolean>() {
-                    @Override
-                    public Boolean execute(Connection conn) throws JobPersistenceException {
-                        return txValidator.validate(conn, result);
-                    }
-                })) {
-                    throw e;
-                }
-            }
-            Long sigTime = clearAndGetSignalSchedulingChangeOnTxCompletion();
-            if(sigTime != null && sigTime >= 0) {
-                signalSchedulingChangeImmediately(sigTime);
-            }
-            return result;
-        } catch (JobPersistenceException e) {
-            rollbackConnection(conn);
-            throw e;
-        } catch (RuntimeException e) {
-            rollbackConnection(conn);
-            throw new JobPersistenceException("Unexpected runtime exception: " + e.getMessage(), e);
-        } finally {
-            try {
-                releaseLock(lockName, transOwner);
-            } finally {
-                cleanupConnection(conn);
-            }
-        }
-    }
+//    protected <T> T retryExecuteInNonManagedTXLock(String lockName, TransactionCallback<T> txCallback) {
+//        for (int retry = 1; !shutdown; retry++) {
+//            try {
+//                return executeInNonManagedTXLock(lockName, txCallback, null);
+//            } catch (JobPersistenceException jpe) {
+//                if(retry % 4 == 0) {
+//                    log.error("An error occurred while {},{} " ,txCallback, jpe);
+////                    schedSignaler.notifySchedulerListenersError("An error occurred while " + txCallback, jpe);
+//                }
+//            } catch (RuntimeException e) {
+//                getLog().error("retryExecuteInNonManagedTXLock: RuntimeException " + e.getMessage(), e);
+//            }
+//            try {
+//                Thread.sleep(getDbRetryInterval()); // retry every N seconds (the db connection must be failed)
+//            } catch (InterruptedException e) {
+//                throw new IllegalStateException("Received interrupted exception", e);
+//            }
+//        }
+//        throw new IllegalStateException("JobStore is shutdown - aborting retry");
+//    }
+//
+//    /**
+//     * Execute the given callback having optionally acquired the given lock.
+//     * This uses the non-managed transaction connection.
+//     *  执行给定的回调，可以选择获取给定的锁。这使用非托管事务连接。
+//     *
+//     * @param lockName The name of the lock to acquire, for example
+//     * "TRIGGER_ACCESS".  If null, then no lock is acquired, but the
+//     * lockCallback is still executed in a non-managed transaction.
+//     *  lockName–要获取的锁的名称，例如“TRIGGER_ACCESS”。如果为null，则不会获取锁，但lockCallback仍在非托管事务中执行。
+//     */
+//    @Deprecated
+//    protected <T> T executeInNonManagedTXLock(String lockName, TransactionCallback<T> txCallback, final TransactionValidator<T> txValidator) throws JobPersistenceException {
+//        boolean transOwner = false;
+//        Connection conn = null;
+//        try {
+//            if (lockName != null) {
+//                // If we aren't using db locks, then delay getting DB connection
+//                // until after acquiring the lock since it isn't needed.
+//                if (getLockHandler().requiresConnection()) {
+//                    conn = getNonManagedTXConnection();
+//                }
+//                transOwner = getLockHandler().obtainLock(conn, lockName);
+//            }
+//            if (conn == null) {
+//                conn = getNonManagedTXConnection();
+//            }
+//            final T result = txCallback.execute(conn);
+//            try {
+//                commitConnection(conn);
+//            } catch (JobPersistenceException e) {
+//                rollbackConnection(conn);
+//                if (txValidator == null || !retryExecuteInNonManagedTXLock(lockName, new TransactionCallback<Boolean>() {
+//                    @Override
+//                    public Boolean execute(Connection conn) throws JobPersistenceException {
+//                        return txValidator.validate(conn, result);
+//                    }
+//                })) {
+//                    throw e;
+//                }
+//            }
+//            Long sigTime = clearAndGetSignalSchedulingChangeOnTxCompletion();
+//            if(sigTime != null && sigTime >= 0) {
+//                signalSchedulingChangeImmediately(sigTime);
+//            }
+//            return result;
+//        } catch (JobPersistenceException e) {
+//            rollbackConnection(conn);
+//            throw e;
+//        } catch (RuntimeException e) {
+//            rollbackConnection(conn);
+//            throw new JobPersistenceException("Unexpected runtime exception: " + e.getMessage(), e);
+//        } finally {
+//            try {
+//                releaseLock(lockName, transOwner);
+//            } finally {
+//                cleanupConnection(conn);
+//            }
+//        }
+//    }
     
     /////////////////////////////////////////////////////////////////////////////
     //
@@ -3319,6 +2565,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                     boolean hasExecuting = false;
                     boolean hasPaused = false;
                     boolean hasError = false;
+                    boolean hasComplete = false;
                     for( QrtzExecute execute:executes ){
                         final String state = execute.getState();
                         if("EXECUTING".equals(state)){
@@ -3327,6 +2574,8 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                             hasPaused=true;
                         }else if("ERROR".equals(state)){
                             hasError=true;
+                        }else if("COMPLETE".equals(state)){
+                            hasComplete=true;
                         }else{
                             continue;
                         }
@@ -3338,6 +2587,8 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                         job.setState("EXECUTING");
                     }else if(hasPaused){
                         job.setState("PAUSED");
+                    }else if(hasComplete){
+                        job.setState("COMPLETE");
                     }else{
                         continue;
                     }
@@ -3355,7 +2606,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
             }finally {
                 cleanupConnection(conn);
             }
-            /***** try start... *****/
+            /***** try end... *****/
 
         }
 
@@ -3434,7 +2685,7 @@ public abstract class JobStoreSupport implements JobStore, Constants {
                         // - 根据 (now+16S)>start_time?(now+16S):start_time 计算 next_fire_time 同时修改 next_fire_time=next_fire_time(new) state=EXECUTING
                         if( null!=execute.getEndTime() && execute.getEndTime()>=now){
                             execute.setState("COMPLETE");
-                        }else if( execute.getTimeTriggered()>=execute.getRepeatCount() ){
+                        }else if( execute.getRepeatCount()>0 && execute.getTimeTriggered()>=execute.getRepeatCount() ){
                             execute.setState("COMPLETE");
                         }else if( (now+TIME_CHECK_INTERVAL*2)>execute.getStartTime() ){
                             SimpleTriggerImpl simpleTrigger = new SimpleTriggerImpl()

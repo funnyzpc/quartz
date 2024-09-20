@@ -136,44 +136,44 @@ public class CronExpressionTest extends SerializationTestSupport {
         newExpression.getNextValidTimeAfter(new Date());
     }
 
-    /**
-     * QTZ-259 : last day offset causes repeating fire time
-     * 
-     */
- 	public void testQtz259() throws Exception {
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        CronScheduleBuilder schedBuilder = CronScheduleBuilder.cronSchedule("0 0 0 L-2 * ? *");
-//        CronScheduleBuilder schedBuilder = CronScheduleBuilder.cronSchedule("0 * * * * ? *");
-        CronScheduleBuilder schedBuilder = CronScheduleBuilder.cronSchedule("0 0/2 * ? * MON-FRI");
- 		Trigger trigger = TriggerBuilder.newTrigger().withIdentity("test").withSchedule(schedBuilder).build();
- 				
- 		int i = 0;
- 		Date pdate = trigger.getFireTimeAfter(new Date());
- 		while (++i < 26) {
- 			Date date = trigger.getFireTimeAfter(pdate);
- 			System.out.println("fireTime: " + fmt.format(date) + ", previousFireTime: " + fmt.format(pdate));
- 			assertFalse("Next fire time is the same as previous fire time!", pdate.equals(date));
- 			pdate = date;
- 		}
- 	}
+//    /**
+//     * QTZ-259 : last day offset causes repeating fire time
+//     *
+//     */
+// 	public void testQtz259() throws Exception {
+//        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+////        CronScheduleBuilder schedBuilder = CronScheduleBuilder.cronSchedule("0 0 0 L-2 * ? *");
+////        CronScheduleBuilder schedBuilder = CronScheduleBuilder.cronSchedule("0 * * * * ? *");
+//        CronScheduleBuilder schedBuilder = CronScheduleBuilder.cronSchedule("0 0/2 * ? * MON-FRI");
+// 		Trigger trigger = TriggerBuilder.newTrigger().withIdentity("test").withSchedule(schedBuilder).build();
+//
+// 		int i = 0;
+// 		Date pdate = trigger.getFireTimeAfter(new Date());
+// 		while (++i < 26) {
+// 			Date date = trigger.getFireTimeAfter(pdate);
+// 			System.out.println("fireTime: " + fmt.format(date) + ", previousFireTime: " + fmt.format(pdate));
+// 			assertFalse("Next fire time is the same as previous fire time!", pdate.equals(date));
+// 			pdate = date;
+// 		}
+// 	}
     
-    /**
-     * QTZ-259 : last day offset causes repeating fire time
-     * 
-     */
- 	public void testQtz259LW() throws Exception {
- 		CronScheduleBuilder schedBuilder = CronScheduleBuilder.cronSchedule("0 0 0 LW * ? *");
- 		Trigger trigger = TriggerBuilder.newTrigger().withIdentity("test").withSchedule(schedBuilder).build();
- 				
- 		int i = 0;
- 		Date pdate = trigger.getFireTimeAfter(new Date());
- 		while (++i < 26) {
- 			Date date = trigger.getFireTimeAfter(pdate);
- 			System.out.println("fireTime: " + date + ", previousFireTime: " + pdate);
- 			assertFalse("Next fire time is the same as previous fire time!", pdate.equals(date));
- 			pdate = date;
- 		}
- 	}
+//    /**
+//     * QTZ-259 : last day offset causes repeating fire time
+//     *
+//     */
+// 	public void testQtz259LW() throws Exception {
+// 		CronScheduleBuilder schedBuilder = CronScheduleBuilder.cronSchedule("0 0 0 LW * ? *");
+// 		Trigger trigger = TriggerBuilder.newTrigger().withIdentity("test").withSchedule(schedBuilder).build();
+//
+// 		int i = 0;
+// 		Date pdate = trigger.getFireTimeAfter(new Date());
+// 		while (++i < 26) {
+// 			Date date = trigger.getFireTimeAfter(pdate);
+// 			System.out.println("fireTime: " + date + ", previousFireTime: " + pdate);
+// 			assertFalse("Next fire time is the same as previous fire time!", pdate.equals(date));
+// 			pdate = date;
+// 		}
+// 	}
  	
     /*
      * QUARTZ-574: Showing that storeExpressionVals correctly calculates the month number

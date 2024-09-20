@@ -103,7 +103,7 @@ public interface RemotableQuartzScheduler extends Remote {
 
 //    void triggerJob(OperableTrigger trig) throws SchedulerException, RemoteException;
     
-    void pauseTrigger(Key triggerKey) throws SchedulerException, RemoteException;
+//    void pauseTrigger(Key triggerKey) throws SchedulerException, RemoteException;
 
 //    void pauseTriggers(GroupMatcher<TriggerKey> matcher) throws SchedulerException, RemoteException;
 
@@ -128,7 +128,6 @@ public interface RemotableQuartzScheduler extends Remote {
 //    List<String> getJobGroupNames() throws SchedulerException, RemoteException;
 
 //    Set<JobKey> getJobKeys(GroupMatcher<JobKey> matcher) throws SchedulerException, RemoteException;
-    Set<Key> getAllJobKeysInSched(final String triggerName) throws SchedulerException, RemoteException;
 //
 //    List<? extends Trigger> getTriggersOfJob(Key jobKey) throws SchedulerException, RemoteException;
 
@@ -139,8 +138,6 @@ public interface RemotableQuartzScheduler extends Remote {
 //    JobDetail getJobDetail(Key jobKey) throws SchedulerException, RemoteException;
 
 //    Trigger getTrigger(Key triggerKey) throws SchedulerException, RemoteException;
-
-    TriggerState getTriggerState(Key triggerKey) throws SchedulerException, RemoteException;
 //
 //    void resetTriggerFromErrorState(TriggerKey triggerKey) throws SchedulerException, RemoteException;
 //
@@ -155,11 +152,6 @@ public interface RemotableQuartzScheduler extends Remote {
 //    boolean interrupt(Key jobKey) throws UnableToInterruptJobException,RemoteException;
 //
 //    boolean interrupt(String fireInstanceId) throws UnableToInterruptJobException,RemoteException;
-    
-    boolean checkExists(Key jobKey) throws SchedulerException,RemoteException;
-   
-    boolean checkTriggerExists(Key triggerKey) throws SchedulerException,RemoteException;
- 
 //    boolean deleteJobs(List<Key> jobKeys) throws SchedulerException,RemoteException;
 
 //    void scheduleJobs(Map<JobDetail, Set<? extends Trigger>> triggersAndJobs, boolean replace) throws SchedulerException,RemoteException;
