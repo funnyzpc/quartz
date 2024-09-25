@@ -133,11 +133,11 @@ public class JobStoreCMT extends JobStoreSupport {
                 "datasource (for the same DB).  " + 
                 "Otherwise, you can set them to be the same.");
         }
-        if (getLockHandler() == null) {
-            // If the user hasn't specified an explicit lock handler, 
-            // then we *must* use DB locks with CMT...
-            setUseDBLocks(true);
-        }
+//        if (getLockHandler() == null) {
+//            // If the user hasn't specified an explicit lock handler,
+//            // then we *must* use DB locks with CMT...
+//            setUseDBLocks(true);
+//        }
         super.initialize(loadHelper, signaler);
         getLog().info("JobStoreCMT initialized.");
     }

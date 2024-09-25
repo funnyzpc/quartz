@@ -18,6 +18,8 @@
 package org.quartz;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A context bundle containing handles to various environment information, that
@@ -135,8 +137,10 @@ public interface JobExecutionContext {
      * <code>IllegalStateException</code>.
      * </p>
      *  ###仅用于springboot starter接入用，不做逻辑处理###
+     *  请勿使用此方法
      *
      */
+    @Deprecated
     default JobDataMap getMergedJobDataMap(){
         return null;
     }
@@ -261,6 +265,8 @@ public interface JobExecutionContext {
     Date getPrevFireTime();
 
     String getJobData();
+    Map<String,Object> getJobDataMap();
+    List<Object> getJobDataList();
 
     String getJobType();
 

@@ -66,7 +66,7 @@
     <!-- 自己项目的 -->
     <logger name="com.mee" level="DEBUG"/>
     <!-- dev环境 -->
-    <springProfile name="dev">
+    <springProfile name="dev,postgresql,mysql,oracle,oracle_BK">
         <root level="debug">
             <!-- 控制台 -->
             <appender-ref ref="console" />

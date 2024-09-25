@@ -18,15 +18,12 @@
 package org.quartz.impl;
 
 import java.util.List;
-import java.util.Set;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger.TriggerState;
 import org.quartz.core.QuartzScheduler;
 import org.quartz.spi.JobFactory;
-import org.quartz.utils.Key;
 
 /**
  * <p>

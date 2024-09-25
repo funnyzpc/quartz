@@ -18,14 +18,17 @@
 
 package org.quartz.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.quartz.Job;
-import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
-import org.quartz.Trigger;
-import org.quartz.spi.OperableTrigger;
+import org.quartz.json.JSONArray;
+import org.quartz.json.JSONObject;
 
 /**
 * 执行器上下文参数
@@ -74,6 +77,9 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
 
     //    private HashMap<Object, Object> data = new HashMap<Object, Object>();
     private final String jobData;
+    private transient List jobDataList;
+    private transient Map jobDataMap;
+
     private final String jobType;
     private final String keyNote;
     private final Long jobId;
@@ -334,6 +340,23 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
     public String getJobData() {
         return jobData;
     }
+    @Override
+    public synchronized Map<String,Object> getJobDataMap(){
+        return (null!=this.jobDataMap)?this.jobDataMap:(
+                    (null==this.jobData || "".equals(this.jobData) || !this.jobData.startsWith("{"))?
+                        (this.jobDataMap=new HashMap<>(0,0)):
+                        (this.jobDataMap=new JSONObject(this.jobData).toMap())
+                );
+    }
+    @Override
+    public synchronized List<Object> getJobDataList(){
+        return (null!=this.jobDataList)?this.jobDataList:(
+                (null==this.jobData || "".equals(this.jobData) || !this.jobData.startsWith("["))?
+                        (this.jobDataList=new ArrayList<>()):
+                        (this.jobDataList=new JSONArray(this.jobData).toList())
+        );
+    }
+
     @Override
     public String getJobType() {
         return jobType;

@@ -1,4 +1,4 @@
-/* 
+/*
  * All content copyright Terracotta, Inc., unless otherwise indicated. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -21,26 +21,27 @@ import java.sql.Connection;
 /**
  * An interface for providing thread/resource locking in order to protect
  * resources from being altered by multiple threads at the same time.
- * 
+ *  ##为接入springboot starter而保留##
+ *
  * @author jhouse
  */
 public interface Semaphore {
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     * 
+     *
      * Interface.
-     * 
+     *
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
     /**
      * Grants a lock on the identified resource to the calling thread (blocking
      * until it is available).
-     * 
+     *
      * @param conn Database connection used to establish lock.  Can be null if
      * <code>{@link #requiresConnection()}</code> returns false.
-     * 
+     *
      * @return true if the lock was obtained.
      */
     boolean obtainLock(Connection conn, String lockName) throws LockException;
@@ -55,7 +56,7 @@ public interface Semaphore {
      * Whether this Semaphore implementation requires a database connection for
      * its lock management operations.
      *  此Semaphore实现是否需要用于其锁管理操作的数据库连接。
-     * 
+     *
      * @see #obtainLock(Connection, String)
      * @see #releaseLock(String)
      */

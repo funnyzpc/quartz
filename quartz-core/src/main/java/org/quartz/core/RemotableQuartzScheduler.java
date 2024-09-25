@@ -22,12 +22,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger.TriggerState;
-import org.quartz.utils.Key;
 
 /**
  * @author James House

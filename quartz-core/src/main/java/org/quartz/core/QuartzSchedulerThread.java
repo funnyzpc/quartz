@@ -242,22 +242,22 @@ public class QuartzSchedulerThread extends Thread {
             sigLock.notifyAll();
         }
     }
-
-    // 清除信号调度变更
-    public void clearSignaledSchedulingChange() {
-        synchronized(sigLock) {
-            // 信号状态
-            signaled = false;
-            signaledNextFireTime = 0;
-        }
-    }
-
-    public boolean isScheduleChanged() {
-        // 这里用synchronized代码块不仅仅是保证 signaled 的读取安全，也能保证可见性
-        synchronized(sigLock) {
-            return signaled;
-        }
-    }
+//
+//    // 清除信号调度变更
+//    public void clearSignaledSchedulingChange() {
+//        synchronized(sigLock) {
+//            // 信号状态
+//            signaled = false;
+//            signaledNextFireTime = 0;
+//        }
+//    }
+//
+//    public boolean isScheduleChanged() {
+//        // 这里用synchronized代码块不仅仅是保证 signaled 的读取安全，也能保证可见性
+//        synchronized(sigLock) {
+//            return signaled;
+//        }
+//    }
 
     // 获取下一次点火信号的时间
     public long getSignaledNextFireTime() {
@@ -341,8 +341,8 @@ public class QuartzSchedulerThread extends Thread {
                     List<QrtzExecute> executeList = null;
 //                    long _tew = _ts+LOOP_INTERVAL*2; // time end window
                     long _tew = _ts+LOOP_INTERVAL; // time end window
-                    // 清除调度信号变更
-                    clearSignaledSchedulingChange();
+//                    // 清除调度信号变更
+//                    clearSignaledSchedulingChange();
                     try {
                         executeList = qsRsrcs.getJobStore().acquireNextTriggers(application,now,_tew);
                         acquiresFailed = 0;
@@ -390,18 +390,16 @@ public class QuartzSchedulerThread extends Thread {
                                 }
                                 if(i==0){
                                     ce=el;
-                                    continue;
+                                    continue; // 如果执行列表长度为一，则会直接进入下面sleep等待
                                 }
                                 // 总是获取最近时间呢个
                                 if( el.getNextFireTime() <= ce.getNextFireTime() ){
                                     ce = el;
-//                                    continue;
                                 }
                             }
                             executeList.remove(ce); // 一定要移除，否则无法退出while循环!!!
                             // 延迟
                             long w = 0;
-//                            if((w = (ce.getNextFireTime()-System.currentTimeMillis()-5)) >0 ){
                             if((w = (ce.getNextFireTime()-System.currentTimeMillis()-ww)) >0 ){
                                 try {
                                     Thread.sleep(w);
@@ -636,83 +634,83 @@ public class QuartzSchedulerThread extends Thread {
 //        }
 //        return delay;
 //    }
-
-    private boolean releaseIfScheduleChangedSignificantly(List<OperableTrigger> triggers, long triggerTime) {
-        // 一般是:通知点火时间 < 任务点火时间
-        if (isCandidateNewTimeEarlierWithinReason(triggerTime, true)) {
-//            // above call does a clearSignaledSchedulingChange()
-//            for (OperableTrigger trigger : triggers) {
-//                // 这里面大致处理有：
-//                //  1.把对应 job_cfg 中的 state in (ACQUIRED,BLOCKED) 改为 WAITING 状态
-//                //  2.把对应 FIRED_TRIGGERS 删除
-//                qsRsrcs.getJobStore().releaseAcquiredTrigger(trigger);
+//
+//    private boolean releaseIfScheduleChangedSignificantly(List<OperableTrigger> triggers, long triggerTime) {
+//        // 一般是:通知点火时间 < 任务点火时间
+//        if (isCandidateNewTimeEarlierWithinReason(triggerTime, true)) {
+////            // above call does a clearSignaledSchedulingChange()
+////            for (OperableTrigger trigger : triggers) {
+////                // 这里面大致处理有：
+////                //  1.把对应 job_cfg 中的 state in (ACQUIRED,BLOCKED) 改为 WAITING 状态
+////                //  2.把对应 FIRED_TRIGGERS 删除
+////                qsRsrcs.getJobStore().releaseAcquiredTrigger(trigger);
+////            }
+//            // 清理触发器
+//            triggers.clear();
+//            return true;
+//        }
+//        return false;
+//    }
+//
+//    // 候选人新时间提前是否合理
+//    private boolean isCandidateNewTimeEarlierWithinReason(long oldTime, boolean clearSignal) {
+//
+//        // So here's the deal: We know due to being signaled that 'the schedule'
+//        // has changed.  We may know (if getSignaledNextFireTime() != 0) the
+//        // new earliest fire time.  We may not (in which case we will assume
+//        // that the new time is earlier than the trigger we have acquired).
+//        // In either case, we only want to abandon our acquired trigger and
+//        // go looking for a new one if "it's worth it".  It's only worth it if
+//        // the time cost incurred to abandon the trigger and acquire a new one
+//        // is less than the time until the currently acquired trigger will fire,
+//        // otherwise we're just "thrashing" the job store (e.g. database).
+//        // 所以，事情是这样的：我们知道，由于收到“日程表”已更改的信号。我们可能知道（如果 getSignaledNextFireTime() !=0)新的最早点火时间。
+//        // 我们可能不会（在这种情况下，我们将假设新时间早于我们获得的触发时间）。
+//        // 在任何一种情况下，我们只想放弃我们获得的触发器，并在“值得”的情况下寻找新的触发器。
+//        // 只有当放弃触发器并获取新触发器所花费的时间小于当前获取的触发器触发所需的时间时，这样做才是值得的，否则我们只是在“折腾”作业存储（例如数据库）。
+//        //
+//        // So the question becomes when is it "worth it"?  This will depend on
+//        // the job store implementation (and of course the particular database
+//        // or whatever behind it).  Ideally we would depend on the job store
+//        // implementation to tell us the amount of time in which it "thinks"
+//        // it can abandon the acquired trigger and acquire a new one.  However
+//        // we have no current facility for having it tell us that, so we make
+//        // a somewhat educated but arbitrary guess ;-).
+//        // 所以问题就变成了什么时候“值得”这么做？这将取决于作业存储实现（当然还有特定的数据库或其背后的任何东西）。
+//        // 理想情况下，我们会依赖作业存储实现来告诉我们它“认为”它可以放弃已获取的触发器并获取新触发器的时间量。
+//        // 然而，我们目前没有设备可以告诉我们，所以我们做出了一个有点有根据但武断的猜测；-）。
+//
+//        // oldTime=nextFireTime
+//        synchronized(sigLock) {
+//            // 获取 signaled 的值
+//            if (!isScheduleChanged()){
+//                return false;
 //            }
-            // 清理触发器
-            triggers.clear();
-            return true;
-        }
-        return false;
-    }
-
-    // 候选人新时间提前是否合理
-    private boolean isCandidateNewTimeEarlierWithinReason(long oldTime, boolean clearSignal) {
-
-        // So here's the deal: We know due to being signaled that 'the schedule'
-        // has changed.  We may know (if getSignaledNextFireTime() != 0) the
-        // new earliest fire time.  We may not (in which case we will assume
-        // that the new time is earlier than the trigger we have acquired).
-        // In either case, we only want to abandon our acquired trigger and
-        // go looking for a new one if "it's worth it".  It's only worth it if
-        // the time cost incurred to abandon the trigger and acquire a new one
-        // is less than the time until the currently acquired trigger will fire,
-        // otherwise we're just "thrashing" the job store (e.g. database).
-        // 所以，事情是这样的：我们知道，由于收到“日程表”已更改的信号。我们可能知道（如果 getSignaledNextFireTime() !=0)新的最早点火时间。
-        // 我们可能不会（在这种情况下，我们将假设新时间早于我们获得的触发时间）。
-        // 在任何一种情况下，我们只想放弃我们获得的触发器，并在“值得”的情况下寻找新的触发器。
-        // 只有当放弃触发器并获取新触发器所花费的时间小于当前获取的触发器触发所需的时间时，这样做才是值得的，否则我们只是在“折腾”作业存储（例如数据库）。
-        //
-        // So the question becomes when is it "worth it"?  This will depend on
-        // the job store implementation (and of course the particular database
-        // or whatever behind it).  Ideally we would depend on the job store
-        // implementation to tell us the amount of time in which it "thinks"
-        // it can abandon the acquired trigger and acquire a new one.  However
-        // we have no current facility for having it tell us that, so we make
-        // a somewhat educated but arbitrary guess ;-).
-        // 所以问题就变成了什么时候“值得”这么做？这将取决于作业存储实现（当然还有特定的数据库或其背后的任何东西）。
-        // 理想情况下，我们会依赖作业存储实现来告诉我们它“认为”它可以放弃已获取的触发器并获取新触发器的时间量。
-        // 然而，我们目前没有设备可以告诉我们，所以我们做出了一个有点有根据但武断的猜测；-）。
-
-        // oldTime=nextFireTime
-        synchronized(sigLock) {
-            // 获取 signaled 的值
-            if (!isScheduleChanged()){
-                return false;
-            }
-//            boolean earlier = false;
-//            // 获取 signaledNextFireTime 的值
-//            if(getSignaledNextFireTime() == 0){
-//                earlier = true;
+////            boolean earlier = false;
+////            // 获取 signaledNextFireTime 的值
+////            if(getSignaledNextFireTime() == 0){
+////                earlier = true;
+////            }
+////            else if(getSignaledNextFireTime() < oldTime ){
+////                earlier = true;
+////            }
+//            // signaledNextFireTime:发出下次点火时间的信号,这个参数一开始就是0
+////            System.out.println("getSignaledNextFireTime()="+getSignaledNextFireTime()+", oldTime="+oldTime);
+////            log.info("getSignaledNextFireTime()="+getSignaledNextFireTime()+", oldTime="+oldTime);
+//            boolean earlier = getSignaledNextFireTime() == 0 || getSignaledNextFireTime() < oldTime ?true:false;
+//            if(earlier) {
+//                // so the new time is considered earlier, but is it enough earlier? 所以新的时间被认为更早，但足够早吗？
+//                long diff = oldTime - System.currentTimeMillis();
+//                // 这里的 supportsPersistence 针对基于DB的任务是70，内存任务是7
+//                if(diff < (qsRsrcs.getJobStore().supportsPersistence() ? 70L : 7L)){
+//                    earlier = false;
+//                }
 //            }
-//            else if(getSignaledNextFireTime() < oldTime ){
-//                earlier = true;
+//            if(clearSignal) {
+//                clearSignaledSchedulingChange();
 //            }
-            // signaledNextFireTime:发出下次点火时间的信号,这个参数一开始就是0
-//            System.out.println("getSignaledNextFireTime()="+getSignaledNextFireTime()+", oldTime="+oldTime);
-//            log.info("getSignaledNextFireTime()="+getSignaledNextFireTime()+", oldTime="+oldTime);
-            boolean earlier = getSignaledNextFireTime() == 0 || getSignaledNextFireTime() < oldTime ?true:false;
-            if(earlier) {
-                // so the new time is considered earlier, but is it enough earlier? 所以新的时间被认为更早，但足够早吗？
-                long diff = oldTime - System.currentTimeMillis();
-                // 这里的 supportsPersistence 针对基于DB的任务是70，内存任务是7
-                if(diff < (qsRsrcs.getJobStore().supportsPersistence() ? 70L : 7L)){
-                    earlier = false;
-                }
-            }
-            if(clearSignal) {
-                clearSignaledSchedulingChange();
-            }
-            return earlier;
-        }
-    }
+//            return earlier;
+//        }
+//    }
 
 } // end of QuartzSchedulerThread

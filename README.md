@@ -10,4 +10,8 @@
 + 去掉所有builder ✔
 + 去掉 qrtz_job_cfg 及 qrtz_execute_cfg 相关代码 ✔
 + 去掉 Calendar 相关代码,仅保留Calendar本身  ✔
++ 添加json序列化及反序列化操作 ✔
++ 去掉顯示的鎖處理 ✔
++ 兼容mysql及oracle數據庫 ✔
++ 啓動時自動獲取數據庫類型
 + 

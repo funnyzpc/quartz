@@ -30,8 +30,6 @@ import org.quartz.ee.jta.JTAAnnotationAwareJobRunShellFactory;
 import org.quartz.ee.jta.JTAJobRunShellFactory;
 import org.quartz.ee.jta.UserTransactionHelper;
 import org.quartz.impl.jdbcjobstore.JobStoreSupport;
-import org.quartz.impl.jdbcjobstore.Semaphore;
-import org.quartz.impl.jdbcjobstore.TablePrefixAware;
 import org.quartz.management.ManagementRESTServiceConfiguration;
 import org.quartz.simpl.SimpleThreadPool;
 import org.quartz.simpl.SystemPropGenerator;
@@ -60,7 +58,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Properties;
@@ -190,9 +187,9 @@ public class StdSchedulerFactory implements SchedulerFactory {
 
     public static final String PROP_JOB_STORE_PREFIX = "org.quartz.jobStore";
 
-    public static final String PROP_JOB_STORE_LOCK_HANDLER_PREFIX = PROP_JOB_STORE_PREFIX + ".lockHandler";
+//    public static final String PROP_JOB_STORE_LOCK_HANDLER_PREFIX = PROP_JOB_STORE_PREFIX + ".lockHandler";
 
-    public static final String PROP_JOB_STORE_LOCK_HANDLER_CLASS = PROP_JOB_STORE_LOCK_HANDLER_PREFIX + ".class";
+//    public static final String PROP_JOB_STORE_LOCK_HANDLER_CLASS = PROP_JOB_STORE_LOCK_HANDLER_PREFIX + ".class";
 
     public static final String PROP_TABLE_PREFIX = "tablePrefix";
 
@@ -205,42 +202,6 @@ public class StdSchedulerFactory implements SchedulerFactory {
     public static final String PROP_DATASOURCE_PREFIX = "org.quartz.dataSource";
 
     public static final String PROP_CONNECTION_PROVIDER_CLASS = "connectionProvider.class";
-
-    /**
-     * @deprecated Replaced with {@link PoolingConnectionProvider#DB_DRIVER}
-     */
-    @Deprecated
-    public static final String PROP_DATASOURCE_DRIVER = "driver";
-
-    /**
-     * @deprecated Replaced with {@link PoolingConnectionProvider#DB_URL}
-     */
-    @Deprecated
-    public static final String PROP_DATASOURCE_URL = "URL";
-
-    /**
-     * @deprecated Replaced with {@link PoolingConnectionProvider#DB_USER}
-     */
-    @Deprecated
-    public static final String PROP_DATASOURCE_USER = "user";
-
-    /**
-     * @deprecated Replaced with {@link PoolingConnectionProvider#DB_PASSWORD}
-     */
-    @Deprecated
-    public static final String PROP_DATASOURCE_PASSWORD = "password";
-
-    /**
-     * @deprecated Replaced with {@link PoolingConnectionProvider#DB_MAX_CONNECTIONS}
-     */
-    @Deprecated
-    public static final String PROP_DATASOURCE_MAX_CONNECTIONS = "maxConnections";
-
-    /**
-     * @deprecated Replaced with {@link PoolingConnectionProvider#DB_VALIDATION_QUERY}
-     */
-    @Deprecated
-    public static final String PROP_DATASOURCE_VALIDATION_QUERY = "validationQuery";
 
     public static final String PROP_DATASOURCE_JNDI_URL = "jndiURL";
 
@@ -791,40 +752,40 @@ public class StdSchedulerFactory implements SchedulerFactory {
         }
         // 反射设置属性
         SchedulerDetailsSetter.setDetails(js,application,schedInstId);
-        tProps = cfg.getPropertyGroup(PROP_JOB_STORE_PREFIX, true, new String[] {PROP_JOB_STORE_LOCK_HANDLER_PREFIX});
-        try {
-            setBeanProps(js, tProps);
-        } catch (Exception e) {
-            initException = new SchedulerException("JobStore class '" + jsClass + "' props could not be configured.", e);
-            throw initException;
-        }
-
-        if (js instanceof JobStoreSupport) {
-            // Install custom lock handler (Semaphore)
-            String lockHandlerClass = cfg.getStringProperty(PROP_JOB_STORE_LOCK_HANDLER_CLASS);
-            if (lockHandlerClass != null) {
-                try {
-                    Semaphore lockHandler = (Semaphore)loadHelper.loadClass(lockHandlerClass).newInstance();
-                    tProps = cfg.getPropertyGroup(PROP_JOB_STORE_LOCK_HANDLER_PREFIX, true);
-                    // If this lock handler requires the table prefix, add it to its properties.
-                    if (lockHandler instanceof TablePrefixAware) {
-                        tProps.setProperty( PROP_TABLE_PREFIX, ((JobStoreSupport)js).getTablePrefix());
-                        tProps.setProperty(PROP_SCHED_NAME,application);
-                    }
-                    try {
-                        setBeanProps(lockHandler, tProps);
-                    } catch (Exception e) {
-                        initException = new SchedulerException("JobStore LockHandler class '" + lockHandlerClass + "' props could not be configured.", e);
-                        throw initException;
-                    }
-                    ((JobStoreSupport)js).setLockHandler(lockHandler);
-                    getLog().info("Using custom data access locking (synchronization): " + lockHandlerClass);
-                } catch (Exception e) {
-                    initException = new SchedulerException("JobStore LockHandler class '" + lockHandlerClass + "' could not be instantiated.", e);
-                    throw initException;
-                }
-            }
-        }
+//        tProps = cfg.getPropertyGroup(PROP_JOB_STORE_PREFIX, true, new String[] {PROP_JOB_STORE_LOCK_HANDLER_PREFIX});
+//        try {
+//            setBeanProps(js, tProps);
+//        } catch (Exception e) {
+//            initException = new SchedulerException("JobStore class '" + jsClass + "' props could not be configured.", e);
+//            throw initException;
+//        }
+//
+//        if (js instanceof JobStoreSupport) {
+//            // Install custom lock handler (Semaphore)
+//            String lockHandlerClass = cfg.getStringProperty(PROP_JOB_STORE_LOCK_HANDLER_CLASS);
+//            if (lockHandlerClass != null) {
+//                try {
+//                    Semaphore lockHandler = (Semaphore)loadHelper.loadClass(lockHandlerClass).newInstance();
+//                    tProps = cfg.getPropertyGroup(PROP_JOB_STORE_LOCK_HANDLER_PREFIX, true);
+//                    // If this lock handler requires the table prefix, add it to its properties.
+//                    if (lockHandler instanceof TablePrefixAware) {
+//                        tProps.setProperty( PROP_TABLE_PREFIX, ((JobStoreSupport)js).getTablePrefix());
+//                        tProps.setProperty(PROP_SCHED_NAME,application);
+//                    }
+//                    try {
+//                        setBeanProps(lockHandler, tProps);
+//                    } catch (Exception e) {
+//                        initException = new SchedulerException("JobStore LockHandler class '" + lockHandlerClass + "' props could not be configured.", e);
+//                        throw initException;
+//                    }
+////                    ((JobStoreSupport)js).setLockHandler(lockHandler);
+//                    getLog().info("Using custom data access locking (synchronization): " + lockHandlerClass);
+//                } catch (Exception e) {
+//                    initException = new SchedulerException("JobStore LockHandler class '" + lockHandlerClass + "' could not be instantiated.", e);
+//                    throw initException;
+//                }
+//            }
+//        }
 
         // Set up any DataSources
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
