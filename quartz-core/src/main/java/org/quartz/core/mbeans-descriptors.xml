@@ -2,7 +2,7 @@
 <!DOCTYPE mbeans-descriptors PUBLIC "-//Apache Software Foundation//DTD Model MBeans Configuration File"
    "http://jakarta.apache.org/commons/dtds/mbeans-descriptors.dtd">
 <mbeans-descriptors>
-	<mbean name="QuartzScheduler" description="A Quartz Scheduler." domain="quartz" type="org.quartz.core.QuartzScheduler">
+	<mbean name="QuartzScheduler" description="A Quartz Scheduler." domain="quartz" type="org.core.org.quartz.QuartzScheduler">
 	
 		<!-- ATTRIBUTES -->
 		<attribute name="schedulerName" description="The name of the scheduler." type="java.lang.String" writeable="false"/>
@@ -32,11 +32,11 @@
 		<operation name="scheduleJob" description="Add the given JobDetail to the Scheduler, and associate the given Trigger with it." impact="ACTION" returnType="java.util.Date">
 			<parameter name="schedulingContext" type="org.quartz.core.SchedulingContext" description="The scheduling context."/>
 			<parameter name="jobDetail" type="org.quartz.JobDetail" description="The JobDetail to schedule."/>
-			<parameter name="trigger" type="org.quartz.Trigger" description="The Trigger to schedule."/>
+			<parameter name="trigger" type="org.org.quartz.Trigger" description="The Trigger to schedule."/>
 		</operation>
 		<operation name="scheduleJob" description="Schedule the given Trigger with the Job identified by the Trigger's settings." impact="ACTION" returnType="java.util.Date">
 			<parameter name="schedulingContext" type="org.quartz.core.SchedulingContext" description="The scheduling context."/>
-			<parameter name="trigger" type="org.quartz.Trigger" description="The Trigger to schedule."/>
+			<parameter name="trigger" type="org.org.quartz.Trigger" description="The Trigger to schedule."/>
 		</operation>
 		<operation name="unscheduleJob" description="Remove the indicated Triggerfrom the scheduler." impact="ACTION" returnType="boolean">
 			<parameter name="schedulingContext" type="org.quartz.core.SchedulingContext" description="The scheduling context."/>
@@ -47,7 +47,7 @@
 			<parameter name="schedulingContext" type="org.quartz.core.SchedulingContext" description="The scheduling context."/>
 			<parameter name="triggerName" type="java.lang.String" description="The name of the Trigger to be replaced."/>
 			<parameter name="triggerGroupName" type="java.lang.String" description="The group name of the Trigger to be replaced."/>
-			<parameter name="newTrigger" type="org.quartz.Trigger" description="The new Trigger to be stored."/>
+			<parameter name="newTrigger" type="org.org.quartz.Trigger" description="The new Trigger to be stored."/>
 		</operation>
 
 		<operation name="addJob" description="Add the given Job to the Scheduler - with no associated Trigger." impact="ACTION" returnType="void">
@@ -134,7 +134,7 @@
 			<parameter name="schedulingContext" type="org.quartz.core.SchedulingContext" description="The scheduling context."/>
 			<parameter name="jobGroupName" type="java.lang.String" description="The job group name."/>
 		</operation>
-		<operation name="getTriggersOfJob" description="Get all Triggers that are associated with the identified JobDetail." impact="INFO" returnType="[Lorg.quartz.Trigger;">
+		<operation name="getTriggersOfJob" description="Get all Triggers that are associated with the identified JobDetail." impact="INFO" returnType="[Lorg.org.quartz.Trigger;">
 			<parameter name="schedulingContext" type="org.quartz.core.SchedulingContext" description="The scheduling context."/>
 			<parameter name="jobName" type="java.lang.String" description="The name of the job."/>
 			<parameter name="jobGroupName" type="java.lang.String" description="The name of the job group."/>
@@ -151,7 +151,7 @@
 			<parameter name="jobName" type="java.lang.String" description="The name of the job."/>
 			<parameter name="jobGroupName" type="java.lang.String" description="The name of the job group."/>
 		</operation>
-		<operation name="getTrigger" description="Get the Trigger instance with the given name and group." impact="INFO" returnType="[Lorg.quartz.Trigger;">
+		<operation name="getTrigger" description="Get the Trigger instance with the given name and group." impact="INFO" returnType="[Lorg.org.quartz.Trigger;">
 			<parameter name="schedulingContext" type="org.quartz.core.SchedulingContext" description="The scheduling context."/>
 			<parameter name="triggerName" type="java.lang.String" description="The name of the trigger."/>
 			<parameter name="triggerGroupName" type="java.lang.String" description="The name of the trigger group."/>

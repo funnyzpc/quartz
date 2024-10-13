@@ -909,12 +909,19 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                     "J.JOB_DATA AS J_JOB_DATA,J.JOB_DESCRIPTION AS J_JOB_DESCRIPTION,J.UPDATE_TIME AS J_UPDATE_TIME,\n" +
                     "E.*\n" +
                     "FROM {0}JOB J LEFT JOIN {0}EXECUTE E ON J.ID = E.PID  " +
-                    "WHERE J.APPLICATION =? AND E.STATE = ? AND E.NEXT_FIRE_TIME>=? AND E.NEXT_FIRE_TIME<=? ";
+                    "WHERE J.APPLICATION =? AND J.STATE!=? AND J.STATE!=? AND J.STATE!=? " +
+                    "AND E.STATE = ? AND E.NEXT_FIRE_TIME>=? AND E.NEXT_FIRE_TIME<=? ";
             ps = conn.prepareStatement(rtp(sql));
             ps.setString(1,application);
-            ps.setString(2, state);
-            ps.setBigDecimal(3, new BigDecimal(_tsw));
-            ps.setBigDecimal(4, new BigDecimal(_tew));
+
+            // 杜绝job与execute状态相较异常的任务 STATE!=COMPLETE AND STATE!=INIT AND STATE!=PAUSED
+            ps.setString(2,"COMPLETE");
+            ps.setString(3,"INIT");
+            ps.setString(4,"PAUSED");
+
+            ps.setString(5, state);
+            ps.setBigDecimal(6, new BigDecimal(_tsw));
+            ps.setBigDecimal(7, new BigDecimal(_tew));
             rs = ps.executeQuery();
             while (rs.next()) {
                 // JOB

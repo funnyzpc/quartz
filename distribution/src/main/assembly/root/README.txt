@@ -52,14 +52,14 @@ main Quartz website at http://quartz-scheduler.org/docs/index.html
 Most of the Java source files are fairly well documented with JavaDOC -
 consider this your "reference manual".  
 
-Start by looking at org.quartz.Scheduler, org.quartz.Job,
-org.quartz.JobDetail and org.quartz.Trigger.
+Start by looking at org.org.quartz.Scheduler, org.quartz.Job,
+org.quartz.JobDetail and org.org.quartz.Trigger.
 
 Examine and run the examples found in the "examples" directory.
 
 If you're interested in the "behind the scenes" (server-side) code,
 you'll want to look at org.quartz.core.QuartzSchedulerThread, which
-will make you interested in org.quartz.spi.JobStore.java,
+will make you interested in org.spi.org.quartz.JobStore.java,
 org.quartz.spi.ThreadPool.java and org.quartz.core.JobRunShell.
 
 

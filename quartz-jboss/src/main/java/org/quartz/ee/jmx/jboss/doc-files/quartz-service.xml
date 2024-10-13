@@ -88,7 +88,7 @@
       org.quartz.threadPool.threadPriority = 4
 
       org.quartz.jobStore.class = org.quartz.impl.jdbcjobstore.JobStoreCMT
-      org.quartz.jobStore.driverDelegateClass =  org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+      org.quartz.jobStore.driverDelegateClass =  org.jdbcjobstore.impl.org.quartz.StdJDBCDelegate
       org.quartz.jobStore.dataSource = QUARTZ
       org.quartz.jobStore.nonManagedTXDataSource = QUARTZ_NO_TX
       org.quartz.jobStore.tablePrefix = QRTZ_

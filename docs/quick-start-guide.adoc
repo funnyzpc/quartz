@@ -61,8 +61,8 @@ Now you've downloaded and installed Quartz, it's time to get a sample applicatio
 .QuartzTest.java
 ----
   // file: QuartzTest.java
-  import org.quartz.Scheduler;
-  import org.quartz.SchedulerException;
+  import org.org.quartz.Scheduler;
+  import org.org.quartz.SchedulerException;
   import org.quartz.impl.StdSchedulerFactory;
   import static org.quartz.JobBuilder.*;
   import static org.quartz.TriggerBuilder.*;
@@ -95,15 +95,15 @@ Note the static imports in the code example; these will come into play in the co
 If you have not set up logging, all logs will be sent to the console and your output will look something like this:
 
 ----
-[INFO] 21 Jan 08:46:27.857 AM main [org.quartz.core.QuartzScheduler]
+[INFO] 21 Jan 08:46:27.857 AM main [org.core.org.quartz.QuartzScheduler]
 Quartz Scheduler v.2.0.0-SNAPSHOT created.
 
 [INFO] 21 Jan 08:46:27.859 AM main [org.quartz.simpl.RAMJobStore]
 RAMJobStore initialized.
 
-[INFO] 21 Jan 08:46:27.865 AM main [org.quartz.core.QuartzScheduler]
+[INFO] 21 Jan 08:46:27.865 AM main [org.core.org.quartz.QuartzScheduler]
 Scheduler meta-data: Quartz Scheduler (v2.0.0) 'Scheduler' with instanceId 'NON_CLUSTERED'
-  Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.
+  Scheduler class: 'org.core.org.quartz.QuartzScheduler' - running locally.
   NOT STARTED.
   Currently in standby mode.
   Number of jobs executed: 0
@@ -117,16 +117,16 @@ Quartz scheduler 'Scheduler' initialized from default resource file in Quartz pa
 [INFO] 21 Jan 08:46:27.866 AM main [org.quartz.impl.StdSchedulerFactory]
 Quartz scheduler version: 2.0.0
 
-[INFO] 21 Jan 08:46:27.866 AM main [org.quartz.core.QuartzScheduler]
+[INFO] 21 Jan 08:46:27.866 AM main [org.core.org.quartz.QuartzScheduler]
 Scheduler Scheduler_$_NON_CLUSTERED started.
 
-[INFO] 21 Jan 08:46:27.866 AM main [org.quartz.core.QuartzScheduler]
+[INFO] 21 Jan 08:46:27.866 AM main [org.core.org.quartz.QuartzScheduler]
 Scheduler Scheduler_$_NON_CLUSTERED shutting down.
 
-[INFO] 21 Jan 08:46:27.866 AM main [org.quartz.core.QuartzScheduler]
+[INFO] 21 Jan 08:46:27.866 AM main [org.core.org.quartz.QuartzScheduler]
 Scheduler Scheduler_$_NON_CLUSTERED paused.
 
-[INFO] 21 Jan 08:46:27.867 AM main [org.quartz.core.QuartzScheduler]
+[INFO] 21 Jan 08:46:27.867 AM main [org.core.org.quartz.QuartzScheduler]
 Scheduler Scheduler_$_NON_CLUSTERED shutdown complete.
 ----
 

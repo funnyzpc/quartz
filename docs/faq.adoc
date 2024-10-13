@@ -101,7 +101,7 @@ The important 'take away' of the Java API is:
 [qanda]
 How can I control the instantiation of Jobs?::
 
-See org.quartz.spi.JobFactory and the org.quartz.Scheduler.setJobFactory(..) method.
+See org.quartz.spi.JobFactory and the org.org.quartz.Scheduler.setJobFactory(..) method.
 How do I keep a Job from being removed after it completes?::
 +
 Set the property JobDetail.setDurability(true) - which instructs Quartz not to delete the Job when it becomes an "orphan" (when the Job not longer has a Trigger referencing it).

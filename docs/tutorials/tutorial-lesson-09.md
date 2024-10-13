@@ -101,7 +101,7 @@ Once you've selected your delegate, set its class name as the delegate for JDBCJ
 **Configuring JDBCJobStore to use a DriverDelegate**
 
 <pre class="prettyprint highlight"><code class="language-java" data-lang="java">
-org.quartz.jobStore.driverDelegateClass = org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+org.quartz.jobStore.driverDelegateClass = org.jdbcjobstore.impl.org.quartz.StdJDBCDelegate
 </code></pre>
 
 

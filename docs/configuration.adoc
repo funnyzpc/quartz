@@ -759,7 +759,7 @@ org.quartz.jobStore.class = org.quartz.impl.jdbcjobstore.JobStoreTX
 
 Driver delegates understand the particular 'dialects' of varies database systems.  Possible choices include:
 
-* `org.quartz.impl.jdbcjobstore.StdJDBCDelegate` (for fully JDBC-compliant drivers)
+* `org.jdbcjobstore.impl.org.quartz.StdJDBCDelegate` (for fully JDBC-compliant drivers)
 * `org.quartz.impl.jdbcjobstore.MSSQLDelegate` (for Microsoft SQL Server, and Sybase)
 * `org.quartz.impl.jdbcjobstore.PostgreSQLDelegate`
 * `org.quartz.impl.jdbcjobstore.WebLogicDelegate` (for WebLogic drivers)
@@ -1006,7 +1006,7 @@ org.quartz.jobStore.class = org.quartz.impl.jdbcjobstore.JobStoreCMT
 
 Driver delegates understand the particular 'dialects' of varies database systems.  Possible choices include:
 
-* `org.quartz.impl.jdbcjobstore.StdJDBCDelegate` (for fully JDBC-compliant drivers)
+* `org.jdbcjobstore.impl.org.quartz.StdJDBCDelegate` (for fully JDBC-compliant drivers)
 * `org.quartz.impl.jdbcjobstore.MSSQLDelegate` (for Microsoft SQL Server, and Sybase)
 * `org.quartz.impl.jdbcjobstore.PostgreSQLDelegate`
 * `org.quartz.impl.jdbcjobstore.WebLogicDelegate` (for WebLogic drivers)

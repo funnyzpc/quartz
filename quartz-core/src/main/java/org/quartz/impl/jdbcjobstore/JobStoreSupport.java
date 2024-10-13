@@ -66,9 +66,9 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    protected static final String LOCK_TRIGGER_ACCESS = "TRIGGER_ACCESS";
-
-    protected static final String LOCK_STATE_ACCESS = "STATE_ACCESS";
+//    protected static final String LOCK_TRIGGER_ACCESS = "TRIGGER_ACCESS";
+//
+//    protected static final String LOCK_STATE_ACCESS = "STATE_ACCESS";
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -111,7 +111,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
 
 //    private Semaphore lockHandler = null; // set in initialize() method...
 
-    private String selectWithLockSQL = null;
+//    private String selectWithLockSQL = null;
     /**
      * 群集签入间隔
      */
@@ -529,22 +529,6 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
      */
     public String getDriverDelegateInitString() {
         return delegateInitString;
-    }
-
-    public String getSelectWithLockSQL() {
-        return selectWithLockSQL;
-    }
-
-    /**
-     * <p>
-     * set the SQL statement to use to select and lock a row in the "locks"
-     * table.
-     * </p>
-     * 
-     * @see StdRowLockSemaphore
-     */
-    public void setSelectWithLockSQL(String string) {
-        selectWithLockSQL = string;
     }
 
     private ClassLoadHelper getClassLoadHelper() {
@@ -1363,10 +1347,11 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                         }else if("COMPLETE".equals(state)){
                             hasComplete=true;
                         }else{
-                            continue;
+                            continue; // 这里一般是INIT
                         }
                     }
                     // 如果所有状态都有则按以下优先级来
+                    String beforeState = job.getState();
                     if(hasError){
                         job.setState("ERROR");
                     }else if(hasExecuting){
@@ -1376,10 +1361,13 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                     }else if(hasComplete){
                         job.setState("COMPLETE");
                     }else{
-                        continue;
+                        continue; // 这里对应上面的INIT状态，不做处理
                     }
-                    job.setUpdateTime(now);
-                    getDelegate().updateRecoverJob(conn,job);
+                    // 不做无谓的更新...
+                    if(!job.getState().equals(beforeState)){
+                        job.setUpdateTime(now);
+                        getDelegate().updateRecoverJob(conn,job);
+                    }
                 }
                 //2. 清理 state=COMPLETE && update_time >1年的清理(删除),按频度执行逻辑
                 if( (now - PRE_CLEAR_TIME) >= 86400_000L*7 && LocalDateTime.now().getHour()-10==0 ){
@@ -1431,7 +1419,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
 //                        jobs.remove(jobs.get(i));
 //                    }
 //                }
-                // SELECT * FROM QRTZ_EXECUTE WHERE PID=? AND NEXT_FIRE_TIME<=? AND STATE!=? AND STATE!=? AND STATE!=?
+                // SELECT * FROM QRTZ_EXECUTE WHERE PID=? AND NEXT_FIRE_TIME<=? AND STATE!=COMPLETE AND STATE!=INIT AND STATE!=PAUSED
                 List<QrtzExecute> executes = getDelegate().findQrtzExecuteForRecover(conn,jobs,now-5000L-8); // 这个5S很重要，一旦与QuartzSchedulerThread的执行时间无法错开则导致任务无法执行
                 for(QrtzExecute execute:executes){
                     final String jobType = execute.getJobType();

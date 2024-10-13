@@ -45,7 +45,7 @@ pool.
 
 ***JobStores*** and ***DataSources*** were discussed in <a href="./tutorial-lesson-09.md"
     title="Tutorial Lesson 9">Lesson 9</a> of this tutorial. Worth noting here, is the fact that all JobStores implement
-the org.quartz.spi.JobStore interface - and that if one of the bundled JobStores does not fit your needs, then you can
+the org.spi.org.quartz.JobStore interface - and that if one of the bundled JobStores does not fit your needs, then you can
 make your own.
 
 Finally, you need to create your ***Scheduler*** instance. The Scheduler itself needs to be given a

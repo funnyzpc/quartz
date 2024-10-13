@@ -18,7 +18,7 @@ Extend TriggerListenerSupport and override methods for events you're interested 
 <pre class="prettyprint highlight"><code class="language-java" data-lang="java">
 package foo;
 
-import org.quartz.Trigger;
+import org.org.quartz.Trigger;
 import org.quartz.listeners.SchedulerListenerSupport;
 
 public class MyOtherSchedulerListener extends SchedulerListenerSupport {

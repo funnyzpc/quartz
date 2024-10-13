@@ -154,9 +154,9 @@ changes to existing code to make the compiler happy.   Trigger and JobDetail are
 still exists that you can "sneakily" reference.  Note that this is only recommended as a temporary way to get your
 code working quickly, and you should plan on eventually converting your code to use the new API.
 
-Rather than importing and using *org.quartz.SimpleTrigger*, *org.quartz.CronTrigger*, and
-*org.quartz.JobDetail* change your code to import and use *org.quartz.impl.triggers.SimpleTriggerImpl*,
-*org.quartz.impl.triggers.CronTriggerImpl*, and *org.quartz.impl.JobDetailImpl*.  (A similar name
+Rather than importing and using *org.org.quartz.SimpleTrigger*, *org.org.quartz.CronTrigger*, and
+*org.quartz.JobDetail* change your code to import and use *org.triggers.impl.org.quartz.SimpleTriggerImpl*,
+*org.triggers.impl.org.quartz.CronTriggerImpl*, and *org.quartz.impl.JobDetailImpl*.  (A similar name
 substitution pattern can be used for other concrete trigger types).
 
 This can be accomplished with search-and-replace.

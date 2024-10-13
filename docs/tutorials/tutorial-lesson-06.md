@@ -78,7 +78,7 @@ The '#' is used to specify "the nth" XXX weekday of the month. For example, the 
 day-of-week field means "the third Friday of the month".
 
 Here are a few more examples of expressions and their meanings - you can find even more in the JavaDoc for
-org.quartz.CronExpression
+org.org.quartz.CronExpression
 
 ### [Example Cron Expressions](#TutorialLesson6-ExampleCronExpressions)
 

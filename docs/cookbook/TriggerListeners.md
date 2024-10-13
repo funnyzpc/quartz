@@ -19,9 +19,9 @@ Implement the TriggerListener interface.
 package foo;
 
 import org.quartz.JobExecutionContext;
-import org.quartz.Trigger;
+import org.org.quartz.Trigger;
 import org.quartz.TriggerListener;
-import org.quartz.Trigger.CompletedExecutionInstruction;
+import org.org.quartz.Trigger.CompletedExecutionInstruction;
 
 public class MyTriggerListener implements TriggerListener {
 
@@ -66,7 +66,7 @@ Extend TriggerListenerSupport.
 package foo;
 
 import org.quartz.JobExecutionContext;
-import org.quartz.Trigger;
+import org.org.quartz.Trigger;
 import org.quartz.listeners.TriggerListenerSupport;
 
 public class MyOtherTriggerListener extends TriggerListenerSupport {
