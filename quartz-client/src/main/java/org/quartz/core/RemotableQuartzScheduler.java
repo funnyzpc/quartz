@@ -96,6 +96,7 @@ public interface RemotableQuartzScheduler extends Remote {
 
     String[] getDBInfo();
     List<QrtzApp> getAllApp();
+    QrtzApp getAppByApplication(String application);
     List<QrtzNode> getNodeByApp(String application);
     // 根据job_id获取job信息
     QrtzJob getJobByJobId(String job_id);
@@ -117,6 +118,7 @@ public interface RemotableQuartzScheduler extends Remote {
 
     // 添加节点
     int addNode(QrtzNode qrtzNode);
+    boolean containsNode(String application ,String hostIP);
     // 删除节点
     int deleteNode(String application,String hostIP);
     // 暂停节点
@@ -128,6 +130,7 @@ public interface RemotableQuartzScheduler extends Remote {
     int addJob(QrtzJob qrtzJob) throws SchedulerException, RemoteException;
     int updateJob(QrtzJob qrtzJob) throws SchedulerException, RemoteException;
     int deleteJob(Long job_id) ;
+    int findQrtzExecuteCountById(Long job_id);
 
     // 暂停指定job下的所有execute
     int updateExecuteStateByJobId(Long job_id,String state);

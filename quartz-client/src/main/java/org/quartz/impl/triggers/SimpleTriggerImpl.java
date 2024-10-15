@@ -152,7 +152,7 @@ public class SimpleTriggerImpl extends AbstractTrigger<SimpleTrigger> implements
      */
     @Override
     public SimpleTriggerImpl setStartTime(Date startTime) {
-        if (startTime == null) {
+        if (startTime == null || startTime.getTime()<1) {
             throw new IllegalArgumentException("Start time cannot be null");
         }
         Date eTime = getEndTime();

@@ -102,6 +102,7 @@ public interface DriverDelegate {
     /*********** 任务操作 ***************/
     // 获取所有应用(不含节点)
     List<QrtzApp> getAllApp(Connection conn);
+    QrtzApp getAppByApplication(Connection conn,String application);
     // 根据应用查询应用下所有节点
     List<QrtzNode> getNodeByApp(Connection conn,String application);
     // 根据job_id获取job信息
@@ -123,6 +124,7 @@ public interface DriverDelegate {
 
     // 添加节点
     int addNode(Connection conn,QrtzNode qrtzNode);
+    boolean containsNode(Connection conn,String application ,String hostIP);
     // 删除节点
     int deleteNode(Connection conn,String application,String hostIP);
     // 暂停节点

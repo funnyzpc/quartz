@@ -36,6 +36,9 @@ public class QrtzApp implements Serializable {
      */
     private Long timeInterval;
 
+    public QrtzApp() {
+    }
+
     public QrtzApp(String application, String state, Long timePre, Long timeNext, Long timeInterval) {
         this.application = application;
         this.state = state;

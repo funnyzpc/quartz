@@ -713,6 +713,19 @@ public final class JobStoreSupport implements JobStore {
         return null;
     }
     @Override
+    public QrtzApp getAppByApplication( String application){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().getAppByApplication(conn,application);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return null;
+    }
+    @Override
     public List<QrtzNode> getNodeByApp(String application) {
         Connection conn =  null ;
         try{
@@ -843,6 +856,19 @@ public final class JobStoreSupport implements JobStore {
         return 0;
     }
     @Override
+    public boolean containsNode(String application ,String hostIP){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().containsNode(conn,application,hostIP);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return Boolean.FALSE;
+    }
+    @Override
     public int deleteNode(String application,String hostIP){
         Connection conn =  null ;
         try{
@@ -873,7 +899,14 @@ public final class JobStoreSupport implements JobStore {
         Connection conn =  null ;
         try{
             conn = getConnection();
-            return getDelegate().addAppAndNode(conn,qrtzApp,qrtzNode);
+            conn.setAutoCommit(false);
+            int ct = getDelegate().addAppAndNode(conn,qrtzApp,qrtzNode);
+            if( ct==0){
+                conn.rollback();
+            }else{
+                conn.commit();
+            }
+            return ct;
         }catch (Exception e){
             e.printStackTrace();
         }finally {
@@ -921,6 +954,20 @@ public final class JobStoreSupport implements JobStore {
                 throw new SchedulerException("存在execute记录，请先移除后再行删除job!");
             }
             return getDelegate().deleteJob(conn,job_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int findQrtzExecuteCountById(Long job_id){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            // 先查询execute，如果有execute存在则不可删除
+            return getDelegate().findQrtzExecuteCountById(conn,job_id);
         }catch (Exception e){
             e.printStackTrace();
         }finally {

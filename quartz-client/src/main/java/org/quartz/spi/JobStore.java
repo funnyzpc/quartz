@@ -117,6 +117,7 @@ public interface JobStore {
 
     String[] getDBInfo()  ;
     List<QrtzApp> getAllApp();
+    QrtzApp getAppByApplication(String application);
 
     List<QrtzNode> getNodeByApp(String application);
     // 根据job_id获取job信息
@@ -137,6 +138,7 @@ public interface JobStore {
     int updateAppState(String application,String state);
     // 添加节点
     int addNode(QrtzNode qrtzNode);
+    boolean containsNode(String application ,String hostIP);
     // 删除节点
     int deleteNode(String application,String hostIP);
     // 暂停节点
@@ -148,6 +150,7 @@ public interface JobStore {
     int addJob(QrtzJob qrtzJob) ;
     int updateJob(QrtzJob qrtzJob) ;
     int deleteJob(Long job_id) ;
+    int findQrtzExecuteCountById(Long job_id);
 
     // 暂停指定job下的所有execute
     int updateExecuteStateByJobId(Long job_id,String state);

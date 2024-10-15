@@ -291,7 +291,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             ps.setString(1,application);
             rs = ps.executeQuery();
             while( rs.next() ) {
-                rs.close();
+//                rs.close();
                 // 默认有就不需要插入了
                 return 1;
             }
@@ -306,13 +306,14 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             ps.setBigDecimal(4,new BigDecimal(app.getTimeNext()));// TIME_NEXT
             ps.setBigDecimal(5,new BigDecimal(app.getTimeInterval()));// TIME_INTERVAL
             int ct = ps.executeUpdate();
-            conn.commit();
+            conn.commit(); // todo ...
             return ct;
         } catch (Exception e){
             e.printStackTrace();
 //            throw new SQLException("No misfired trigger count returned.");
             return 0;
         }finally {
+            closeResultSet(rs);
             // 由于实在同一个connection下，所以不可关闭Connection
             closeStatement(ps);
         }
@@ -330,7 +331,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             ps.setString(2,node.getHostIp());
             rs = ps.executeQuery();
             while( rs.next() ) {
-                rs.close();
+//                rs.close();
                 // 默认有就不需要插入了
                 return 1;
             }
@@ -345,13 +346,14 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             ps.setString(4,node.getState());// STATE
             ps.setBigDecimal(5,new BigDecimal(node.getTimeCheck()));// TIME_CHECK
             int ct = ps.executeUpdate();
-            conn.commit();
+            conn.commit(); // todo ...
             return ct;
         } catch (Exception e){
             e.printStackTrace();
 //            throw new SQLException("No misfired trigger count returned.");
             return 0;
         }finally {
+            closeResultSet(rs);
             // 由于实在同一个connection下，所以不可关闭Connection
             closeStatement(ps);
         }
@@ -374,7 +376,6 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                 Long timePre = rs.getLong("TIME_PRE");
                 Long timeNext = rs.getLong("TIME_NEXT");
                 Long timeInterval = rs.getLong("TIME_INTERVAL");
-                rs.close();
                 return new QrtzApp(_application,state,timePre,timeNext,timeInterval);
             }
             return null;
@@ -383,6 +384,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //            throw new SQLException("No misfired trigger count returned.");
             return null;
         }finally {
+            closeResultSet(rs);
             // 由于实在同一个connection下，所以不可关闭Connection
             closeStatement(ps);
         }
@@ -495,8 +497,6 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         try {
 //            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             // 写入
-//            ps = conn.prepareStatement(rtp(" UPDATE {0}APP SET STATE=?,TIME_PRE=?,TIME_NEXT=?,TIME_INTERVAL=? WHERE APPLICATION=? AND TIME_NEXT<=? AND STATE=? "));
-//            ps = conn.prepareStatement(rtp(" UPDATE {0}APP SET STATE=?,TIME_PRE=?,TIME_NEXT=?,TIME_INTERVAL=? WHERE APPLICATION=? AND TIME_NEXT=? AND STATE=? "));
             ps = conn.prepareStatement(rtp(" UPDATE {0}APP SET STATE=?,TIME_PRE=?,TIME_NEXT=?,TIME_INTERVAL=? WHERE APPLICATION=? AND TIME_NEXT=? "));
             ps.setString(1,app.getState());
             ps.setBigDecimal(2,new BigDecimal(app.getTimePre()));
@@ -508,7 +508,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //            ps.setString(7,wState);
             int ct = ps.executeUpdate();
 //            System.out.println(ct+":"+ LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS) +":"+wNow+"=>"+ps);
-            conn.commit();
+            conn.commit(); // todo ...
             return ct;
         } catch (Exception e){
             LOGGER.error("异常:{}",app,e);
@@ -536,7 +536,6 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                 String hostName = rs.getString("HOST_NAME");
                 String state = rs.getString("STATE");
                 Long timeCheck = rs.getLong("TIME_CHECK");
-                rs.close();
                 return new QrtzNode(_application,_hostIP,hostName,state,timeCheck);
             }
             return null;
@@ -545,6 +544,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //            throw new SQLException("No misfired trigger count returned.");
             return null;
         }finally {
+            closeResultSet(rs);
             // 由于实在同一个connection下，所以不可关闭Connection
             closeStatement(ps);
         }
@@ -637,13 +637,13 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                 Long updateTime = rs.getLong("UPDATE_TIME");
                 resultList.add( new QrtzJob(id,_application,state,/*jobIdx,*/jobClass,jobData,jobDescription,updateTime) );
             }
-            rs.close();
             return resultList;
         } catch (Exception e){
             e.printStackTrace();
 //            throw new SQLException("No misfired trigger count returned.");
             return resultList;
         }finally {
+            closeResultSet(rs);
             // 由于实在同一个connection下，所以不可关闭Connection
             closeStatement(ps);
         }
@@ -685,11 +685,11 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                     Long endTime = rs.getLong("END_TIME");
                     resultList.add(new QrtzExecute(id,pid,/*executeIdx,*/jobType,state,cron,zoneId,repeatCount,repeatInterval,timeTriggered,prevFireTime,nextFireTime,hostIp,hostName,startTime,endTime));
                 }
-                rs.close();
             } catch (Exception e) {
                 e.printStackTrace();
 //            throw new SQLException("No misfired trigger count returned.");
             } finally {
+                closeResultSet(rs);
                 // 由于实在同一个connection下，所以不可关闭Connection
                 closeStatement(ps);
             }
@@ -788,12 +788,12 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                 Long endTime = rs.getLong("END_TIME");
                 resultList.add(new QrtzExecute(id,_pid,/*executeIdx,*/jobType,state,cron,zoneId,repeatCount,repeatInterval,timeTriggered,prevFireTime,nextFireTime,hostIp,hostName,startTime,endTime));
             }
-            rs.close();
             return resultList;
         } catch (Exception e) {
             e.printStackTrace();
 //            throw new SQLException("No misfired trigger count returned.");
         } finally {
+            closeResultSet(rs);
             // 由于实在同一个connection下，所以不可关闭Connection
             closeStatement(ps);
         }
@@ -806,7 +806,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         ResultSet rs = null;
         try {
 //            ps = conn.prepareStatement(rtp("SELECT STATE FROM {0}NODE WHERE APPLICATION =? AND HOST_IP =? "));
-            ps = conn.prepareStatement(rtp("SELECT A.STATE AS A_STATE,N.STATE AS N_STATE FROM QRTZ_APP A LEFT JOIN QRTZ_NODE N ON A.APPLICATION=N.APPLICATION  WHERE A.APPLICATION=? AND N.APPLICATION=? AND N.HOST_IP=? "));
+            ps = conn.prepareStatement(rtp("SELECT A.STATE AS A_STATE,N.STATE AS N_STATE FROM {0}APP A LEFT JOIN {0}NODE N ON A.APPLICATION=N.APPLICATION  WHERE A.APPLICATION=? AND N.APPLICATION=? AND N.HOST_IP=? "));
             ps.setString(1, application);
             ps.setString(2, application);
             ps.setString(3, hostIP);
@@ -814,7 +814,6 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             while (rs.next()) {
                 String aState = rs.getString("A_STATE");
                 String nState = rs.getString("N_STATE");
-//                rs.close();
                 if("Y".equals(aState) && "Y".equals(nState)){
                     return  "Y";
                 }
@@ -913,6 +912,32 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             closeStatement(ps);
         }
         return result;
+    }
+    @Override
+    public QrtzApp getAppByApplication(Connection conn,String application){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(rtp("SELECT * FROM {0}APP WHERE APPLICATION=? "));
+            ps.setString(1,application);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                String application_ = rs.getString("APPLICATION");
+                String state = rs.getString("STATE");
+                Long time_pre = rs.getLong("TIME_PRE");
+                Long time_next = rs.getLong("TIME_NEXT");
+                Long time_interval = rs.getLong("TIME_INTERVAL");
+                return new QrtzApp(application_,state,time_pre,time_next,time_interval);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+//            throw new SQLException("No misfired trigger count returned.");
+        } finally {
+            closeResultSet(rs);
+            // 由于实在同一个connection下，所以不可关闭Connection
+            closeStatement(ps);
+        }
+        return null;
     }
     @Override
     public List<QrtzNode> getNodeByApp(Connection conn,String application){
@@ -1062,6 +1087,11 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     }
     @Override
     public int addApp(Connection conn,QrtzApp qrtzApp){
+        String state;
+        if(null==(state=qrtzApp.getState()) || (!"N".equals(state) && !"Y".equals(state))){
+            LOGGER.error("异常的状态项:state=>{}",qrtzApp);
+            return 0;
+        }
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(rtp("INSERT INTO {0}APP (APPLICATION,STATE,TIME_PRE,TIME_NEXT,TIME_INTERVAL) VALUES (?,?,?,?,?) "));
@@ -1112,6 +1142,11 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     }
     @Override
     public int addNode(Connection conn,QrtzNode qrtzNode){
+        String state;
+        if(null==(state=qrtzNode.getState()) || (!"N".equals(state) && !"Y".equals(state))){
+            LOGGER.error("异常的状态项:state=>{}",qrtzNode);
+            return 0;
+        }
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(rtp("INSERT INTO {0}NODE (APPLICATION,HOST_IP,HOST_NAME,STATE,TIME_CHECK) VALUES (?,?,?,?,?)"));
@@ -1128,6 +1163,27 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             closeStatement(ps);
         }
         return 0;
+    }
+    @Override
+    public boolean containsNode(Connection conn,String application ,String hostIP){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(rtp("SELECT APPLICATION,HOST_IP FROM {0}NODE WHERE APPLICATION=? AND HOST_IP=? "));
+            ps.setString(1,application);
+            ps.setString(2,hostIP);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                return Boolean.TRUE;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            LOGGER.error("异常:{},{}",application,hostIP,e);
+        } finally {
+            closeResultSet(rs);
+            closeStatement(ps);
+        }
+        return Boolean.FALSE;
     }
     @Override
     public int deleteNode(Connection conn,String application,String hostIP){
@@ -1164,7 +1220,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     }
     @Override
     public int addAppAndNode(Connection conn,QrtzApp qrtzApp, QrtzNode qrtzNode){
-        if(this.addApp(conn, qrtzApp)<1){
+        if(this.getAppByApplication(conn,qrtzApp.getApplication())!=null || this.addApp(conn, qrtzApp)<1){
             LOGGER.error("未能添加app记录：{}",qrtzApp);
             return 0;
         }
@@ -1182,6 +1238,12 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      */
     @Override
     public int addJob(Connection conn, QrtzJob qrtzJob) {
+        String state;
+        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT";
+        if(null==(state=qrtzJob.getState()) || !states.contains(","+state+",") ){
+            LOGGER.error("异常的状态项:state=>{}",qrtzJob);
+            return 0;
+        }
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(rtp("INSERT INTO {0}JOB (ID,APPLICATION,STATE,JOB_CLASS,JOB_DATA,JOB_DESCRIPTION,UPDATE_TIME) VALUES (?,?,?,?,?,?,?)"));
@@ -1241,6 +1303,11 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     }
     @Override
     public int updateExecuteStateByJobId(Connection conn,Long job_id,String state){
+        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT,";
+        if(null==state || !states.contains(","+state+",") ){
+            LOGGER.error("异常的状态项:state=>{},{}",job_id,state);
+            return 0;
+        }
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(rtp("UPDATE {0}EXECUTE SET STATE=? WHERE PID=?"));
@@ -1273,6 +1340,12 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     }
     @Override
     public int addExecute(Connection conn,QrtzExecute qrtzExecute){
+        String state;
+        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT,";
+        if(null==(state=qrtzExecute.getState()) || !states.contains(","+state+",") ){
+            LOGGER.error("异常的状态项:state=>{}",qrtzExecute);
+            return 0;
+        }
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(rtp("INSERT INTO {0}EXECUTE (ID,PID,JOB_TYPE,STATE,CRON,ZONE_ID,REPEAT_COUNT,REPEAT_INTERVAL,TIME_TRIGGERED,PREV_FIRE_TIME,NEXT_FIRE_TIME,HOST_IP,HOST_NAME,START_TIME,END_TIME) VALUES\n" +
@@ -1283,7 +1356,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             ps.setString(4, qrtzExecute.getState()); // STATE
             ps.setString(5, qrtzExecute.getCron()); // CRON
             ps.setString(6, qrtzExecute.getZoneId()); // ZONE_ID
-            ps.setInt(7, qrtzExecute.getRepeatCount()); // REPEAT_COUNT
+            ps.setObject(7, qrtzExecute.getRepeatCount()); // REPEAT_COUNT
             ps.setObject(8, qrtzExecute.getRepeatInterval()); // REPEAT_INTERVAL
             ps.setObject(9, qrtzExecute.getTimeTriggered()); // TIME_TRIGGERED
             ps.setObject(10, qrtzExecute.getPrevFireTime()); // PREV_FIRE_TIME

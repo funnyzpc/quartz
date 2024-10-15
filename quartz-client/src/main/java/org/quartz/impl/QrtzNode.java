@@ -35,6 +35,9 @@ public class QrtzNode implements Serializable {
      */
     private Long timeCheck;
 
+    public QrtzNode() {
+    }
+
     public QrtzNode(String application, String hostIp, String hostName, String state, Long timeCheck) {
         this.application = application;
         this.hostIp = hostIp;
