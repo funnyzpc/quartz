@@ -24,7 +24,6 @@ import org.quartz.impl.QrtzExecute;
 import org.quartz.impl.QrtzJob;
 import org.quartz.impl.QrtzNode;
 
-import java.sql.Connection;
 import java.util.List;
 
 /**
@@ -111,7 +110,6 @@ public interface Scheduler {
 //    String[] getCurrentNodeInfo();
     // 获取数据库信息(  [数据库厂商,数据库schema] )
     String[] getDBInfo() ;
-
     // 获取所有应用(不含节点)
     List<QrtzApp> getAllApp();
     // 根据应用查询应用下所有节点
@@ -122,9 +120,9 @@ public interface Scheduler {
     QrtzExecute getExecuteByExecuteId(String execute_id);
     // 根据job_id获取job下所有execute信息
     List<QrtzExecute> getExecuteByJobId(String job_id);
-    // 根据job_id获取job下所有execute信息
+    // 根据job_id获取job及其下所有execute信息
     QrtzJob getJobInAllByJobId(String job_id);
-    // 根据execute_id获取execute及job信息
+    // 根据execute_id获取execute及关联的job信息
     QrtzExecute getExecuteInAllByExecuteId(String execute_id);
 
     // 添加应用
@@ -138,8 +136,9 @@ public interface Scheduler {
     int addNode(QrtzNode qrtzNode);
     // 删除节点
     int deleteNode(String application,String hostIP);
-    // 暂停节点
+    // 暂停/开启节点
     int updateNodeState(QrtzNode qrtzNode);
+    int updateNode(QrtzNode qrtzNode);
 
     // 添加应用及节点
     int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode);
@@ -154,14 +153,10 @@ public interface Scheduler {
     int updateExecuteStateByJobId(Long job_id,String state);
     // 暂停指定execute
     int updateExecuteStateByExecuteId(Long execute_id,String state);
-//    // 启动job以及execute,只是改变execute及job状态
-//    int recoverExecuteByJobId(Long job_id);
-//    // 启动execute
-//    int recoverExecuteByExecuteId(Long execute_id);
     // 添加execute
     int addExecute(QrtzExecute qrtzExecute);
     // 删除execute
-    int deleteExecute(Long execute_id );
+    int deleteExecute(String execute_id );
 
 
 }

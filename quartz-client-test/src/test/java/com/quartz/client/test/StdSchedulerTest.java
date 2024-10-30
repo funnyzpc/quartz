@@ -43,8 +43,10 @@ public class StdSchedulerTest {
         job.setState("INIT");
         job.setJobClass("com.mee.quartz.job.Job01TestService");
         job.setJobData("{}}");
-        job.setJobDescription("描述测试。。。");
-        scheduler.addJob(job);
+        job.setJobDescription("描述测试01。。。");
+        int ct = scheduler.addJob(job);
+        System.out.println("写入job结果:"+ct);
+
     }
 
     @Test
@@ -60,13 +62,13 @@ public class StdSchedulerTest {
         List<QrtzApp> qrtzApps = scheduler.getAllApp();
         System.out.println(JacksonUtil.toJsonString(qrtzApps));
     }
+
     ////////////////////////////////////////////
     @Test
     public void test04(){
         Scheduler scheduler = new StdScheduler(dataSource);
         List<QrtzNode> qrtzApps = scheduler.getNodeByApp("mee_generator");
         System.out.println(JacksonUtil.toJsonString(qrtzApps));
-//        LOGGER.info(JacksonUtil.toJsonString(qrtzApps));
     }
 
     @Test
@@ -105,23 +107,22 @@ public class StdSchedulerTest {
     public void test10(){
         Scheduler scheduler = new StdScheduler(dataSource);
 //        QrtzApp qrtzApp = new QrtzApp("APPLICATION-TEST","Y",-1L,System.currentTimeMillis(),1L);
-        QrtzApp qrtzApp = new QrtzApp("APPLICATION-TEST2","Y",null,null,null);
-
+        QrtzApp qrtzApp = new QrtzApp("APPLICATION-TEST1","Y",null,null,null);
         int result = scheduler.addApp(qrtzApp);
-        System.out.println(JacksonUtil.toJsonString(result));
+        System.out.println("app写入结果:"+result);
     }
 
     @Test
     public void test11(){
         Scheduler scheduler = new StdScheduler(dataSource);
-        int result = scheduler.deleteApp("APPLICATION-TEST");
-        System.out.println(JacksonUtil.toJsonString(result));
+        int result = scheduler.deleteApp("APPLICATION-TEST3");
+        System.out.println("删除app:"+result);
     }
 
     @Test
     public void test12(){
         Scheduler scheduler = new StdScheduler(dataSource);
-        int result = scheduler.updateAppState("APPLICATION-TEST2","N");
+        int result = scheduler.updateAppState("APPLICATION-TEST2","Y");
         System.out.println(JacksonUtil.toJsonString(result));
     }
 
@@ -129,70 +130,70 @@ public class StdSchedulerTest {
     public void test13(){
         Scheduler scheduler = new StdScheduler(dataSource);
 //        QrtzNode node = new QrtzNode("APPLICATION-TEST","172.18.18.11", SeqGenUtil.genSeq(),"Y",System.currentTimeMillis());
-        QrtzNode node = new QrtzNode("APPLICATION-TEST","172.18.18.11", null,"Y",null);
+        QrtzNode node = new QrtzNode("APPLICATION-TEST","172.18.18.12", SeqGenUtil.genSeq(),"Y",-1L);
         int result = scheduler.addNode(node);
-        System.out.println(JacksonUtil.toJsonString(result));
+        System.out.println("添加node结果:"+result);
     }
 
     @Test
     public void test14(){
         Scheduler scheduler = new StdScheduler(dataSource);
-        int result = scheduler.deleteNode("APPLICATION-TEST","172.18.18.11");
-        System.out.println(JacksonUtil.toJsonString(result));
+        int result = scheduler.deleteNode("APPLICATION-TEST3","172.18.18.11");
+        System.out.println("删除node结果:"+result);
     }
     @Test
     public void test15(){
         Scheduler scheduler = new StdScheduler(dataSource);
-        QrtzNode node = new QrtzNode("APPLICATION-TEST", "172.18.18.11", null, "N", null);
+        QrtzNode node = new QrtzNode("APPLICATION-TEST", "172.18.18.12", null, "N", null);
         int result = scheduler.updateNodeState(node);
-        System.out.println(JacksonUtil.toJsonString(result));
+        System.out.println("修改node状态结果:"+result);
     }
 
     @Test
     public void test16(){
         Scheduler scheduler = new StdScheduler(dataSource);
         QrtzApp qrtzApp = new QrtzApp("APPLICATION-TEST3","Y",null,null,null);
-        QrtzNode node = new QrtzNode("APPLICATION-TEST3", "172.18.18.11", null, null, null);
+        QrtzNode node = new QrtzNode("APPLICATION-TEST3", "172.18.18.11", null, "N", null);
         int result = scheduler.addAppAndNode(qrtzApp,node);
-        System.out.println(JacksonUtil.toJsonString(result));
+        System.out.println("新增app&node结果:"+result);
     }
     @Test
     public void test17(){
         Scheduler scheduler = new StdScheduler(dataSource);
-        QrtzJob qrtzJob = new QrtzJob(null,"APPLICATION-TEST","INIT","com.mee.quartz.Test02","[]",null,null);
+        QrtzJob qrtzJob = new QrtzJob(null,"APPLICATION-TEST2","INIT","com.mee.quartz.Test02","[]",null,null);
 
         int result = scheduler.addJob(qrtzJob);
-        System.out.println(result+"=>"+JacksonUtil.toJsonString(qrtzJob));
+        System.out.println("job写入结果=>"+result);
     }
 
     @Test
     public void test18(){
         Scheduler scheduler = new StdScheduler(dataSource);
-        QrtzJob qrtzJob = new QrtzJob(202410141453521000L,"APPLICATION-TEST","EXECUTING","com.mee.quartz.Test02","[]","测试数据任务01",null);
+        QrtzJob qrtzJob = new QrtzJob(202410141453521000L,"APPLICATION-TEST2","PAUSE","com.mee.quartz.Test02","{}","测试数据任务01",null);
 
         int result = scheduler.updateJob(qrtzJob);
-        System.out.println(result+"=>"+JacksonUtil.toJsonString(qrtzJob));
+        System.out.println("job更新结果=>"+result);
     }
 
     @Test
     public void test19(){
         Scheduler scheduler = new StdScheduler(dataSource);
-        int result = scheduler.deleteJob(202410141453521000L);
-        System.out.println(result+"=>"+JacksonUtil.toJsonString(result));
+        int result = scheduler.deleteJob(202410301331261000L);
+        System.out.println("job删除结果=>"+result);
     }
 
     @Test
     public void test20(){
         Scheduler scheduler = new StdScheduler(dataSource);
         int result = scheduler.updateExecuteStateByJobId(202410141453521000L,"COMPLETE");
-        System.out.println(result+"=>"+JacksonUtil.toJsonString(result));
+        System.out.println("execute更新结果=>"+result);
     }
 
     @Test
     public void test21(){
         Scheduler scheduler = new StdScheduler(dataSource);
-        int result = scheduler.updateExecuteStateByExecuteId(2409200940191099L,"EXECUTING");
-        System.out.println(result+"=>"+JacksonUtil.toJsonString(result));
+        int result = scheduler.updateExecuteStateByExecuteId(202410141950091001L,"EXECUTING");
+        System.out.println("execute更新结果=>"+result);
     }
 
     @Test
@@ -201,16 +202,23 @@ public class StdSchedulerTest {
         QrtzExecute execute = new QrtzExecute(null,202410141453521000L,"SIMPLE","INIT",null,null,999,10000,0,-1L,-1L,null,null,-1L,-1L);
 //        QrtzExecute execute = new QrtzExecute(null,202410141453521000L,"CRON","INIT","0 0/5 * * * ?",null,-1,10000,0,-1L,-1L,null,null,-1L,-1L);
         int result = scheduler.addExecute(execute);
-        System.out.println(result+"=>"+JacksonUtil.toJsonString(result));
+        System.out.println("execute添加结果=>"+result);
     }
 
     @Test
     public void test23(){
         Scheduler scheduler = new StdScheduler(dataSource);
-        int result = scheduler.deleteExecute(2409200940191099L);
-        System.out.println(result+"=>"+JacksonUtil.toJsonString(result));
+        int result = scheduler.deleteExecute(-2L);
+        System.out.println("execute删除结果=>"+result);
     }
 
+    @Test
+    public void test24(){
+        Scheduler scheduler = new StdScheduler(dataSource);
+        QrtzNode node = new QrtzNode("APPLICATION-TEST", "172.18.18.12", "", "N", null);
+        int result = scheduler.updateNode(node);
+        System.out.println("修改node结果:"+result);
+    }
 
 
 }

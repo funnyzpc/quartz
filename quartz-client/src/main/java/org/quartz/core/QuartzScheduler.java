@@ -491,12 +491,20 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         return resources.getJobStore().containsNode(application,hostIP);
     }
     @Override
+    public boolean containsNode(String application){
+        return resources.getJobStore().containsNode(application);
+    }
+    @Override
     public int deleteNode(String application,String hostIP){
         return resources.getJobStore().deleteNode(application,hostIP);
     }
     @Override
     public int updateNodeState(QrtzNode qrtzNode){
         return resources.getJobStore().updateNodeState(qrtzNode);
+    }
+    @Override
+    public int updateNode(QrtzNode qrtzNode){
+        return resources.getJobStore().updateNode(qrtzNode);
     }
     @Override
     public int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode){
@@ -521,6 +529,10 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         return resources.getJobStore().findQrtzExecuteCountById(job_id);
     }
     @Override
+    public boolean containsExecute(Long job_id){
+        return resources.getJobStore().containsExecute(job_id);
+    }
+    @Override
     public int updateExecuteStateByJobId(Long job_id,String state){
         return resources.getJobStore().updateExecuteStateByJobId(job_id,state);
     }
@@ -533,7 +545,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         return resources.getJobStore().addExecute(qrtzExecute);
     }
     @Override
-    public int deleteExecute(Long execute_id ){
+    public int deleteExecute(String execute_id ){
         return resources.getJobStore().deleteExecute(execute_id);
     }
 

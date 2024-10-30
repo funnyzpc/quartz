@@ -125,10 +125,13 @@ public interface DriverDelegate {
     // 添加节点
     int addNode(Connection conn,QrtzNode qrtzNode);
     boolean containsNode(Connection conn,String application ,String hostIP);
+    boolean containsNode(Connection conn,String application);
     // 删除节点
     int deleteNode(Connection conn,String application,String hostIP);
     // 暂停节点
     int updateNodeState(Connection conn,QrtzNode qrtzNode);
+    int updateNode(Connection conn,QrtzNode qrtzNode);
+    int updateNodeStateBatch(Connection conn,String application,String state);
 
     // 添加应用及节点
     int addAppAndNode(Connection conn,QrtzApp qrtzApp, QrtzNode qrtzNode);
@@ -147,8 +150,10 @@ public interface DriverDelegate {
     // 添加execute
     int addExecute(Connection conn,QrtzExecute qrtzExecute);
     // 删除execute
-    int deleteExecute(Connection conn,Long execute_id );
+    int deleteExecute(Connection conn,String execute_id );
     int findQrtzExecuteCountById(Connection conn, Long job_id);
+    // 是否存在execute
+    boolean containsExecute(Connection conn,Long job_id);
 
 }
 

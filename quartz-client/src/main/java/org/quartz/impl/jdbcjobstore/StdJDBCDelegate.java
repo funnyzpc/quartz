@@ -1186,6 +1186,26 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         return Boolean.FALSE;
     }
     @Override
+    public boolean containsNode(Connection conn,String application){
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(rtp("SELECT APPLICATION,HOST_IP FROM {0}NODE WHERE APPLICATION=?"));
+            ps.setString(1,application);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                return Boolean.TRUE;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            LOGGER.error("异常:{}",application,e);
+        } finally {
+            closeResultSet(rs);
+            closeStatement(ps);
+        }
+        return Boolean.FALSE;
+    }
+    @Override
     public int deleteNode(Connection conn,String application,String hostIP){
         PreparedStatement ps = null;
         try {
@@ -1219,6 +1239,43 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
         return 0;
     }
     @Override
+    public int updateNode(Connection conn,QrtzNode qrtzNode){
+        PreparedStatement ps = null;
+        try {
+            ps = conn.prepareStatement(rtp("UPDATE {0}NODE SET STATE=?,HOST_NAME=? WHERE APPLICATION=? AND HOST_IP=? "));
+            ps.setString(1,qrtzNode.getState());
+            ps.setString(2,qrtzNode.getHostName());
+            ps.setString(3,qrtzNode.getApplication());
+            ps.setString(4,qrtzNode.getHostIp());
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            LOGGER.error("异常:{},{}",qrtzNode,e);
+        } finally {
+            closeStatement(ps);
+        }
+        return 0;
+    }
+    @Override
+    public int updateNodeStateBatch(Connection conn,String application,String state){
+        PreparedStatement ps = null;
+        try {
+            ps = conn.prepareStatement(rtp("UPDATE {0}NODE SET STATE=? WHERE APPLICATION=? AND STATE!=? "));
+            ps.setString(1,state);
+            ps.setString(2,application);
+            ps.setString(3,state);
+            ps.executeUpdate();
+            // 如果状态即为目标状态则可能更新记录就是0，这里只关注更新操作本身
+            return 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            LOGGER.error("异常:{},{}",state,application,e);
+        } finally {
+            closeStatement(ps);
+        }
+        return 0;
+    }
+    @Override
     public int addAppAndNode(Connection conn,QrtzApp qrtzApp, QrtzNode qrtzNode){
         if(this.getAppByApplication(conn,qrtzApp.getApplication())!=null || this.addApp(conn, qrtzApp)<1){
             LOGGER.error("未能添加app记录：{}",qrtzApp);
@@ -1239,7 +1296,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     @Override
     public int addJob(Connection conn, QrtzJob qrtzJob) {
         String state;
-        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT";
+        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT,";
         if(null==(state=qrtzJob.getState()) || !states.contains(","+state+",") ){
             LOGGER.error("异常的状态项:state=>{}",qrtzJob);
             return 0;
@@ -1267,6 +1324,11 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     @Override
     public int updateJob(Connection conn, QrtzJob qrtzJob) {
         PreparedStatement ps = null;
+        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT,";
+        if(null!=qrtzJob.getState() && !states.contains(","+qrtzJob.getState()+",") ){
+            LOGGER.error("异常的状态项:{}",qrtzJob);
+            return 0;
+        }
         try {
             ps = conn.prepareStatement(rtp("UPDATE {0}JOB SET APPLICATION =?,STATE=?,JOB_CLASS =?,JOB_DATA=?,JOB_DESCRIPTION=?,UPDATE_TIME=? WHERE ID=?"));
             ps.setString(1,qrtzJob.getApplication());
@@ -1376,7 +1438,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     }
 
     @Override
-    public int deleteExecute(Connection conn,Long execute_id ){
+    public int deleteExecute(Connection conn,String execute_id ){
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(rtp("DELETE FROM {0}EXECUTE WHERE ID=? "));
@@ -1410,6 +1472,27 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             closeStatement(ps);
         }
         return 0;
+    }
+
+    @Override
+    public boolean containsExecute(Connection conn,Long job_id) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(rtp("SELECT ID  FROM {0}EXECUTE WHERE PID=? "));
+            ps.setBigDecimal(1,new BigDecimal(job_id));
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                return Boolean.TRUE;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            LOGGER.error("异常:{}",job_id,e);
+        } finally {
+            closeResultSet(rs);
+            closeStatement(ps);
+        }
+        return Boolean.FALSE;
     }
 
 

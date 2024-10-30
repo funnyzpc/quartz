@@ -22,7 +22,6 @@ import org.quartz.impl.QrtzExecute;
 import org.quartz.impl.QrtzJob;
 import org.quartz.impl.QrtzNode;
 
-import java.sql.Connection;
 import java.util.List;
 
 
@@ -139,10 +138,12 @@ public interface JobStore {
     // 添加节点
     int addNode(QrtzNode qrtzNode);
     boolean containsNode(String application ,String hostIP);
+    boolean containsNode(String application);
     // 删除节点
     int deleteNode(String application,String hostIP);
     // 暂停节点
     int updateNodeState(QrtzNode qrtzNode);
+    int updateNode(QrtzNode qrtzNode);
 
     // 添加应用及节点
     int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode);
@@ -151,6 +152,7 @@ public interface JobStore {
     int updateJob(QrtzJob qrtzJob) ;
     int deleteJob(Long job_id) ;
     int findQrtzExecuteCountById(Long job_id);
+    boolean containsExecute(Long job_id);
 
     // 暂停指定job下的所有execute
     int updateExecuteStateByJobId(Long job_id,String state);
@@ -160,6 +162,6 @@ public interface JobStore {
     // 添加execute
     int addExecute(QrtzExecute qrtzExecute);
     // 删除execute
-    int deleteExecute(Long execute_id );
+    int deleteExecute(String execute_id );
 
 }

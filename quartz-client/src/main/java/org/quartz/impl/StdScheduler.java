@@ -168,6 +168,11 @@ public class StdScheduler implements Scheduler {
             LOGGER.error("必要参数为空! [application]: {}",application);
             return 0;
         }
+        // 如果有node则必须先删除node
+        if(sched.containsNode(application)){
+            LOGGER.error("存在node，请先移除node后再行删除! [application]: {}",application);
+            return 0;
+        }
         return sched.deleteApp(application);
     }
     @Override
@@ -177,6 +182,12 @@ public class StdScheduler implements Scheduler {
             LOGGER.error("必要参数为空或状态非法! [application、state]: {},{}",application,state);
             return 0;
         }
+        QrtzApp app = null ;
+        if( (app=sched.getAppByApplication(application))!=null && state.equals(app.getState()) ){
+            LOGGER.error("app已经是目标状态了! [application:{}、state:{}]",application,state);
+            return 0;
+        }
+        // 更新app状态需要同步更新对应node节点状态
         return sched.updateAppState(application,state);
     }
     @Override
@@ -229,6 +240,23 @@ public class StdScheduler implements Scheduler {
             return 0;
         }
         return sched.updateNodeState(qrtzNode);
+    }
+    @Override
+    public int updateNode(QrtzNode qrtzNode){
+        String state;
+        if( null==qrtzNode
+                || null==qrtzNode.getApplication() || "".equals(qrtzNode.getApplication())
+                || null==qrtzNode.getHostIp() || "".equals(qrtzNode.getHostIp())
+                || null==(state=qrtzNode.getState()) || (!"N".equals(state) && !"Y".equals(state))
+        ){
+            LOGGER.error("参数为空或参数异常:{}",qrtzNode);
+            return 0;
+        }
+        // host_name 不可为空
+        if(qrtzNode.getHostName()==null){
+            qrtzNode.setHostName(qrtzNode.getHostIp());
+        }
+        return sched.updateNode(qrtzNode);
     }
     @Override
     public int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode){
@@ -316,6 +344,11 @@ public class StdScheduler implements Scheduler {
             LOGGER.error("异常的任务数据：{}",qrtzJob);
             return 0;
         }
+        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT,";
+        if(null!=qrtzJob.getState() && !states.contains(","+qrtzJob.getState()+",") ){
+            LOGGER.error("异常的状态项:{}",qrtzJob);
+            return 0;
+        }
         qrtzJob.setJobData(job_data);
         // 赋初始化参数
         qrtzJob.setUpdateTime(System.currentTimeMillis()/1000*1000);
@@ -328,7 +361,7 @@ public class StdScheduler implements Scheduler {
             return 0;
         }
         // 先查询execute，如果有execute存在则不可删除
-        if(sched.findQrtzExecuteCountById(job_id)>0){
+        if(sched.containsExecute(job_id)){
             LOGGER.error("存在execute记录，请先移除后再行删除job! [job_id] {}",job_id);
             return 0;
         }
@@ -462,7 +495,7 @@ public class StdScheduler implements Scheduler {
         return sched.addExecute(qrtzExecute);
     }
     @Override
-    public int deleteExecute(Long execute_id ){
+    public int deleteExecute(String execute_id ){
         if(null==execute_id){
             LOGGER.error("必要参数为空! [execute_id]:{}",execute_id);
             return 0;

@@ -834,8 +834,20 @@ public final class JobStoreSupport implements JobStore {
         Connection conn =  null ;
         try{
             conn = getConnection();
-            return getDelegate().updateAppState(conn,application,state);
+            conn.setAutoCommit(false);
+            int ct=0;
+            if( (ct=getDelegate().updateAppState(conn,application,state))<1 || getDelegate().updateNodeStateBatch(conn,application,state)<1 ){
+                conn.rollback();
+            }
+            return ct;
         }catch (Exception e){
+            if( null!=conn ){
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+
+                }
+            }
             e.printStackTrace();
         }finally {
             closeConnection(conn);
@@ -869,6 +881,19 @@ public final class JobStoreSupport implements JobStore {
         return Boolean.FALSE;
     }
     @Override
+    public boolean containsNode(String application){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().containsNode(conn,application);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return Boolean.FALSE;
+    }
+    @Override
     public int deleteNode(String application,String hostIP){
         Connection conn =  null ;
         try{
@@ -894,6 +919,20 @@ public final class JobStoreSupport implements JobStore {
         }
         return 0;
     }
+    @Override
+    public int updateNode(QrtzNode qrtzNode){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().updateNode(conn,qrtzNode);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+
     @Override
     public int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode){
         Connection conn =  null ;
@@ -976,6 +1015,20 @@ public final class JobStoreSupport implements JobStore {
         return 0;
     }
     @Override
+    public boolean containsExecute(Long job_id){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            // 先查询execute，如果有execute存在则不可删除
+            return getDelegate().containsExecute(conn,job_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return Boolean.FALSE;
+    }
+    @Override
     public int updateExecuteStateByJobId(Long job_id,String state) {
         Connection conn =  null ;
         try{
@@ -1018,7 +1071,7 @@ public final class JobStoreSupport implements JobStore {
         return 0;
     }
     @Override
-    public int deleteExecute(Long execute_id ){
+    public int deleteExecute(String execute_id ){
         Connection conn =  null ;
         try{
             conn = getConnection();
