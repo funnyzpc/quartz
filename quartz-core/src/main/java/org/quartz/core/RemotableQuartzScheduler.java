@@ -25,6 +25,10 @@ import java.util.List;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.SchedulerException;
+import org.quartz.impl.QrtzApp;
+import org.quartz.impl.QrtzExecute;
+import org.quartz.impl.QrtzJob;
+import org.quartz.impl.QrtzNode;
 
 /**
  * @author James House
@@ -122,39 +126,58 @@ public interface RemotableQuartzScheduler extends Remote {
 
     void resumeAll() throws SchedulerException, RemoteException;
 
-//    List<String> getJobGroupNames() throws SchedulerException, RemoteException;
+    // ================= client api ================
 
-//    Set<JobKey> getJobKeys(GroupMatcher<JobKey> matcher) throws SchedulerException, RemoteException;
-//
-//    List<? extends Trigger> getTriggersOfJob(Key jobKey) throws SchedulerException, RemoteException;
+    String[] getDBInfo();
+    List<QrtzApp> getAllApp();
+    QrtzApp getAppByApplication(String application);
+    List<QrtzNode> getNodeByApp(String application);
+    // 根据job_id获取job信息
+    QrtzJob getJobByJobId(String job_id);
+    // 根据job_id获取job下所有execute信息
+    QrtzExecute getExecuteByExecuteId(String execute_id);
+    // 根据job_id获取job下所有execute信息
+    List<QrtzExecute> getExecuteByJobId(String job_id);
+    // 根据job_id获取job下所有execute信息
+    QrtzJob getJobInAllByJobId(String job_id);
+    // 根据execute_id获取execute及job信息
+    QrtzExecute getExecuteInAllByExecuteId(String execute_id);
 
-//    List<String> getTriggerGroupNames() throws SchedulerException, RemoteException;
+    // 添加应用
+    int addApp(QrtzApp qrtzApp);
+    // 删除应用
+    int deleteApp(String application);
+    // 暂停/启动应用
+    int updateAppState(String application,String state);
 
-//    Set<TriggerKey> getTriggerKeys(GroupMatcher<TriggerKey> matcher) throws SchedulerException, RemoteException;
+    // 添加节点
+    int addNode(QrtzNode qrtzNode);
+    boolean containsNode(String application ,String hostIP);
+    boolean containsNode(String application);
+    // 删除节点
+    int deleteNode(String application,String hostIP);
+    // 暂停节点
+    int updateNodeState(QrtzNode qrtzNode);
+    int updateNode(QrtzNode qrtzNode);
 
-//    JobDetail getJobDetail(Key jobKey) throws SchedulerException, RemoteException;
+    // 添加应用及节点
+    int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode);
 
-//    Trigger getTrigger(Key triggerKey) throws SchedulerException, RemoteException;
-//
-//    void resetTriggerFromErrorState(TriggerKey triggerKey) throws SchedulerException, RemoteException;
-//
-//    void addCalendar(String calName, Calendar calendar, boolean replace, boolean updateTriggers) throws SchedulerException, RemoteException;
-//
-//    boolean deleteCalendar(String calName) throws SchedulerException, RemoteException;
-//
-//    Calendar getCalendar(String calName) throws SchedulerException, RemoteException;
-//
-//    List<String> getCalendarNames() throws SchedulerException, RemoteException;
-//
-//    boolean interrupt(Key jobKey) throws UnableToInterruptJobException,RemoteException;
-//
-//    boolean interrupt(String fireInstanceId) throws UnableToInterruptJobException,RemoteException;
-//    boolean deleteJobs(List<Key> jobKeys) throws SchedulerException,RemoteException;
+    int addJob(QrtzJob qrtzJob) throws SchedulerException, RemoteException;
+    int updateJob(QrtzJob qrtzJob) throws SchedulerException, RemoteException;
+    int deleteJob(String job_id) ;
+    //    int findQrtzExecuteCountById(Long job_id);
+    boolean containsExecute(String job_id);
+    // 暂停指定job下的所有execute
+    int updateJobState(String job_id, String state);
+    // 暂停指定execute
+    int updateExecuteState(String execute_id, String state);
 
-//    void scheduleJobs(Map<JobDetail, Set<? extends Trigger>> triggersAndJobs, boolean replace) throws SchedulerException,RemoteException;
-
-//    void scheduleJob(JobDetail jobDetail, Set<? extends Trigger> triggersForJob, boolean replace) throws SchedulerException,RemoteException;
-
-//    boolean unscheduleJobs(List<Key> keys) throws SchedulerException,RemoteException;
+    // 添加execute
+    int addExecute(QrtzExecute qrtzExecute);
+    // 删除execute
+    int deleteExecute(String execute_id );
+    // 修改执行项
+    int updateExecute(QrtzExecute qrtzExecute);
     
 }

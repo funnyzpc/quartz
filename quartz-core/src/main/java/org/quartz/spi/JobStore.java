@@ -22,7 +22,10 @@ import java.util.List;
 import org.quartz.JobPersistenceException;
 import org.quartz.SchedulerConfigException;
 import org.quartz.SchedulerException;
+import org.quartz.impl.QrtzApp;
 import org.quartz.impl.QrtzExecute;
+import org.quartz.impl.QrtzJob;
+import org.quartz.impl.QrtzNode;
 
 /**
  * <p>
@@ -618,5 +621,59 @@ public interface JobStore {
 //        throw new JobPersistenceException("toLockAndUpdate method is not defined ! "+newCe+" : "+oldState);
         return 0;
     }
+
+
+
+    String[] getDBInfo()  ;
+    List<QrtzApp> getAllApp();
+    QrtzApp getAppByApplication(String application);
+
+    List<QrtzNode> getNodeByApp(String application);
+    // 根据job_id获取job信息
+    QrtzJob getJobByJobId(String job_id);
+    // 根据job_id获取job下所有execute信息
+    QrtzExecute getExecuteByExecuteId( String execute_id);
+    // 根据job_id获取job下所有execute信息
+    List<QrtzExecute> getExecuteByJobId(String job_id);
+    // 根据job_id获取job下所有execute信息
+    QrtzJob getJobInAllByJobId(String job_id);
+    // 根据execute_id获取execute及job信息
+    QrtzExecute getExecuteInAllByExecuteId(String execute_id);
+    // 添加应用
+    int addApp(QrtzApp qrtzApp);
+    // 删除应用
+    int deleteApp(String application);
+    // 暂停/启动应用
+    int updateAppState(String application,String state);
+    // 添加节点
+    int addNode(QrtzNode qrtzNode);
+    boolean containsNode(String application ,String hostIP);
+    boolean containsNode(String application);
+    // 删除节点
+    int deleteNode(String application,String hostIP);
+    // 暂停节点
+    int updateNodeState(QrtzNode qrtzNode);
+    int updateNode(QrtzNode qrtzNode);
+
+    // 添加应用及节点
+    int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode);
+
+    int addJob(QrtzJob qrtzJob) ;
+    int updateJob(QrtzJob qrtzJob) ;
+    int deleteJob(String job_id) ;
+    //    int findQrtzExecuteCountById(Long job_id);
+    boolean containsExecute(String job_id);
+
+    // 暂停指定job下的所有execute
+    int updateJobState(String job_id, String state);
+    // 暂停指定execute
+    int updateExecuteState(String execute_id, String state);
+
+    // 添加execute
+    int addExecute(QrtzExecute qrtzExecute);
+    // 删除execute
+    int deleteExecute(String execute_id );
+
+    int updateExecute(QrtzExecute qrtzExecute);
 
 }

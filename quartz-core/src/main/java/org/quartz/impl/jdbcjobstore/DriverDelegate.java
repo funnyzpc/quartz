@@ -18,19 +18,13 @@
 package org.quartz.impl.jdbcjobstore;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
-import org.quartz.Job;
-import org.quartz.JobPersistenceException;
-import org.quartz.Trigger;
 import org.quartz.impl.QrtzApp;
 import org.quartz.impl.QrtzExecute;
 import org.quartz.impl.QrtzJob;
 import org.quartz.impl.QrtzNode;
 import org.quartz.spi.ClassLoadHelper;
-import org.quartz.utils.Key;
 import org.slf4j.Logger;
 
 /**
@@ -635,7 +629,7 @@ public interface DriverDelegate {
 
     // 写入 qrtz_node 节点信息
     int insertQrtzNode(Connection conn, QrtzNode node);
-    QrtzApp findQrtzAppByApp(Connection conn,String application);
+//    QrtzApp findQrtzAppByApp(Connection conn,String application);
 
     // 清理历史数据
     void clearHistoryData(Connection conn,Long timeLimit);
@@ -659,13 +653,72 @@ public interface DriverDelegate {
 
     int updateRecoverJob(Connection conn, QrtzJob job);
 
-    List<QrtzExecute> findAllQrtzExecuteByPID(Connection conn, Long id);
+//    List<QrtzExecute> findAllQrtzExecuteByPID(Connection conn, Long id);
 
     String findNodeStateByPK(Connection conn,String application, String hostIP);
 
     List<QrtzExecute> selectExecuteAndJobToAcquire(Connection conn, String application, long _tsw,long _tew,String state);
 
     int toLockAndUpdate(Connection conn, QrtzExecute newCe, String oldState, long oldPrevTime, long oldNextTime);
+
+
+
+    String[] getDBInfo(Connection conn);
+
+    /*********** 任务操作 ***************/
+    // 获取所有应用(不含节点)
+    List<QrtzApp> getAllApp(Connection conn);
+    QrtzApp getAppByApplication(Connection conn,String application);
+    // 根据应用查询应用下所有节点
+    List<QrtzNode> getNodeByApp(Connection conn,String application);
+    // 根据job_id获取job信息
+    QrtzJob getJobByJobId(Connection conn,String job_id);
+    // 根据job_id获取job下所有execute信息
+    QrtzExecute getExecuteByExecuteId(Connection conn,String execute_id);
+    List<QrtzExecute> getExecuteByJobId(Connection conn,String job_id);
+    // 根据job_id获取job下所有execute信息
+    QrtzJob getJobInAllByJobId(Connection conn,String job_id);
+    // 根据execute_id获取execute及job信息
+    QrtzExecute getExecuteInAllByExecuteId(Connection conn,String execute_id);
+
+    // 添加应用
+    int addApp(Connection conn,QrtzApp qrtzApp);
+    // 删除应用
+    int deleteApp(Connection conn,String application);
+    // 暂停/启动应用
+    int updateAppState(Connection conn,String application,String state);
+
+    // 添加节点
+    int addNode(Connection conn,QrtzNode qrtzNode);
+    boolean containsNode(Connection conn,String application ,String hostIP);
+    boolean containsNode(Connection conn,String application);
+    // 删除节点
+    int deleteNode(Connection conn,String application,String hostIP);
+    // 暂停节点
+    int updateNodeState(Connection conn,QrtzNode qrtzNode);
+    int updateNode(Connection conn,QrtzNode qrtzNode);
+    int updateNodeStateBatch(Connection conn,String application,String state);
+
+    // 添加应用及节点
+    int addAppAndNode(Connection conn,QrtzApp qrtzApp, QrtzNode qrtzNode);
+
+    int addJob(Connection conn, QrtzJob qrtzJob);
+    int updateJob(Connection conn, QrtzJob qrtzJob);
+    int deleteJob(Connection conn,String job_id);
+    // 暂停指定job下的所有execute
+    int updateJobState(Connection conn,String job_id, String state);
+    // 暂停指定execute
+    int updateExecuteState(Connection conn, String execute_id, String state);
+    // 添加execute
+    int addExecute(Connection conn,QrtzExecute qrtzExecute);
+    // 删除execute
+    int deleteExecute(Connection conn,String execute_id );
+    //    int findQrtzExecuteCountById(Connection conn, Long job_id);
+    // 是否存在execute
+    boolean containsExecute(Connection conn,String job_id);
+    // 更新执行项
+    int updateExecute(Connection conn, QrtzExecute qrtzExecute);
+
 
 }
 

@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -410,29 +409,27 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
     ///////////////////////////////////////////////////////////////////////////
 
 
-    /**
-     * <p>
-     * Pause all triggers - equivalent of calling <code>pauseTriggers(GroupMatcher<TriggerKey>)</code>
-     * with a matcher matching all known groups.
-     * </p>
-     * 
-     * <p>
-     * When <code>resumeAll()</code> is called (to un-pause), trigger misfire
-     * instructions WILL be applied.
-     * </p>
-     * 
-     * @see #resumeAll()
-//     * @see #pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
-     * @see #standby()
-     */
-    public void pauseAll() throws SchedulerException {
-        validateState();
-//        resources.getJobStore().pauseAll();
-//        // 發送郵件消息
-//        notifySchedulerListenersPausedTriggers(null);
-    }
-
-
+//    /**
+//     * <p>
+//     * Pause all triggers - equivalent of calling <code>pauseTriggers(GroupMatcher<TriggerKey>)</code>
+//     * with a matcher matching all known groups.
+//     * </p>
+//     *
+//     * <p>
+//     * When <code>resumeAll()</code> is called (to un-pause), trigger misfire
+//     * instructions WILL be applied.
+//     * </p>
+//     *
+//     * @see #resumeAll()
+////     * @see #pauseTriggers(org.quartz.impl.matchers.GroupMatcher)
+//     * @see #standby()
+//     */
+//    public void pauseAll() throws SchedulerException {
+//        validateState();
+////        resources.getJobStore().pauseAll();
+////        // 發送郵件消息
+////        notifySchedulerListenersPausedTriggers(null);
+//    }
 
     @Override
     public String[] getDBInfo() {
@@ -521,24 +518,24 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         return resources.getJobStore().updateJob(qrtzJob);
     }
     @Override
-    public int deleteJob(Long job_id) {
+    public int deleteJob(final String job_id) {
         return resources.getJobStore().deleteJob(job_id);
     }
+//    @Override
+//    public int findQrtzExecuteCountById(Long job_id){
+//        return resources.getJobStore().findQrtzExecuteCountById(job_id);
+//    }
     @Override
-    public int findQrtzExecuteCountById(Long job_id){
-        return resources.getJobStore().findQrtzExecuteCountById(job_id);
-    }
-    @Override
-    public boolean containsExecute(Long job_id){
+    public boolean containsExecute(String job_id){
         return resources.getJobStore().containsExecute(job_id);
     }
     @Override
-    public int updateExecuteStateByJobId(Long job_id,String state){
-        return resources.getJobStore().updateExecuteStateByJobId(job_id,state);
+    public int updateJobState(String job_id, String state){
+        return resources.getJobStore().updateJobState(job_id,state);
     }
     @Override
-    public int updateExecuteStateByExecuteId( Long execute_id,String state){
-        return resources.getJobStore().updateExecuteStateByExecuteId(execute_id,state);
+    public int updateExecuteState(String execute_id, String state){
+        return resources.getJobStore().updateExecuteState(execute_id,state);
     }
     @Override
     public int addExecute(QrtzExecute qrtzExecute){
@@ -549,8 +546,10 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         return resources.getJobStore().deleteExecute(execute_id);
     }
 
-
-
+    @Override
+    public int updateExecute(QrtzExecute qrtzExecute) {
+        return resources.getJobStore().updateExecute(qrtzExecute);
+    }
 }
 
 

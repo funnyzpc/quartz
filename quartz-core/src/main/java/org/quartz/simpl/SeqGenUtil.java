@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author shadow
  * @description 序列生成器
  */
-public class SeqGenUtil {
+public final class SeqGenUtil {
     private static final Logger LOG = LoggerFactory.getLogger(SeqGenUtil.class);
     private static final AtomicInteger IT = new AtomicInteger(1000);
     private static final DateTimeFormatter DATE_SHORT_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");

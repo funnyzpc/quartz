@@ -56,7 +56,7 @@
 <!--    <module>quartz-weblogic</module>    -->
 <!--    <module>quartz-jobs</module> -->
 <!--    <module>quartz-plugins</module>-->
-    <module>quartz-springboot</module>
+    <module>quartz-core-test</module>
       <module>quartz-client</module>
     <module>quartz-client-test</module>
     <!--    <module>quartz</module>-->

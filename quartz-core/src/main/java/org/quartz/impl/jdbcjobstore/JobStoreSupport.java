@@ -920,7 +920,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                         final QrtzJob job = item.getJob();
                         for( int i =0;i<dateList.size();i++ ){
                             Date date = dateList.get(i);
-                            QrtzExecute _execute = new QrtzExecute(
+                            QrtzExecute _execute = QrtzExecute.build(
                                     item.getId(),
                                     item.getPid(),
                                     /*item.getExecuteIdx(),*/
@@ -1065,15 +1065,15 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
 //    protected boolean firstCheckIn = true;
 
 //    protected long lastCheckin = System.currentTimeMillis();
-
-
-    protected void logWarnIfNonZero(int val, String warning) {
-        if (val > 0) {
-            getLog().info(warning);
-        } else {
-            getLog().debug(warning);
-        }
-    }
+//
+//
+//    protected void logWarnIfNonZero(int val, String warning) {
+//        if (val > 0) {
+//            getLog().info(warning);
+//        } else {
+//            getLog().debug(warning);
+//        }
+//    }
 
     /**
      * <p>
@@ -1174,6 +1174,422 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
         }
     }
 
+    @Override
+    public String[] getDBInfo() {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().getDBInfo(conn);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return null;
+    }
+    @Override
+    public List<QrtzApp> getAllApp() {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().getAllApp(conn);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return null;
+    }
+    @Override
+    public QrtzApp getAppByApplication( String application){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().getAppByApplication(conn,application);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return null;
+    }
+    @Override
+    public List<QrtzNode> getNodeByApp(String application) {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().getNodeByApp(conn,application);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return null;
+    }
+    @Override
+    public QrtzJob getJobByJobId(String job_id) {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().getJobByJobId(conn,job_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return null;
+    }
+    @Override
+    public QrtzExecute getExecuteByExecuteId( String execute_id) {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().getExecuteByExecuteId(conn,execute_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return null;
+    }
+    @Override
+    public List<QrtzExecute> getExecuteByJobId(String job_id){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().getExecuteByJobId(conn,job_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return null;
+    }
+    @Override
+    public QrtzJob getJobInAllByJobId(String job_id){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().getJobInAllByJobId(conn,job_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return null;
+    }
+    @Override
+    public QrtzExecute getExecuteInAllByExecuteId(String execute_id){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().getExecuteInAllByExecuteId(conn,execute_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return null;
+    }
+    @Override
+    public int addApp(QrtzApp qrtzApp){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().addApp(conn,qrtzApp);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int deleteApp(String application){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().deleteApp(conn,application);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int updateAppState(String application,String state){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            conn.setAutoCommit(false);
+            int ct=0;
+            if( (ct=getDelegate().updateAppState(conn,application,state))<1 || getDelegate().updateNodeStateBatch(conn,application,state)<1 ){
+                conn.rollback();
+            }
+            return ct;
+        }catch (Exception e){
+            if( null!=conn ){
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+
+                }
+            }
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int addNode(QrtzNode qrtzNode){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().addNode(conn,qrtzNode);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public boolean containsNode(String application ,String hostIP){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().containsNode(conn,application,hostIP);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return Boolean.FALSE;
+    }
+    @Override
+    public boolean containsNode(String application){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().containsNode(conn,application);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return Boolean.FALSE;
+    }
+    @Override
+    public int deleteNode(String application,String hostIP){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().deleteNode(conn,application,hostIP);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int updateNodeState(QrtzNode qrtzNode){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().updateNodeState(conn,qrtzNode);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int updateNode(QrtzNode qrtzNode){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().updateNode(conn,qrtzNode);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+
+    @Override
+    public int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            conn.setAutoCommit(false);
+            int ct = getDelegate().addAppAndNode(conn,qrtzApp,qrtzNode);
+            if( ct==0){
+                conn.rollback();
+            }else{
+                conn.commit();
+            }
+            return ct;
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+
+
+    ///////////////////////////////////////////////////
+    @Override
+    public int addJob(final QrtzJob qrtzJob)   {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().addJob(conn,qrtzJob);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateJob(final QrtzJob qrtzJob)   {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            return getDelegate().updateJob(conn,qrtzJob);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int deleteJob(final String job_id)   {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            // 先查询execute，如果有execute存在则不可删除
+//            if(getDelegate().findQrtzExecuteCountById(conn,job_id)>0){
+            if(getDelegate().containsExecute(conn,job_id)){
+                throw new SchedulerException("存在execute记录，请先移除后再行删除job!");
+            }
+            return getDelegate().deleteJob(conn,job_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    //    @Override
+//    public int findQrtzExecuteCountById(Long job_id){
+//        Connection conn =  null ;
+//        try{
+//            conn = getConnection();
+//            // 先查询execute，如果有execute存在则不可删除
+//            return getDelegate().findQrtzExecuteCountById(conn,job_id);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }finally {
+//            closeConnection(conn);
+//        }
+//        return 0;
+//    }
+    @Override
+    public boolean containsExecute(String job_id){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            // 先查询execute，如果有execute存在则不可删除
+            return getDelegate().containsExecute(conn,job_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return Boolean.FALSE;
+    }
+    @Override
+    public int updateJobState(String job_id, String state) {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            // EXECUTING,PAUSED,COMPLETE,ERROR,INIT
+            // 先查询execute，如果有execute存在则不可删除
+            return getDelegate().updateJobState(conn,job_id,state);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int updateExecuteState(String execute_id, String state) {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            // EXECUTING,PAUSED,COMPLETE,ERROR,INIT
+            // 先查询execute，如果有execute存在则不可删除
+            return getDelegate().updateExecuteState(conn,execute_id,state);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int addExecute(QrtzExecute qrtzExecute) {
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            // 先查询execute，如果有execute存在则不可删除
+            return getDelegate().addExecute(conn,qrtzExecute);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int deleteExecute(String execute_id ){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            // 先查询execute，如果有execute存在则不可删除
+            return getDelegate().deleteExecute(conn,execute_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int updateExecute(QrtzExecute qrtzExecute){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            // 先查询execute，如果有execute存在则不可删除
+            return getDelegate().updateExecute(conn,qrtzExecute);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+
     /////////////////////////////////////////////////////////////////////////////
     //
     // ClusterManager Thread 群集管理器线程
@@ -1219,7 +1635,8 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                       conn = getNonManagedTXConnection();
 //                      conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 //                      conn.setAutoCommit(true);
-                      QrtzApp app = getDelegate().findQrtzAppByApp(conn, getInstanceName());
+//                      QrtzApp app = getDelegate().findQrtzAppByApp(conn, getInstanceName());
+                      QrtzApp app = getDelegate().getAppByApplication(conn, getInstanceName());
                       // 由于状态可能存在不一致 app:state ~ node:state
 //                      if( null==app || (app.getTimeNext()-4)>_start /*|| "N".equals(app.getState())*/){
                       if( null==app /*|| "N".equals(app.getState())*/){
@@ -1331,7 +1748,8 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                 conn = getNonManagedTXConnection();
                 List<QrtzJob> jobs = getDelegate().findQrtzJobByAppForRecover(conn,applicaton);
                 for(QrtzJob job:jobs){
-                    List<QrtzExecute> executes = getDelegate().findAllQrtzExecuteByPID(conn,job.getId());
+//                    List<QrtzExecute> executes = getDelegate().findAllQrtzExecuteByPID(conn,job.getId());
+                    List<QrtzExecute> executes = getDelegate().getExecuteByJobId(conn,job.getId());
                     boolean hasExecuting = false;
                     boolean hasPaused = false;
                     boolean hasError = false;

@@ -200,10 +200,6 @@ public final class JobStoreSupport implements JobStore {
     public void setApplication(String instanceName) {
         this.application = instanceName;
     }
-    @Override
-    public void setThreadPoolSize(final int poolSize) {
-        //
-    }
     
 
     /**
@@ -285,30 +281,6 @@ public final class JobStoreSupport implements JobStore {
     @SuppressWarnings("UnusedDeclaration") /* called reflectively */
     public void setMaxMisfiresToHandleAtATime(int maxToRecoverAtATime) {
         this.maxToRecoverAtATime = maxToRecoverAtATime;
-    }
-
-    /**
-     * <p>
-     * Set whether this instance should use database-based thread
-     * synchronization.
-     * </p>
-     */
-    public void setUseDBLocks(boolean useDBLocks) {
-        this.useDBLocks = useDBLocks;
-    }
-
-    /**
-     * <p>
-     * Get whether this instance should use database-based thread
-     * synchronization.
-     * </p>
-     */
-    public boolean getUseDBLocks() {
-        return useDBLocks;
-    }
-
-    public boolean isLockOnInsert() {
-        return lockOnInsert;
     }
     
     /**
@@ -407,50 +379,6 @@ public final class JobStoreSupport implements JobStore {
         }
     }
 
-//    /**
-//     * 默认15s, 具体可参见配置: org.quartz.scheduler.dbFailureRetryInterval
-//     * @param failureCount the number of successive failures seen so far
-//     * @return
-//     */
-//    @Override
-//    public long getAcquireRetryDelay(int failureCount) {
-//        return dbRetryInterval;
-//    }
-    @Override
-    public String findNodeStateByPK(String application, String hostIP) {
-        Connection conn = null;
-        try {
-            conn = getConnection();
-            return getDelegate().findNodeStateByPK(conn,application,hostIP);
-        }catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }finally {
-            cleanupConnection(conn);
-        }
-    }
-    @Override
-    public int toLockAndUpdate(QrtzExecute newCe, String oldState, long oldPrevTime, long oldNextTime) {
-        Connection conn = null;
-        try {
-            conn = getConnection();
-            int ct = getDelegate().toLockAndUpdate(conn, newCe, oldState, oldPrevTime, oldNextTime);
-//            log.info("写入:{},{}",ct,newCe);
-            return ct;
-        }catch (Exception e){
-            e.printStackTrace();
-            return 0;
-        }finally {
-            try {
-                if (null != conn && !conn.getAutoCommit()) {
-                    conn.commit();
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-            cleanupConnection(conn);
-        }
-    }
 
     //---------------------------------------------------------------------------
     // interface methods
@@ -984,12 +912,13 @@ public final class JobStoreSupport implements JobStore {
         return 0;
     }
     @Override
-    public int deleteJob(final Long job_id)   {
+    public int deleteJob(final String job_id)   {
         Connection conn =  null ;
         try{
             conn = getConnection();
             // 先查询execute，如果有execute存在则不可删除
-            if(getDelegate().findQrtzExecuteCountById(conn,job_id)>0){
+//            if(getDelegate().findQrtzExecuteCountById(conn,job_id)>0){
+            if(getDelegate().containsExecute(conn,job_id)){
                 throw new SchedulerException("存在execute记录，请先移除后再行删除job!");
             }
             return getDelegate().deleteJob(conn,job_id);
@@ -1000,22 +929,22 @@ public final class JobStoreSupport implements JobStore {
         }
         return 0;
     }
+//    @Override
+//    public int findQrtzExecuteCountById(Long job_id){
+//        Connection conn =  null ;
+//        try{
+//            conn = getConnection();
+//            // 先查询execute，如果有execute存在则不可删除
+//            return getDelegate().findQrtzExecuteCountById(conn,job_id);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }finally {
+//            closeConnection(conn);
+//        }
+//        return 0;
+//    }
     @Override
-    public int findQrtzExecuteCountById(Long job_id){
-        Connection conn =  null ;
-        try{
-            conn = getConnection();
-            // 先查询execute，如果有execute存在则不可删除
-            return getDelegate().findQrtzExecuteCountById(conn,job_id);
-        }catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            closeConnection(conn);
-        }
-        return 0;
-    }
-    @Override
-    public boolean containsExecute(Long job_id){
+    public boolean containsExecute(String job_id){
         Connection conn =  null ;
         try{
             conn = getConnection();
@@ -1029,12 +958,13 @@ public final class JobStoreSupport implements JobStore {
         return Boolean.FALSE;
     }
     @Override
-    public int updateExecuteStateByJobId(Long job_id,String state) {
+    public int updateJobState(String job_id, String state) {
         Connection conn =  null ;
         try{
             conn = getConnection();
+            // EXECUTING,PAUSED,COMPLETE,ERROR,INIT
             // 先查询execute，如果有execute存在则不可删除
-            return getDelegate().updateExecuteStateByJobId(conn,job_id,state);
+            return getDelegate().updateJobState(conn,job_id,state);
         }catch (Exception e){
             e.printStackTrace();
         }finally {
@@ -1043,12 +973,13 @@ public final class JobStoreSupport implements JobStore {
         return 0;
     }
     @Override
-    public int updateExecuteStateByExecuteId(Long execute_id,String state) {
+    public int updateExecuteState(String execute_id, String state) {
         Connection conn =  null ;
         try{
             conn = getConnection();
+            // EXECUTING,PAUSED,COMPLETE,ERROR,INIT
             // 先查询execute，如果有execute存在则不可删除
-            return getDelegate().updateExecuteStateByExecuteId(conn,execute_id,state);
+            return getDelegate().updateExecuteState(conn,execute_id,state);
         }catch (Exception e){
             e.printStackTrace();
         }finally {
@@ -1077,6 +1008,20 @@ public final class JobStoreSupport implements JobStore {
             conn = getConnection();
             // 先查询execute，如果有execute存在则不可删除
             return getDelegate().deleteExecute(conn,execute_id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            closeConnection(conn);
+        }
+        return 0;
+    }
+    @Override
+    public int updateExecute(QrtzExecute qrtzExecute){
+        Connection conn =  null ;
+        try{
+            conn = getConnection();
+            // 先查询execute，如果有execute存在则不可删除
+            return getDelegate().updateExecute(conn,qrtzExecute);
         }catch (Exception e){
             e.printStackTrace();
         }finally {

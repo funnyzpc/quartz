@@ -96,24 +96,6 @@ public interface JobStore {
     void setApplication(String application);
     String getInstanceName();
 
-    /**
-     * Tells the JobStore the pool size used to execute jobs
-     * @param poolSize amount of threads allocated for job execution
-     * @since 2.0
-     */
-    void setThreadPoolSize(int poolSize);
-
-    default String findNodeStateByPK(String application, String hostIP){
-//        throw new Exception("findNodeStateByPK method is not defined ! "+application+" : "+hostIP);
-        return null;
-    }
-
-    default int toLockAndUpdate(QrtzExecute newCe, String oldState, long oldPrevTime, long oldNextTime){
-//        throw new JobPersistenceException("toLockAndUpdate method is not defined ! "+newCe+" : "+oldState);
-        return 0;
-    }
-
-
     String[] getDBInfo()  ;
     List<QrtzApp> getAllApp();
     QrtzApp getAppByApplication(String application);
@@ -150,18 +132,20 @@ public interface JobStore {
 
     int addJob(QrtzJob qrtzJob) ;
     int updateJob(QrtzJob qrtzJob) ;
-    int deleteJob(Long job_id) ;
-    int findQrtzExecuteCountById(Long job_id);
-    boolean containsExecute(Long job_id);
+    int deleteJob(String job_id) ;
+//    int findQrtzExecuteCountById(Long job_id);
+    boolean containsExecute(String job_id);
 
     // 暂停指定job下的所有execute
-    int updateExecuteStateByJobId(Long job_id,String state);
+    int updateJobState(String job_id, String state);
     // 暂停指定execute
-    int updateExecuteStateByExecuteId(Long execute_id,String state);
+    int updateExecuteState(String execute_id, String state);
 
     // 添加execute
     int addExecute(QrtzExecute qrtzExecute);
     // 删除execute
     int deleteExecute(String execute_id );
+
+    int updateExecute(QrtzExecute qrtzExecute);
 
 }

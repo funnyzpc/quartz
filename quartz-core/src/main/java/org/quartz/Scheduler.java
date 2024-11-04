@@ -21,6 +21,10 @@ package org.quartz;
 import java.util.List;
 
 import org.quartz.core.ListenerManagerImpl;
+import org.quartz.impl.QrtzApp;
+import org.quartz.impl.QrtzExecute;
+import org.quartz.impl.QrtzJob;
+import org.quartz.impl.QrtzNode;
 import org.quartz.spi.JobFactory;
 
 /**
@@ -195,8 +199,9 @@ public interface Scheduler {
 
     /**
      * Returns the name of the <code>Scheduler</code>.
+     * is org.quartz.scheduler.instanceName
      */
-    String getSchedulerName() throws SchedulerException;
+    String getSchedulerName() /*throws SchedulerException*/;
 
 //    /**
 //     * Returns the instance Id of the <code>Scheduler</code>.
@@ -588,36 +593,36 @@ public interface Scheduler {
 //     *
 //     */
 //    void pauseJob(Key key) throws SchedulerException;
-
-    /**
-     * Pause all of the <code>{@link org.quartz.JobDetail}s</code> in the
-     * matching groups - by pausing all of their <code>Trigger</code>s.
-     *
-     * <p>
-     * The Scheduler will "remember" the groups paused, and impose the
-     * pause on any new jobs that are added to any of those groups
-     * until it is resumed.
-     * </p>
-     * 
-     * <p>NOTE: There is a limitation that only exactly matched groups
-     * can be remembered as paused.  For example, if there are pre-existing
-     * job in groups "aaa" and "bbb" and a matcher is given to pause
-     * groups that start with "a" then the group "aaa" will be remembered
-     * as paused and any subsequently added jobs in group "aaa" will be paused,
-     * however if a job is added to group "axx" it will not be paused,
-     * as "axx" wasn't known at the time the "group starts with a" matcher 
-     * was applied.  HOWEVER, if there are pre-existing groups "aaa" and
-     * "bbb" and a matcher is given to pause the group "axx" (with a
-     * group equals matcher) then no jobs will be paused, but it will be 
-     * remembered that group "axx" is paused and later when a job is added 
-     * in that group, it will become paused.</p>
-     *
-     * @param matcher The matcher to evaluate against know groups
-     * @throws SchedulerException On error
-     * @see #resumeJobs(org.quartz.impl.matchers.GroupMatcher)
-     */
-    void pauseJobs(final String triggerName) throws SchedulerException;
-
+//
+//    /**
+//     * Pause all of the <code>{@link org.quartz.JobDetail}s</code> in the
+//     * matching groups - by pausing all of their <code>Trigger</code>s.
+//     *
+//     * <p>
+//     * The Scheduler will "remember" the groups paused, and impose the
+//     * pause on any new jobs that are added to any of those groups
+//     * until it is resumed.
+//     * </p>
+//     *
+//     * <p>NOTE: There is a limitation that only exactly matched groups
+//     * can be remembered as paused.  For example, if there are pre-existing
+//     * job in groups "aaa" and "bbb" and a matcher is given to pause
+//     * groups that start with "a" then the group "aaa" will be remembered
+//     * as paused and any subsequently added jobs in group "aaa" will be paused,
+//     * however if a job is added to group "axx" it will not be paused,
+//     * as "axx" wasn't known at the time the "group starts with a" matcher
+//     * was applied.  HOWEVER, if there are pre-existing groups "aaa" and
+//     * "bbb" and a matcher is given to pause the group "axx" (with a
+//     * group equals matcher) then no jobs will be paused, but it will be
+//     * remembered that group "axx" is paused and later when a job is added
+//     * in that group, it will become paused.</p>
+//     *
+//     * @param matcher The matcher to evaluate against know groups
+//     * @throws SchedulerException On error
+//     * @see #resumeJobs(org.quartz.impl.matchers.GroupMatcher)
+//     */
+//    void pauseJobs(final String triggerName) throws SchedulerException;
+//
 //    /**
 //     * Pause the <code>{@link Trigger}</code> with the given key.
 //     *
@@ -665,22 +670,22 @@ public interface Scheduler {
 //     *
 //     */
 //    void resumeJob(Key key)throws SchedulerException;
-
-    /**
-     * Resume (un-pause) all of the <code>{@link org.quartz.JobDetail}s</code>
-     * in matching groups.
-     * 
-     * <p>
-     * If any of the <code>Job</code> s had <code>Trigger</code> s that
-     * missed one or more fire-times, then the <code>Trigger</code>'s
-     * misfire instruction will be applied.
-     * </p>
-     * 
-     * @param matcher The matcher to evaluate against known paused groups
-     * @throws SchedulerException On error
-     * @see #pauseJobs(GroupMatcher)
-     */
-    void resumeJobs(final String triggerName) throws SchedulerException;
+//
+//    /**
+//     * Resume (un-pause) all of the <code>{@link org.quartz.JobDetail}s</code>
+//     * in matching groups.
+//     *
+//     * <p>
+//     * If any of the <code>Job</code> s had <code>Trigger</code> s that
+//     * missed one or more fire-times, then the <code>Trigger</code>'s
+//     * misfire instruction will be applied.
+//     * </p>
+//     *
+//     * @param matcher The matcher to evaluate against known paused groups
+//     * @throws SchedulerException On error
+//     * @see #pauseJobs(GroupMatcher)
+//     */
+//    void resumeJobs(final String triggerName) throws SchedulerException;
 //
 //    /**
 //     * Resume (un-pause) the <code>{@link Trigger}</code> with the given
@@ -920,6 +925,61 @@ public interface Scheduler {
 //     * @throws SchedulerException
 //     */
 //    void clear() throws SchedulerException;
+
+    // ======================= client api ========================\
+    // 添加任务
+    Object[] addJob(QrtzJob qrtzJob);
+    // 获取db厂商信息
+    String[] getDBInfo() ;
+
+    // 获取所有应用(不含节点)
+    List<QrtzApp> getAllApp();
+    // 根据应用查询应用下所有节点
+    List<QrtzNode> getNodeByApp(String application);
+    // 根据job_id获取job信息
+    QrtzJob getJobByJobId(String job_id);
+    // 根据job_id获取job下所有execute信息
+    QrtzExecute getExecuteByExecuteId(String execute_id);
+    // 根据job_id获取job下所有execute信息
+    List<QrtzExecute> getExecuteByJobId(String job_id);
+    // 根据job_id获取job及其下所有execute信息
+    QrtzJob getJobInAllByJobId(String job_id);
+    // 根据execute_id获取execute及关联的job信息
+    QrtzExecute getExecuteInAllByExecuteId(String execute_id);
+
+    // 添加应用
+    Object[] addApp(QrtzApp qrtzApp);
+    // 删除应用
+    Object[] deleteApp(String application);
+    // 暂停/启动应用
+    int updateAppState(String application,String state);
+
+    // 添加节点
+    Object[] addNode(QrtzNode qrtzNode);
+    // 删除节点
+    int deleteNode(String application,String hostIP);
+    // 暂停/开启节点
+    int updateNodeState(QrtzNode qrtzNode);
+    int updateNode(QrtzNode qrtzNode);
+
+    // 添加应用及节点
+    Object[] addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode);
+    // 更新任务
+    Object[] updateJob(QrtzJob qrtzJob) ;
+    // 删除任务
+    int deleteJob(String job_id) ;
+    // 修改job及其下所有执行项状态 注意:仅可操作为 EXECUTING or PAUSED
+    Object[] updateJobStateInAll(String job_id, String state);
+    // 修改指定job状态
+    int updateJobState(String job_id, String state);
+    // 修改指定execute状态
+    int updateExecuteState(String execute_id, String state);
+    // 添加execute
+    Object[] addExecute(QrtzExecute qrtzExecute);
+    // 删除execute
+    int deleteExecute(String execute_id );
+    // 更新执行项
+    Object[] updateExecute(QrtzExecute qrtzExecute);
 
 
 }

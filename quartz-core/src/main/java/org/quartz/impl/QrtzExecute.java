@@ -20,11 +20,11 @@ public class QrtzExecute implements Serializable {
     /**
      * 主键
      */
-    private Long id;
+    private String id;
     /**
      * 关联任务
      */
-    private Long pid;
+    private String pid;
 //    /**
 //     * 任务执行项编号
 //     */
@@ -99,37 +99,56 @@ public class QrtzExecute implements Serializable {
      * */
     private transient Class<? extends Job> jobClazz;
 
-    public QrtzExecute(Long id,Long pid,/*Integer executeIdx,*/String jobType,String state,String cron,String zoneId,Integer repeatCount,Integer repeatInterval,Integer timeTriggered,Long prevFireTime,Long nextFireTime,String hostIp,String hostName,Long startTime,Long endTime){
-        this.id=id;
-        this.pid=pid;
-        this.jobType=jobType;
-        this.state=state;
-        this.cron=cron;
-        this.zoneId=zoneId;
-        this.repeatCount=repeatCount;
-        this.repeatInterval=repeatInterval;
-        this.timeTriggered=timeTriggered;
-        this.prevFireTime=prevFireTime;
-        this.nextFireTime=nextFireTime;
-        this.hostIp=hostIp;
-        this.hostName=hostName;
-        this.startTime=startTime;
-        this.endTime=endTime;
+//    public QrtzExecute(Long id,Long pid,/*Integer executeIdx,*/String jobType,String state,String cron,String zoneId,Integer repeatCount,Integer repeatInterval,Integer timeTriggered,Long prevFireTime,Long nextFireTime,String hostIp,String hostName,Long startTime,Long endTime){
+//        this.id=id;
+//        this.pid=pid;
+//        this.jobType=jobType;
+//        this.state=state;
+//        this.cron=cron;
+//        this.zoneId=zoneId;
+//        this.repeatCount=repeatCount;
+//        this.repeatInterval=repeatInterval;
+//        this.timeTriggered=timeTriggered;
+//        this.prevFireTime=prevFireTime;
+//        this.nextFireTime=nextFireTime;
+//        this.hostIp=hostIp;
+//        this.hostName=hostName;
+//        this.startTime=startTime;
+//        this.endTime=endTime;
+//    }
+    public static QrtzExecute build(String id,String pid,/*Integer executeIdx,*/String jobType,String state,String cron,String zoneId,Integer repeatCount,Integer repeatInterval,Integer timeTriggered,Long prevFireTime,Long nextFireTime,String hostIp,String hostName,Long startTime,Long endTime){
+        QrtzExecute qrtzExecute = new QrtzExecute();
+        qrtzExecute.setId(id);
+        qrtzExecute.setPid(pid);
+        qrtzExecute.setJobType(jobType);
+        qrtzExecute.setState(state);
+        qrtzExecute.setCron(cron);
+        qrtzExecute.setZoneId(zoneId);
+        qrtzExecute.setRepeatCount(repeatCount);
+        qrtzExecute.setRepeatInterval(repeatInterval);
+        qrtzExecute.setTimeTriggered(timeTriggered);
+        qrtzExecute.setPrevFireTime(prevFireTime);
+        qrtzExecute.setNextFireTime(nextFireTime);
+        qrtzExecute.setHostIp(hostIp);
+        qrtzExecute.setHostName(hostName);
+        qrtzExecute.setStartTime(startTime);
+        qrtzExecute.setEndTime(endTime);
+        return qrtzExecute;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public Long getPid() {
+    public String getPid() {
         return pid;
     }
 
-    public void setPid(Long pid) {
+    public void setPid(String pid) {
         this.pid = pid;
     }
 

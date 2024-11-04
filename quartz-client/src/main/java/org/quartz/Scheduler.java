@@ -126,14 +126,14 @@ public interface Scheduler {
     QrtzExecute getExecuteInAllByExecuteId(String execute_id);
 
     // 添加应用
-    int addApp(QrtzApp qrtzApp);
+    Object[] addApp(QrtzApp qrtzApp);
     // 删除应用
-    int deleteApp(String application);
+    Object[] deleteApp(String application);
     // 暂停/启动应用
     int updateAppState(String application,String state);
 
     // 添加节点
-    int addNode(QrtzNode qrtzNode);
+    Object[] addNode(QrtzNode qrtzNode);
     // 删除节点
     int deleteNode(String application,String hostIP);
     // 暂停/开启节点
@@ -141,22 +141,26 @@ public interface Scheduler {
     int updateNode(QrtzNode qrtzNode);
 
     // 添加应用及节点
-    int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode);
+    Object[] addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode);
 
     // 添加任务
-    int addJob(QrtzJob qrtzJob) ;
+    Object[] addJob(QrtzJob qrtzJob) ;
     // 更新任务
-    int updateJob(QrtzJob qrtzJob) ;
+    Object[] updateJob(QrtzJob qrtzJob) ;
     // 删除任务
-    int deleteJob(Long job_id) ;
-    // 暂停指定job下的所有execute
-    int updateExecuteStateByJobId(Long job_id,String state);
-    // 暂停指定execute
-    int updateExecuteStateByExecuteId(Long execute_id,String state);
+    int deleteJob(String job_id) ;
+    // 修改job及其下所有执行项状态 注意:仅可操作为 EXECUTING or PAUSED
+    Object[] updateJobStateInAll(String job_id, String state);
+    // 修改指定job状态
+    int updateJobState(String job_id, String state);
+    // 修改指定execute状态
+    int updateExecuteState(String execute_id, String state);
     // 添加execute
-    int addExecute(QrtzExecute qrtzExecute);
+    Object[] addExecute(QrtzExecute qrtzExecute);
     // 删除execute
     int deleteExecute(String execute_id );
+    // 更新执行项
+    Object[] updateExecute(QrtzExecute qrtzExecute);
 
 
 }

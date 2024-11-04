@@ -1,19 +1,32 @@
 
+-- cron
+STATE=?
+CRON=?
+ZONE_ID=?
+-- REPEAT_COUNT =?
+-- REPEAT_INTERVAL =?
+PREV_FIRE_TIME=?
+NEXT_FIRE_TIME =?
+HOST_IP =?
+HOST_NAME =?
+START_TIME =?
+END_TIME =?
+
+WHERE ID = ? AND PID=?
+
+-- SIMPLE
+STATE=?
+-- CRON=?
+-- ZONE_ID=?
+REPEAT_COUNT =?
+REPEAT_INTERVAL =?
+PREV_FIRE_TIME=?
+NEXT_FIRE_TIME =?
+HOST_IP =?
+HOST_NAME =?
+START_TIME =?
+END_TIME =?
 
 
-item.getId(),
-item.getPid(),
-item.getExecuteIdx(),
-item.getJobType(),
-item.getState(),
-item.getCron(),
-item.getZoneId(),
-item.getRepeatCount(),
-item.getRepeatInterval(),
-item.getTimeTriggered(),
-item.getPrevFireTime(),
-item.getNextFireTime(),
-item.getHostIp(),
-item.getHostName(),
-item.getStartTime(),
-item.getEndTime(),
+WHERE ID = ? AND PID=?
+

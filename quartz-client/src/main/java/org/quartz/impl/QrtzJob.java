@@ -18,7 +18,7 @@ public class QrtzJob implements Serializable {
     /**
      * 主键
      */
-    private Long id;
+    private String id;
     /**
      * 调度名称
      */
@@ -54,7 +54,7 @@ public class QrtzJob implements Serializable {
     public QrtzJob() {
     }
 
-    public QrtzJob(Long id, String application, String state, /*Integer jobIdx,*/ String jobClass, String jobData, String jobDescription, Long updateTime) {
+    public QrtzJob(String id, String application, String state, /*Integer jobIdx,*/ String jobClass, String jobData, String jobDescription, Long updateTime) {
         this.id = id;
         this.application = application;
         this.state = state;
@@ -65,11 +65,11 @@ public class QrtzJob implements Serializable {
         this.updateTime = updateTime;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

@@ -517,7 +517,8 @@ public class QuartzSchedulerThread extends Thread {
         long old_next_time = ce.getNextFireTime();
         final String old_state = ce.getState();
         Date nextFireTime = new Date(ce.getNextFireTime());
-        QrtzExecute newCe = new QrtzExecute(ce.getId(),ce.getPid(),ce.getJobType(),ce.getState(),ce.getCron(),ce.getZoneId(),ce.getRepeatCount(),ce.getRepeatInterval(),ce.getTimeTriggered(),ce.getPrevFireTime(),ce.getNextFireTime(),ce.getHostIp(),ce.getHostName(),ce.getStartTime(),ce.getEndTime());
+//        QrtzExecute newCe = new QrtzExecute(ce.getId(),ce.getPid(),ce.getJobType(),ce.getState(),ce.getCron(),ce.getZoneId(),ce.getRepeatCount(),ce.getRepeatInterval(),ce.getTimeTriggered(),ce.getPrevFireTime(),ce.getNextFireTime(),ce.getHostIp(),ce.getHostName(),ce.getStartTime(),ce.getEndTime());
+        QrtzExecute newCe = QrtzExecute.build(ce.getId(),ce.getPid(),ce.getJobType(),ce.getState(),ce.getCron(),ce.getZoneId(),ce.getRepeatCount(),ce.getRepeatInterval(),ce.getTimeTriggered(),ce.getPrevFireTime(),ce.getNextFireTime(),ce.getHostIp(),ce.getHostName(),ce.getStartTime(),ce.getEndTime());
         try {
             if ("CRON".equals(jobType)) {
                 CronTriggerImpl cronTrigger = new CronTriggerImpl()

@@ -26,7 +26,6 @@ import org.quartz.impl.QrtzNode;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
 
@@ -131,18 +130,18 @@ public interface RemotableQuartzScheduler extends Remote {
 
     int addJob(QrtzJob qrtzJob) throws SchedulerException, RemoteException;
     int updateJob(QrtzJob qrtzJob) throws SchedulerException, RemoteException;
-    int deleteJob(Long job_id) ;
-    int findQrtzExecuteCountById(Long job_id);
-    boolean containsExecute(Long job_id);
+    int deleteJob(String job_id) ;
+//    int findQrtzExecuteCountById(Long job_id);
+    boolean containsExecute(String job_id);
     // 暂停指定job下的所有execute
-    int updateExecuteStateByJobId(Long job_id,String state);
+    int updateJobState(String job_id, String state);
     // 暂停指定execute
-    int updateExecuteStateByExecuteId( Long execute_id,String state);
+    int updateExecuteState(String execute_id, String state);
 
     // 添加execute
     int addExecute(QrtzExecute qrtzExecute);
     // 删除execute
     int deleteExecute(String execute_id );
-
-    
+    // 修改执行项
+    int updateExecute(QrtzExecute qrtzExecute);
 }

@@ -82,8 +82,8 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
 
     private final String jobType;
     private final String keyNote;
-    private final Long jobId;
-    private final Long executeId;
+    private final String jobId;
+    private final String executeId;
     private final String jobClassName;
 
     /*
@@ -366,12 +366,12 @@ public class JobExecutionContextImpl implements java.io.Serializable, JobExecuti
         return keyNote;
     }
     @Override
-    public Long getJobId() {
+    public String getJobId() {
         return jobId;
     }
     @Override
-    public Long getExecuteId() {
-        return executeId;
+    public String getExecuteId() {
+        return this.executeId;
     }
     @Override
     public String getJobClassName(){

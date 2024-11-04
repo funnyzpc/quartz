@@ -18,7 +18,6 @@
 package org.quartz.impl;
 
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.quartz.core.QuartzScheduler;
 import org.quartz.impl.triggers.CronTriggerImpl;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
@@ -58,7 +57,7 @@ public class StdScheduler implements Scheduler {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    private QuartzScheduler sched;
+    private final QuartzScheduler sched;
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -138,18 +137,18 @@ public class StdScheduler implements Scheduler {
         return sched.getExecuteInAllByExecuteId(execute_id);
     }
     @Override
-    public int addApp(QrtzApp qrtzApp){
+    public Object[] addApp(QrtzApp qrtzApp){
         String state ;
         if( null==qrtzApp || null==qrtzApp.getApplication() ||"".equals(qrtzApp.getApplication())
             || null==(state=qrtzApp.getState()) || (!"N".equals(state) && !"Y".equals(state))
             /*|| null==qrtzApp.getTimePre() || null==qrtzApp.getTimeNext() || null== qrtzApp.getTimeInterval()*/){
             LOGGER.error("必要参数为空或异常! [qrtzApp] {}",qrtzApp);
-            return 0;
+            return new Object[]{0,"必要参数为空或异常"};
         }
         final String application = qrtzApp.getApplication();
         if(this.sched.getAppByApplication(application)!=null){
             LOGGER.error("相关记录已经存在! [qrtzApp(application)] {}",qrtzApp);
-            return 0;
+            return new Object[]{0,"相关记录已经存在"};
         }
         if(null==qrtzApp.getTimePre()){
             qrtzApp.setTimePre(-1L);
@@ -160,20 +159,22 @@ public class StdScheduler implements Scheduler {
         if(null==qrtzApp.getTimeInterval()){
             qrtzApp.setTimeInterval(15000L); // 15S
         }
-        return sched.addApp(qrtzApp);
+        int insertCount = sched.addApp(qrtzApp);
+        return new Object[]{insertCount,null};
     }
     @Override
-    public int deleteApp(String application){
+    public Object[] deleteApp(String application){
         if(null==application || "".equals(application=application.trim())){
             LOGGER.error("必要参数为空! [application]: {}",application);
-            return 0;
+            return new Object[]{0,"必要参数为空!"};
         }
         // 如果有node则必须先删除node
         if(sched.containsNode(application)){
             LOGGER.error("存在node，请先移除node后再行删除! [application]: {}",application);
-            return 0;
+            return new Object[]{0,"存在node，请先移除node后再行删除!"};
         }
-        return sched.deleteApp(application);
+        int deleteCount = sched.deleteApp(application);
+        return new Object[]{deleteCount,null};
     }
     @Override
     public int updateAppState(String application,String state){
@@ -191,7 +192,7 @@ public class StdScheduler implements Scheduler {
         return sched.updateAppState(application,state);
     }
     @Override
-    public int addNode(QrtzNode qrtzNode){
+    public Object[] addNode(QrtzNode qrtzNode){
         String state;
         if(null==qrtzNode
                 || null==qrtzNode.getApplication() || "".equals(qrtzNode.getApplication())
@@ -199,7 +200,7 @@ public class StdScheduler implements Scheduler {
                 || null==(state=qrtzNode.getState()) || (!"N".equals(state) && !"Y".equals(state))
                 ){
             LOGGER.error("必要参数为空或状态异常! [qrtzNode]: {}",qrtzNode);
-            return 0;
+            return new Object[]{0,"必要参数为空或状态异常!"};
         }
         if(null==qrtzNode.getHostName()){
             qrtzNode.setHostName(qrtzNode.getHostIp());
@@ -211,14 +212,15 @@ public class StdScheduler implements Scheduler {
         // 对应app不可为空
         if( this.sched.getAppByApplication(application)==null ){
             LOGGER.error("对应应用配置为空! [qrtzApp]: {}",qrtzNode);
-            return 0;
+            return new Object[]{0,"对应应用配置为空!"};
         }
         // 对应node也必须唯一
         if(this.sched.containsNode(application,qrtzNode.getHostIp())){
             LOGGER.error("存在对应的node配置! [qrtzNode]: {}",qrtzNode);
-            return 0;
+            return new Object[]{0,"存在对应的node配置!"};
         }
-        return sched.addNode(qrtzNode);
+        int insertCount = sched.addNode(qrtzNode);
+        return new Object[]{insertCount,null};
     }
     @Override
     public int deleteNode(String application,String hostIP){
@@ -259,13 +261,13 @@ public class StdScheduler implements Scheduler {
         return sched.updateNode(qrtzNode);
     }
     @Override
-    public int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode){
+    public Object[] addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode){
         String state ;
         if( null==qrtzApp || null==qrtzApp.getApplication() ||"".equals(qrtzApp.getApplication())
                 || null==(state=qrtzApp.getState()) || (!"N".equals(state) && !"Y".equals(state))
                 /*|| null==qrtzApp.getTimePre() || null==qrtzApp.getTimeNext() || null== qrtzApp.getTimeInterval()*/){
             LOGGER.error("必要参数为空或参数异常! [qrtzApp] {}",qrtzApp);
-            return 0;
+            return new Object[]{0,"必要参数为空或参数异常!"};
         }
         if(null==qrtzNode
                 /*|| null==qrtzNode.getApplication() || "".equals(qrtzNode.getApplication())*/
@@ -274,7 +276,7 @@ public class StdScheduler implements Scheduler {
                 /*|| null==(state=qrtzNode.getState()) || (!"N".equals(state) && !"Y".equals(state))*/
                 /*|| null==qrtzNode.getTimeCheck()*/ ){
             LOGGER.error("必要参数为空或异常! [qrtzNode] {}",qrtzNode);
-            return 0;
+            return new Object[]{0,"必要参数为空或异常!"};
         }
         // 补充默认参数
         if(null==qrtzApp.getTimePre()){
@@ -295,20 +297,21 @@ public class StdScheduler implements Scheduler {
         // 保持一致
         qrtzNode.setApplication(qrtzApp.getApplication());
         qrtzNode.setState(qrtzApp.getState());
-        return sched.addAppAndNode(qrtzApp,qrtzNode);
+        int insertCount = sched.addAppAndNode(qrtzApp,qrtzNode);
+        return new Object[]{insertCount,null};
     }
 
 
     /////////////////////////////////////
     @Override
-    public int addJob(QrtzJob qrtzJob){
+    public Object[] addJob(QrtzJob qrtzJob){
 //        String[] states = {"EXECUTING", "PAUSED", "COMPLETE", "ERROR" ,"INIT"};
         String states = "EXECUTING,PAUSED,COMPLETE,ERROR,INIT";
         // 检查参数
         String state;
         if(null==qrtzJob || null==qrtzJob.getApplication() || null==(state=qrtzJob.getState()) || !states.contains(state) || null==qrtzJob.getJobClass() ){
             LOGGER.error("必要参数不可为空或参数异常:{}",qrtzJob);
-            return 0;
+            return new Object[]{0,"必要参数不可为空或参数异常"};
         }
         String job_data = qrtzJob.getJobData();
         JSONObject jo;
@@ -318,21 +321,22 @@ public class StdScheduler implements Scheduler {
                 && !((job_data.startsWith("{") && job_data.endsWith("}") && (jo = new JSONObject(job_data)) !=null && (job_data=jo.toString())!=null) ||
                 (job_data.startsWith("[") && job_data.endsWith("]") && (ja = new JSONArray(job_data)) !=null) && (job_data=ja.toString())!=null) ){
             LOGGER.error("异常的任务数据：{}",qrtzJob);
-            return 0;
+            return new Object[]{0,"异常的任务数据"};
         }
         qrtzJob.setJobData(job_data);
         // 赋初始化参数
-        qrtzJob.setId(SeqGenUtil.shortKey());
+        qrtzJob.setId(SeqGenUtil.genSeq());
         qrtzJob.setUpdateTime(System.currentTimeMillis()/1000*1000);
-        return sched.addJob(qrtzJob);
+        int insertCount = sched.addJob(qrtzJob);
+        return new Object[]{insertCount,null};
     }
 
     @Override
-    public int updateJob(QrtzJob qrtzJob){
+    public Object[] updateJob(QrtzJob qrtzJob){
         // 检查参数
         if(null==qrtzJob || null==qrtzJob.getId() || null==qrtzJob.getApplication() || null==qrtzJob.getState() || null==qrtzJob.getJobClass() ){
             LOGGER.error("必要参数不可为空:{}",qrtzJob);
-            return 0;
+            return new Object[]{0,"必要参数不可为空"};
         }
         String job_data = qrtzJob.getJobData();
         JSONObject jo;
@@ -342,20 +346,21 @@ public class StdScheduler implements Scheduler {
                 && !((job_data.startsWith("{") && job_data.endsWith("}") && (jo = new JSONObject(job_data)) !=null && (job_data=jo.toString())!=null) ||
                 (job_data.startsWith("[") && job_data.endsWith("]") && (ja = new JSONArray(job_data)) !=null) && (job_data=ja.toString())!=null) ){
             LOGGER.error("异常的任务数据：{}",qrtzJob);
-            return 0;
+            return new Object[]{0,"异常的任务数据"};
         }
         final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT,";
         if(null!=qrtzJob.getState() && !states.contains(","+qrtzJob.getState()+",") ){
             LOGGER.error("异常的状态项:{}",qrtzJob);
-            return 0;
+            return new Object[]{0,"异常的状态项"};
         }
         qrtzJob.setJobData(job_data);
         // 赋初始化参数
         qrtzJob.setUpdateTime(System.currentTimeMillis()/1000*1000);
-        return sched.updateJob(qrtzJob);
+        int updateCount = sched.updateJob(qrtzJob);
+        return new Object[]{updateCount,null};
     }
     @Override
-    public int deleteJob(Long job_id){
+    public int deleteJob(String job_id){
         if( null==job_id ){
             LOGGER.error("必要参数为空! [job_id] {}",job_id);
             return 0;
@@ -369,33 +374,84 @@ public class StdScheduler implements Scheduler {
     }
 
     @Override
-    public int updateExecuteStateByJobId(Long job_id,String state){
+    public Object[] updateJobStateInAll(String job_id, String state){
+        if( null==job_id || null==state || "".equals(state=state.trim())  ){
+            LOGGER.error("必要参数为空! [job_id] {},{}",job_id,state);
+            return new Object[]{0,"必要参数为空(job_id、state)"};
+        }
+        if( !("EXECUTING".equals(state)  || "PAUSED".equals(state)) ){
+            LOGGER.error("仅可操作状态为(EXECUTING or PAUSED)! [job_id] {},{}",job_id,state);
+            return new Object[]{0,"仅可操作状态为(EXECUTING or PAUSED)!"};
+        }
+        final QrtzJob qrtzJob = sched.getJobInAllByJobId(job_id);
+        if( null==qrtzJob || state.equals(qrtzJob.getState()) ){
+            LOGGER.error("job状态已经是目标状态或job为空 {},{}",job_id,state);
+            return new Object[]{0,"job状态已经是目标状态或job为空"};
+        }
+        final String bState = qrtzJob.getState();
+        int ct = 0;
+        if("EXECUTING".equals(state) && ("PAUSED".equals(bState) || "INIT".equals(bState)) ){
+            // EXECUTING,PAUSED,COMPLETE,ERROR,INIT
+            // PAUSED,INIT -> EXECUTING
+            if( (ct=sched.updateJobState(job_id,state))>0 ){
+                for( QrtzExecute item:qrtzJob.getExecutes() ){
+                    final String execute_id = item.getId();
+                    final String execute_state = item.getState();
+                    if("PAUSED".equals(execute_state) || "INIT".equals(execute_state)){
+                        sched.updateExecuteState(execute_id,state);
+                    }
+                }
+                return new Object[]{ct,null};
+            }
+            return new Object[]{0,"当前状态不可启动 "+bState};
+        }
+        if("PAUSED".equals(state) && ("EXECUTING".equals(bState) || "ERROR".equals(bState)) ){
+            // EXECUTING,PAUSED,COMPLETE,ERROR,INIT
+            // EXECUTING,ERROR -> PAUSED
+            if( (ct=sched.updateJobState(job_id,state))>0 ){
+                for( QrtzExecute item:qrtzJob.getExecutes() ){
+                    final String execute_id = item.getId();
+                    final String execute_state = item.getState();
+                    if("EXECUTING".equals(execute_state) || "ERROR".equals(execute_state)){
+                        sched.updateExecuteState(execute_id,state);
+                    }
+                }
+                return new Object[]{ct,null};
+            }
+            return new Object[]{0,"当前状态不可暂停 "+bState};
+        }
+        return new Object[]{0,"操作失败!"};
+    }
+
+    @Override
+    public int updateJobState(String job_id, String state){
         if( null==job_id || null==state || "".equals(state=state.trim()) /*|| (!"N".equals(state) && !"Y".equals(state))*/ ){
             LOGGER.error("必要参数为空! [job_id] {},{}",job_id,state);
             return 0;
         }
-        String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT,";
+        // INIT状态只可在初次写入时候为INIT
+        String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,";
         if(null==state || !states.contains(","+state+",") ){
             LOGGER.error("异常的状态项:state=>{},{}",job_id,state);
             return 0;
         }
-        return sched.updateExecuteStateByJobId(job_id,state);
+        return sched.updateJobState(job_id,state);
     }
     @Override
-    public int updateExecuteStateByExecuteId(Long execute_id,String state){
+    public int updateExecuteState(String execute_id, String state){
         if( null==execute_id || null==state /*|| "".equals(state=state.trim()) || (!"N".equals(state) && !"Y".equals(state))*/ ){
             LOGGER.error("必要参数为空! [execute_id、state] {},{}",execute_id,state);
             return 0;
         }
-        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT,";
+        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,";
         if(!states.contains(","+state+",") ){
             LOGGER.error("异常的状态项:state=>{},{}",execute_id,state);
             return 0;
         }
-        return sched.updateExecuteStateByExecuteId(execute_id,state);
+        return sched.updateExecuteState(execute_id,state);
     }
     @Override
-    public int addExecute(QrtzExecute qrtzExecute){
+    public Object[] addExecute(QrtzExecute qrtzExecute){
         String jobType;
         String state;
         if(null==qrtzExecute || null==qrtzExecute.getPid()
@@ -403,29 +459,36 @@ public class StdScheduler implements Scheduler {
                 || null==(state=qrtzExecute.getState()) /*|| (!"N".equals(state) && !"Y".equals(state))*/
                 ){
             LOGGER.error("必要参数为空或参数异常! [qrtzExecute]:{}",qrtzExecute);
-            return 0;
+            return new Object[]{0,"必要参数为空或参数异常!"};
         }
         final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT,";
         if(!states.contains(","+state+",") ){
             LOGGER.error("异常的状态项:{}",qrtzExecute);
-            return 0;
+            return new Object[]{0,"异常的状态项!(only:EXECUTING,PAUSED,COMPLETE,ERROR,INIT)"};
         }
-        final Long pid = qrtzExecute.getPid();
-        if( sched.getJobByJobId(pid.toString())==null){
+        final String pid = qrtzExecute.getPid();
+        if( sched.getJobByJobId(pid)==null){
             LOGGER.error("对应job配置为空! [qrtzExecute]:{}",qrtzExecute);
-            return 0;
+            return new Object[]{0,"对应job配置为空!"};
+        }
+        Long startTime = qrtzExecute.getStartTime();
+        if(null==startTime || startTime<1){
+            qrtzExecute.setStartTime(startTime=System.currentTimeMillis()/1000*1000);
         }
         final Date aft = new Date(System.currentTimeMillis() + 5000L);
         // 如果是 SIMPLE任务
         if("SIMPLE".equals(jobType)){
+            if(qrtzExecute.getRepeatCount()==null || qrtzExecute.getRepeatCount()<1){
+                qrtzExecute.setRepeatCount(-1);  // 永远重复
+            }
             final Integer repeatInterval = qrtzExecute.getRepeatInterval();
-            final Long startTime = qrtzExecute.getStartTime();
+//            final Long startTime = qrtzExecute.getStartTime();
             final Long endTime = qrtzExecute.getEndTime();
             final Integer repeatCount = qrtzExecute.getRepeatCount();
             if( null==repeatCount || null==repeatInterval /*|| null==qrtzExecute.getTimeTriggered()*/
                 || null==qrtzExecute.getStartTime() || repeatInterval<10 ){
                 LOGGER.error("SIMPLE任务参数异常! [qrtzExecute]:{}",qrtzExecute);
-                return 0;
+                return new Object[]{0,"SIMPLE任务参数异常!"};
             }
             SimpleTriggerImpl simpleTrigger = new SimpleTriggerImpl()
                     .setStartTime(new Date(startTime>0?startTime:System.currentTimeMillis()/1000*1000))
@@ -437,7 +500,7 @@ public class StdScheduler implements Scheduler {
             Date nextFireTime = simpleTrigger.getFireTimeAfter(aft);
             if(null==nextFireTime){
                 LOGGER.error("SIMPLE任务无效的任务配置 [qrtzExecute]:{}",qrtzExecute);
-                return 0;
+                return new Object[]{0,"SIMPLE任务无效的任务配置!"};
             }
             // CRON任务参数清空
             qrtzExecute.setCron(null);
@@ -453,11 +516,11 @@ public class StdScheduler implements Scheduler {
         if("CRON".equals(jobType)){
             final String cron = qrtzExecute.getCron();
             String zoneId = qrtzExecute.getZoneId();
-            final Long startTime = qrtzExecute.getStartTime();
+//            final Long startTime = qrtzExecute.getStartTime();
             final Long endTime = qrtzExecute.getEndTime();
             if(null==cron || "".equals(cron.trim())){
                 LOGGER.error("CRON任务参数异常! [qrtzExecute]:{}",qrtzExecute);
-                return 0;
+                return new Object[]{0,"CRON任务参数异常!"};
             }
             if(null==zoneId || "".equals(zoneId.trim()) || null==ZoneId.of(zoneId)){
                 qrtzExecute.setZoneId(zoneId="Asia/Shanghai");
@@ -472,7 +535,7 @@ public class StdScheduler implements Scheduler {
                 Date nextFireTime = cronTrigger.getFireTimeAfter(aft);
                 if (null == nextFireTime) {
                     LOGGER.error("CRON任务无效的任务配置 [qrtzExecute]:{}", qrtzExecute);
-                    return 0;
+                    return new Object[]{0,"CRON任务无效的任务配置!"};
                 }
                 // SIMPLE任务参数清空
                 qrtzExecute.setRepeatCount(null);
@@ -482,7 +545,7 @@ public class StdScheduler implements Scheduler {
             }catch (Exception e){
                 e.printStackTrace();
                 LOGGER.error("CRON任务配置异常:{}",qrtzExecute,e);
-                return 0;
+                return new Object[]{0,"CRON任务配置异常!"};
             }
         }
         if(qrtzExecute.getHostIp()==null){
@@ -491,8 +554,10 @@ public class StdScheduler implements Scheduler {
         if(qrtzExecute.getHostName()==null){
             qrtzExecute.setHostName(SystemPropGenerator.hostName());
         }
-        qrtzExecute.setId(SeqGenUtil.shortKey());
-        return sched.addExecute(qrtzExecute);
+        qrtzExecute.setPrevFireTime(-1L); // 新增都没有前一次执行时间的
+        qrtzExecute.setId(SeqGenUtil.genSeq());
+        int insert_count = sched.addExecute(qrtzExecute);
+        return new Object[]{insert_count,"CRON任务配置异常!"};
     }
     @Override
     public int deleteExecute(String execute_id ){
@@ -501,6 +566,124 @@ public class StdScheduler implements Scheduler {
             return 0;
         }
         return sched.deleteExecute(execute_id);
+    }
+
+    /**
+     * 更新执行项
+     * @param qrtzExecute
+     * @return [更新条数(Integer),异常消息(String)],更新条数>0即为更新成功
+     */
+    @Override
+    public Object[] updateExecute(QrtzExecute qrtzExecute){
+        String jobType;
+        String state;
+        if(null==qrtzExecute || null==qrtzExecute.getId() || null==qrtzExecute.getPid()
+                || null==(jobType=qrtzExecute.getJobType()) || (!"CRON".equals(jobType) && !"SIMPLE".equals(jobType))
+                || null==(state=qrtzExecute.getState())
+        ){
+            LOGGER.error("必要参数为空或参数异常! [qrtzExecute]:{}",qrtzExecute);
+            return new Object[]{0,"必要参数为空或参数异常!"};
+        }
+        // 类型不可修改
+        QrtzExecute qrtzExecute_ = this.sched.getExecuteByExecuteId(qrtzExecute.getId().toString());
+        if( null==qrtzExecute_ || !jobType.equals(qrtzExecute_.getJobType()) ){
+            return new Object[]{0,"执行项不存在或类型(SIMPLE、CRON)被修改!"};
+        }
+        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,INIT,";
+        if(!states.contains(","+state+",") ){
+            LOGGER.error("异常的状态项:{}",qrtzExecute);
+            return new Object[]{0,"异常的状态项[state]!"};
+        }
+        final String pid = qrtzExecute.getPid();
+        if( sched.getJobByJobId(pid)==null){
+            LOGGER.error("对应job配置为空! [qrtzExecute]:{}",qrtzExecute);
+            return new Object[]{0,"对应job配置为空"};
+        }
+        Long startTime = qrtzExecute.getStartTime();
+        if(null==startTime || startTime<1){
+            qrtzExecute.setStartTime(startTime=System.currentTimeMillis()/1000*1000);
+        }
+        final Date aft = new Date(System.currentTimeMillis() + 5000L);
+        // 如果是 SIMPLE任务
+        if("SIMPLE".equals(jobType)){
+            if(qrtzExecute.getRepeatCount()==null || qrtzExecute.getRepeatCount()<1){
+                qrtzExecute.setRepeatCount(-1);  // 永远重复
+            }
+            final Integer repeatInterval = qrtzExecute.getRepeatInterval();
+//            final Long startTime = qrtzExecute.getStartTime();
+            final Long endTime = qrtzExecute.getEndTime();
+            final Integer repeatCount = qrtzExecute.getRepeatCount();
+            if( null==repeatCount || null==repeatInterval
+                    || null==qrtzExecute.getStartTime() || repeatInterval<10 ){
+                LOGGER.error("SIMPLE任务参数异常! [qrtzExecute]:{}",qrtzExecute);
+                return new Object[]{0,"SIMPLE任务参数异常"};
+            }
+            SimpleTriggerImpl simpleTrigger = new SimpleTriggerImpl()
+                    .setStartTime(new Date(startTime>0?startTime:System.currentTimeMillis()/1000*1000))
+                    .setEndTime(new Date(endTime))
+                    .setRepeatCount(repeatCount)
+                    .setRepeatInterval(repeatInterval)
+                    .setTimesTriggered(0);
+            // 必须要滞后5分钟，否则任务无法扫到
+            Date nextFireTime = simpleTrigger.getFireTimeAfter(aft);
+            if(null==nextFireTime){
+                LOGGER.error("SIMPLE任务无效的任务配置 [qrtzExecute]:{}",qrtzExecute);
+                return new Object[]{0,"SIMPLE任务无效的任务配置"};
+            }
+            // CRON任务参数清空
+            qrtzExecute.setCron(null);
+            qrtzExecute.setZoneId(null);
+            if(qrtzExecute.getRepeatCount()>0){
+                qrtzExecute.setTimeTriggered(0);
+            }else{
+                qrtzExecute.setTimeTriggered(-1); // 没有次数限制
+            }
+            qrtzExecute.setNextFireTime(nextFireTime.getTime());
+        }
+        // 如果是 CRON任务
+        if("CRON".equals(jobType)){
+            final String cron = qrtzExecute.getCron();
+            String zoneId = qrtzExecute.getZoneId();
+//            final Long startTime = qrtzExecute.getStartTime();
+            final Long endTime = qrtzExecute.getEndTime();
+            if(null==cron || "".equals(cron.trim())){
+                LOGGER.error("CRON任务参数异常! [qrtzExecute]:{}",qrtzExecute);
+                return new Object[]{0,"CRON任务参数异常"};
+            }
+            if(null==zoneId || "".equals(zoneId.trim()) || null==ZoneId.of(zoneId)){
+                qrtzExecute.setZoneId(zoneId="Asia/Shanghai");
+            }
+            try {
+                CronTriggerImpl cronTrigger = new CronTriggerImpl()
+                        .setCronExpression(cron)
+                        .setStartTime(new Date(startTime))
+                        .setEndTime(new Date(endTime))
+                        .setTimeZone(TimeZone.getTimeZone(zoneId));
+
+                Date nextFireTime = cronTrigger.getFireTimeAfter(aft);
+                if (null == nextFireTime) {
+                    LOGGER.error("CRON任务无效的任务配置 [qrtzExecute]:{}", qrtzExecute);
+                    return new Object[]{0,"CRON任务无效的任务配置"};
+                }
+                // SIMPLE任务参数清空
+                qrtzExecute.setRepeatCount(null);
+                qrtzExecute.setRepeatInterval(null);
+//                qrtzExecute.setTimeTriggered(-1);
+                qrtzExecute.setNextFireTime(nextFireTime.getTime());
+            }catch (Exception e){
+                e.printStackTrace();
+                LOGGER.error("CRON任务配置异常:{}",qrtzExecute,e);
+                return new Object[]{0,"CRON任务配置异常"};
+            }
+        }
+        if(qrtzExecute.getHostIp()==null){
+            qrtzExecute.setHostIp(SystemPropGenerator.hostIP());
+        }
+        if(qrtzExecute.getHostName()==null){
+            qrtzExecute.setHostName(SystemPropGenerator.hostName());
+        }
+        int updateCount = sched.updateExecute(qrtzExecute);
+        return new Object[]{updateCount,null};
     }
 
 

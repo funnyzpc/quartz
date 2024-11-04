@@ -272,9 +272,9 @@ public interface JobExecutionContext {
 
     String getKeyNote();
 
-    Long getJobId() ;
+    String getJobId() ;
 
-    Long getExecuteId();
+    String getExecuteId();
     String getJobClassName();
 
 }

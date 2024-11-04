@@ -64,39 +64,6 @@ public interface DriverDelegate {
      */
     void initialize(String tablePrefix, String schedName,boolean useProperties) ;
 
-    // 写入 qrtz_app 应用信息
-    int insertQrtzApp(Connection conn, QrtzApp app);
-
-    // 写入 qrtz_node 节点信息
-    int insertQrtzNode(Connection conn, QrtzNode node);
-    QrtzApp findQrtzAppByApp(Connection conn,String application);
-
-    // 清理历史数据
-    void clearHistoryData(Connection conn,Long timeLimit);
-
-    int updateQrtzAppByApp(Connection conn, QrtzApp app/*,long now,String wState*/);
-
-    QrtzNode findQrtzNodeByAppHost(Connection conn,final String app, final String hostIP);
-
-    void updateQrtzNodeOfState(Connection conn, QrtzNode node);
-
-    void updateQrtzNodeOfTimeCheck(Connection conn, QrtzNode node);
-
-    int clearAllExecuteData(Connection conn, long timeLimit);
-
-    List<QrtzJob> findQrtzJobByAppForRecover(Connection conn, String applicaton);
-
-    List<QrtzExecute> findQrtzExecuteForRecover(Connection conn, List<QrtzJob> jobs,long now);
-    int updateRecoverExecute(Connection conn, QrtzExecute execute);
-
-//    int clearAllJobData(Connection conn, long timeLimit);
-
-    int updateRecoverJob(Connection conn, QrtzJob job);
-
-    List<QrtzExecute> findAllQrtzExecuteByPID(Connection conn, Long id);
-
-    String findNodeStateByPK(Connection conn,String application, String hostIP);
-    int toLockAndUpdate(Connection conn, QrtzExecute newCe, String oldState, long oldPrevTime, long oldNextTime);
     String[] getDBInfo(Connection conn);
 
     /*********** 任务操作 ***************/
@@ -138,22 +105,20 @@ public interface DriverDelegate {
 
     int addJob(Connection conn, QrtzJob qrtzJob);
     int updateJob(Connection conn, QrtzJob qrtzJob);
-    int deleteJob(Connection conn, Long job_id);
+    int deleteJob(Connection conn,String job_id);
     // 暂停指定job下的所有execute
-    int updateExecuteStateByJobId(Connection conn,Long job_id,String state);
+    int updateJobState(Connection conn,String job_id, String state);
     // 暂停指定execute
-    int updateExecuteStateByExecuteId(Connection conn,Long execute_id,String state);
-//    // 启动job以及execute,只是改变execute及job状态
-//    int recoverExecuteByJobId(Connection conn,Long job_id);
-//    // 启动execute
-//    int recoverExecuteByExecuteId(Connection conn,Long execute_id);
+    int updateExecuteState(Connection conn, String execute_id, String state);
     // 添加execute
     int addExecute(Connection conn,QrtzExecute qrtzExecute);
     // 删除execute
     int deleteExecute(Connection conn,String execute_id );
-    int findQrtzExecuteCountById(Connection conn, Long job_id);
+//    int findQrtzExecuteCountById(Connection conn, Long job_id);
     // 是否存在execute
-    boolean containsExecute(Connection conn,Long job_id);
+    boolean containsExecute(Connection conn,String job_id);
+    // 更新执行项
+    int updateExecute(Connection conn, QrtzExecute qrtzExecute);
 
 }
 

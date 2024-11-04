@@ -32,6 +32,10 @@ import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobListener;
 import org.quartz.SchedulerException;
+import org.quartz.impl.QrtzApp;
+import org.quartz.impl.QrtzExecute;
+import org.quartz.impl.QrtzJob;
+import org.quartz.impl.QrtzNode;
 import org.quartz.impl.SchedulerRepository;
 import org.quartz.simpl.PropertySettingJobFactory;
 import org.quartz.simpl.SystemPropGenerator;
@@ -1708,6 +1712,128 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
     }
 
+
+    @Override
+    public String[] getDBInfo() {
+        return resources.getJobStore().getDBInfo();
+    }
+    @Override
+    public List<QrtzApp> getAllApp(){
+        return resources.getJobStore().getAllApp();
+    }
+    @Override
+    public QrtzApp getAppByApplication(String application){
+        return resources.getJobStore().getAppByApplication(application);
+    }
+    @Override
+    public List<QrtzNode> getNodeByApp(String application){
+        return resources.getJobStore().getNodeByApp(application);
+    }
+    @Override
+    public QrtzJob getJobByJobId(String job_id){
+        return resources.getJobStore().getJobByJobId(job_id);
+    }
+    @Override
+    public QrtzExecute getExecuteByExecuteId(String execute_id){
+        return resources.getJobStore().getExecuteByExecuteId(execute_id);
+    }
+    @Override
+    public List<QrtzExecute> getExecuteByJobId(String job_id){
+        return resources.getJobStore().getExecuteByJobId(job_id);
+    }
+    @Override
+    public QrtzJob getJobInAllByJobId(String job_id){
+        return resources.getJobStore().getJobInAllByJobId(job_id);
+    }
+    @Override
+    public QrtzExecute getExecuteInAllByExecuteId(String execute_id){
+        return resources.getJobStore().getExecuteInAllByExecuteId(execute_id);
+    }
+    @Override
+    public int addApp(QrtzApp qrtzApp){
+        return resources.getJobStore().addApp(qrtzApp);
+    }
+    @Override
+    public int deleteApp(String application){
+        return resources.getJobStore().deleteApp(application);
+    }
+    @Override
+    public int updateAppState( String application, String state){
+        return resources.getJobStore().updateAppState(application,state);
+    }
+    @Override
+    public int addNode(QrtzNode qrtzNode){
+        return resources.getJobStore().addNode(qrtzNode);
+    }
+    @Override
+    public boolean containsNode(String application ,String hostIP){
+        return resources.getJobStore().containsNode(application,hostIP);
+    }
+    @Override
+    public boolean containsNode(String application){
+        return resources.getJobStore().containsNode(application);
+    }
+    @Override
+    public int deleteNode(String application,String hostIP){
+        return resources.getJobStore().deleteNode(application,hostIP);
+    }
+    @Override
+    public int updateNodeState(QrtzNode qrtzNode){
+        return resources.getJobStore().updateNodeState(qrtzNode);
+    }
+    @Override
+    public int updateNode(QrtzNode qrtzNode){
+        return resources.getJobStore().updateNode(qrtzNode);
+    }
+    @Override
+    public int addAppAndNode(QrtzApp qrtzApp, QrtzNode qrtzNode){
+        return resources.getJobStore().addAppAndNode(qrtzApp,qrtzNode);
+    }
+
+    ///////////////////////////////////////
+    @Override
+    public int addJob(QrtzJob qrtzJob) {
+        return resources.getJobStore().addJob(qrtzJob);
+    }
+    @Override
+    public int updateJob(QrtzJob qrtzJob) {
+        return resources.getJobStore().updateJob(qrtzJob);
+    }
+    @Override
+    public int deleteJob(final String job_id) {
+        return resources.getJobStore().deleteJob(job_id);
+    }
+    //    @Override
+//    public int findQrtzExecuteCountById(Long job_id){
+//        return resources.getJobStore().findQrtzExecuteCountById(job_id);
+//    }
+    @Override
+    public boolean containsExecute(String job_id){
+        return resources.getJobStore().containsExecute(job_id);
+    }
+    @Override
+    public int updateJobState(String job_id, String state){
+        return resources.getJobStore().updateJobState(job_id,state);
+    }
+    @Override
+    public int updateExecuteState(String execute_id, String state){
+        return resources.getJobStore().updateExecuteState(execute_id,state);
+    }
+    @Override
+    public int addExecute(QrtzExecute qrtzExecute){
+        return resources.getJobStore().addExecute(qrtzExecute);
+    }
+    @Override
+    public int deleteExecute(String execute_id ){
+        return resources.getJobStore().deleteExecute(execute_id);
+    }
+
+    @Override
+    public int updateExecute(QrtzExecute qrtzExecute) {
+        return resources.getJobStore().updateExecute(qrtzExecute);
+    }
+
+
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1779,5 +1905,8 @@ class ExecutingJobsManager implements JobListener {
 //    public void jobExecutionVetoed(JobExecutionContext context) {
 //
 //    }
+
+
+
 
 }

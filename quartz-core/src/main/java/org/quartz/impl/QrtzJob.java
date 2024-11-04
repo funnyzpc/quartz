@@ -1,6 +1,7 @@
 package org.quartz.impl;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * QrtzJob
@@ -17,7 +18,7 @@ public class QrtzJob implements Serializable {
     /**
      * 主键
      */
-    private Long id;
+    private String id;
     /**
      * 调度名称
      */
@@ -43,8 +44,14 @@ public class QrtzJob implements Serializable {
      */
     private String jobDescription;
     private Long updateTime;
+    /**
+     * 扩展业务用
+     */
+    private transient List<QrtzExecute> executes;
+    public QrtzJob() {
+    }
 
-    public QrtzJob(Long id, String application, String state, /*Integer jobIdx,*/ String jobClass, String jobData, String jobDescription,Long updateTime) {
+    public QrtzJob(String id, String application, String state, /*Integer jobIdx,*/ String jobClass, String jobData, String jobDescription, Long updateTime) {
         this.id = id;
         this.application = application;
         this.state = state;
@@ -55,11 +62,11 @@ public class QrtzJob implements Serializable {
         this.updateTime = updateTime;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -111,6 +118,15 @@ public class QrtzJob implements Serializable {
         this.updateTime = updateTime;
     }
 
+    public List<QrtzExecute> getExecutes() {
+        return executes;
+    }
+
+    public QrtzJob setExecutes(List<QrtzExecute> executes) {
+        this.executes = executes;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "QrtzJob{" +
@@ -121,6 +137,7 @@ public class QrtzJob implements Serializable {
                 ", jobData='" + jobData + '\'' +
                 ", jobDescription='" + jobDescription + '\'' +
                 ", updateTime=" + updateTime +
+                ", executes=" + executes +
                 '}';
     }
 }
