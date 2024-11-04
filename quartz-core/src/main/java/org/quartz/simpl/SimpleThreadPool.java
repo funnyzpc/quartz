@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Juergen Donnerstag
  */
 public class SimpleThreadPool implements ThreadPool {
+    private final Logger LOG = LoggerFactory.getLogger(SimpleThreadPool.class);
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -424,9 +425,13 @@ public class SimpleThreadPool implements ThreadPool {
     @Override
     public int blockForAvailableThreads() {
         synchronized(nextRunnableLock) {
+            int ct = 0;
             while((availWorkers.size() < 1 || handoffPending) && !isShutdown) {
                 try {
-                    nextRunnableLock.wait(500);
+                    nextRunnableLock.wait(200);
+                    if( (ct>100 && ct%10==0) || ++ct%2!=0){
+                        LOG.error("可用线程不足已经等待200毫秒....");
+                    }
                 } catch (InterruptedException ignore) {
                 }
             }

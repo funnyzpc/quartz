@@ -169,7 +169,7 @@ public class StdSchedulerTest {
     @Test
     public void test18(){
         Scheduler scheduler = new StdScheduler(dataSource);
-        QrtzJob qrtzJob = new QrtzJob(202410141453521000L,"APPLICATION-TEST2","PAUSE","com.mee.quartz.Test02","{}","测试数据任务01",null);
+        QrtzJob qrtzJob = new QrtzJob("202410141453521000L","APPLICATION-TEST2","PAUSE","com.mee.quartz.Test02","{}","测试数据任务01",null);
 
         Object[] result = scheduler.updateJob(qrtzJob);
         System.out.println("job更新结果=>"+JacksonUtil.toJsonString(result));

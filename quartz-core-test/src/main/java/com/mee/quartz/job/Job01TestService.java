@@ -16,7 +16,7 @@ public class Job01TestService  implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         LOGGER.info("=>>{}-{}.{}-{}",context.getJobId(),context.getExecuteId(),context.getJobType(),context.getJobClassName());
         try {
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(4);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

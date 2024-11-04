@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Juergen Donnerstag
  */
 public class MeeThreadPool implements ThreadPool {
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger LOG = LoggerFactory.getLogger(getClass());
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -231,7 +231,7 @@ public class MeeThreadPool implements ThreadPool {
             }
         }
         if (isThreadsInheritContextClassLoaderOfInitializingThread()) {
-            log.info("Job execution threads will use class loader of thread: " + Thread.currentThread().getName());
+            LOG.info("Job execution threads will use class loader of thread: " + Thread.currentThread().getName());
         }
         // create the worker threads and start them
         this.createWorkerThreads(this.count);
@@ -348,11 +348,15 @@ public class MeeThreadPool implements ThreadPool {
         final int maximumPoolSize = poolExecutor.getMaximumPoolSize();
         int activeCount = poolExecutor.getActiveCount();
         int rct = poolExecutor.getQueue().remainingCapacity();
+        int ct = 0;
         while(activeCount==maximumPoolSize && rct<=0 && !poolExecutor.isShutdown()) {
             try {
                 TimeUnit.MILLISECONDS.sleep(200);
                 activeCount = poolExecutor.getActiveCount();
                 rct = poolExecutor.getQueue().remainingCapacity()-1;
+                if( (ct>100 && ct%10==0) || ++ct%2!=0){
+                    LOG.error("可用线程不足已经等待200毫秒....");
+                }
             } catch (InterruptedException ignore) {
                 ignore.printStackTrace();
             }
@@ -446,9 +450,9 @@ public class MeeThreadPool implements ThreadPool {
                     // do nothing (loop will terminate if shutdown() was called 不做任何事情（如果调用了shutdown（），循环将终止
                     try {
                         if( e instanceof InterruptedException){
-                            log.error("Worker thread was interrupt()'ed.", e);
+                            LOG.error("Worker thread was interrupt()'ed.", e);
                         }else{
-                            log.error("Error while executing the Runnable: ", e);
+                            LOG.error("Error while executing the Runnable: ", e);
                         }
                     } catch(Exception e2) {
                         // ignore to help with a tomcat glitch 忽略以帮助解决tomcat故障
@@ -472,7 +476,7 @@ public class MeeThreadPool implements ThreadPool {
                     }
                 }
             }
-            log.debug("WorkerThread is shut down.");
+            LOG.debug("WorkerThread is shut down.");
         }
     }
 }

@@ -519,8 +519,8 @@ public class StdScheduler implements Scheduler {
 //            final Long startTime = qrtzExecute.getStartTime();
             final Long endTime = qrtzExecute.getEndTime();
             if(null==cron || "".equals(cron.trim())){
-                LOGGER.error("CRON任务参数异常! [qrtzExecute]:{}",qrtzExecute);
-                return new Object[]{0,"CRON任务参数异常!"};
+                LOGGER.error("CRON任务表达式为空! [qrtzExecute]:{}",qrtzExecute);
+                return new Object[]{0,"CRON任务表达式为空!"};
             }
             if(null==zoneId || "".equals(zoneId.trim()) || null==ZoneId.of(zoneId)){
                 qrtzExecute.setZoneId(zoneId="Asia/Shanghai");
@@ -647,8 +647,8 @@ public class StdScheduler implements Scheduler {
 //            final Long startTime = qrtzExecute.getStartTime();
             final Long endTime = qrtzExecute.getEndTime();
             if(null==cron || "".equals(cron.trim())){
-                LOGGER.error("CRON任务参数异常! [qrtzExecute]:{}",qrtzExecute);
-                return new Object[]{0,"CRON任务参数异常"};
+                LOGGER.error("CRON任务表达式为空! [qrtzExecute]:{}",qrtzExecute);
+                return new Object[]{0,"CRON任务表达式为空"};
             }
             if(null==zoneId || "".equals(zoneId.trim()) || null==ZoneId.of(zoneId)){
                 qrtzExecute.setZoneId(zoneId="Asia/Shanghai");

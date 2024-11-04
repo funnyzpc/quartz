@@ -836,7 +836,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
     public List<QrtzExecute> acquireNextTriggers(final String application,final long _tsw,final long _tew) throws JobPersistenceException {
         long scheduledFireTime = -1;
         if ((scheduledFireTime=System.currentTimeMillis()) > _tew) {
-            throw new IllegalArgumentException();
+//            throw new IllegalArgumentException();
         }
         final String hostIP = SystemPropGenerator.hostIP();
         final String hostName = SystemPropGenerator.hostName();
@@ -887,32 +887,43 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                         continue;
                     }
                     executeList.add(item);
-                    if( null!=endTime && (endTime<=0 || endTime<=_tew ) ){
+//                    if( null!=endTime && (endTime<=0 || endTime<=_tew ) ){
+                    if( null!=endTime && (endTime<=0 || endTime>_tew ) ){
                         List<Date> dateList = null;
                         if("CRON".equals(jobType)){
                             final String cron = item.getCron();
                             Long nextFireTime = item.getNextFireTime();
                             Long startTime = item.getStartTime();
-                            Long _endTime = endTime<=0?_tew:(endTime>_tew?null:endTime);
+//                            Long _endTime = endTime<=0?_tew:(endTime>_tew?null:endTime);
+                            Long _endTime = endTime<=0?_tew:(endTime>_tew?_tew:endTime);
                             String _zoneId = item.getZoneId();
-                            if(!( _endTime!=null
-                                    && (dateList=this.getExecuteCronTimes(cron,nextFireTime,startTime,_endTime,_zoneId)) !=null && !dateList.isEmpty()
-                            )){
+                            if( _endTime==null || _endTime<1 || _endTime>_tew || nextFireTime > _tew ){
                                 continue;
                             }
+                            dateList=this.getExecuteCronTimes(cron,nextFireTime,startTime,_endTime,_zoneId);
+//                            if(!( _endTime!=null && nextFireTime <=  _tew
+//                                    && (dateList=this.getExecuteCronTimes(cron,nextFireTime,startTime,_endTime,_zoneId)) !=null && !dateList.isEmpty()
+//                            )){
+//                                continue;
+//                            }
                         }else if("SIMPLE".equals(jobType)){
                             Long nextFireTime = item.getNextFireTime();
                             Long startTime = item.getStartTime();
-                            Long _endTime = endTime<=0?_tew:(endTime>_tew?null:endTime);
+//                            Long _endTime = endTime<=0?_tew:(endTime>_tew?null:endTime);
+                            Long _endTime = endTime<=0?_tew:(endTime>_tew?_tew:endTime);
                             // Integer repeatCount = item.getRepeatCount();
                             Integer timeTriggered = item.getTimeTriggered();
                             Integer repeatInterval = item.getRepeatInterval();
-                            if(!( _endTime!=null && timeTriggered<repeatCount
-                                    && nextFireTime+repeatInterval <=  _tew
-                                    && (dateList=this.getExecuteSimpleTimes(nextFireTime,startTime,_endTime,repeatCount,(long)repeatInterval,timeTriggered )) !=null && !dateList.isEmpty()
-                            )){
+                            if( _endTime==null || _endTime<1 || (repeatCount>0 && timeTriggered>=repeatCount) || nextFireTime+repeatInterval > _tew ){
                                 continue;
                             }
+                            dateList=this.getExecuteSimpleTimes(nextFireTime,startTime,_endTime,repeatCount,(long)repeatInterval,timeTriggered );
+//                            if(!( _endTime!=null && (repeatCount>0 && timeTriggered<repeatCount)
+//                                    && nextFireTime+repeatInterval <=  _tew
+//                                    && (dateList=this.getExecuteSimpleTimes(nextFireTime,startTime,_endTime,repeatCount,(long)repeatInterval,timeTriggered )) !=null && !dateList.isEmpty()
+//                            )){
+//                                continue;
+//                            }
                         }else{
                             log.error("not support jobType! {}",item);
                         }
@@ -975,6 +986,10 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
         do {
             try {
                 nextFireTime = cronTrigger.getFireTimeAfter(nextFireTime);
+//                // 存在时间回调，故此需要判断过滤
+//                if(execTime!=null && nextFireTime!=null && execTime.equals(nextFireTime.getTime())){
+//                    continue;
+//                }
                 if(null==nextFireTime || nextFireTime.getTime()>endTime ){
                     break;
                 }
@@ -1007,6 +1022,10 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
         do {
             try {
                 nextFireTime = simpleTrigger.getFireTimeAfter(nextFireTime);
+//                // 存在时间回调，故此需要判断过滤
+//                if(execTime!=null && nextFireTime!=null && execTime.equals(nextFireTime.getTime())){
+//                    continue;
+//                }
                 if(null==nextFireTime || nextFireTime.getTime()>endTime ){
                     break;
                 }
@@ -1862,6 +1881,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                         if(null==nextFireTime){
                             // 没有下一次执行时间就是执行完成
 //                                execute.setNextFireTime(null);
+                            log.info("03任务已执行完成:{}",execute.getId());
                             execute.setState("COMPLETE");
                         }else{
                             execute.setNextFireTime(nextFireTime.getTime());
@@ -1875,9 +1895,11 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                         // - 若 end_time>0 and end_time>=now 则修改 state=COMPLETE(完成)
                         // - 若 repeat_count>0 && time_triggered>=repeat_count 则修改 state=COMPLETE(完成)
                         // - 根据 (now+16S)>start_time?(now+16S):start_time 计算 next_fire_time 同时修改 next_fire_time=next_fire_time(new) state=EXECUTING
-                        if( null!=execute.getEndTime() && execute.getEndTime()>=now){
+                        if( null!=execute.getEndTime() && (execute.getEndTime()>0 && now>execute.getEndTime()) ) {
+                            log.info("04任务已执行完成:{}",execute.getId());
                             execute.setState("COMPLETE");
                         }else if( execute.getRepeatCount()>0 && execute.getTimeTriggered()>=execute.getRepeatCount() ){
+                            log.info("05任务已执行完成:{}",execute.getId());
                             execute.setState("COMPLETE");
                         }else if( (now+TIME_CHECK_INTERVAL*2)>execute.getStartTime() ){
                             SimpleTriggerImpl simpleTrigger = new SimpleTriggerImpl()
@@ -1891,6 +1913,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                             if(null==nextFireTime){
                                 // 没有下一次执行时间就是执行完成
 //                                execute.setNextFireTime(null);
+                                log.info("06任务已执行完成:{}",execute.getId());
                                 execute.setState("COMPLETE");
                             }else{
                                 execute.setNextFireTime(nextFireTime.getTime());

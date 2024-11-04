@@ -80,7 +80,7 @@ public class QuartzSchedulerThread extends Thread {
     private int idleWaitVariablness = 7 * 1000;
 
 //    private final Logger log = LoggerFactory.getLogger(getClass());
-    private final Logger log = LoggerFactory.getLogger(QuartzSchedulerThread.class);
+    private final Logger LOG = LoggerFactory.getLogger(QuartzSchedulerThread.class);
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,7 +117,7 @@ public class QuartzSchedulerThread extends Thread {
         this.qsRsrcs = qsRsrcs;
         this.setDaemon(setDaemon);//默认为false（非守护线程）
         if(qsRsrcs.isThreadsInheritInitializersClassLoadContext()) {
-            log.info("QuartzSchedulerThread Inheriting ContextClassLoader of thread: " + Thread.currentThread().getName());
+            LOG.info("QuartzSchedulerThread Inheriting ContextClassLoader of thread: " + Thread.currentThread().getName());
             this.setContextClassLoader(Thread.currentThread().getContextClassLoader());
         }
         this.setPriority(threadPrio); // 线程默认优先级设置为中(5)
@@ -344,6 +344,10 @@ public class QuartzSchedulerThread extends Thread {
 //                    // 清除调度信号变更
 //                    clearSignaledSchedulingChange();
                     try {
+                        if ((System.currentTimeMillis()) > _tew) {
+                            LOG.error("线程池饱和已造成任务丢弃(=_=)!");
+//                            continue;
+                        }
                         executeList = qsRsrcs.getJobStore().acquireNextTriggers(application,now,_tew);
                         acquiresFailed = 0;
                         if (executeList == null || executeList.isEmpty()) {
@@ -351,7 +355,7 @@ public class QuartzSchedulerThread extends Thread {
                         }
                     } catch (JobPersistenceException | RuntimeException jpe) {
                         if (acquiresFailed == 0) {
-                            log.error("An error occurred while scanning for the next triggers to fire.",jpe);
+                            LOG.error("An error occurred while scanning for the next triggers to fire.",jpe);
 //                            qs.notifySchedulerListenersError("An error occurred while scanning for the next triggers to fire.",jpe);
                         }
                         if (acquiresFailed < Integer.MAX_VALUE){
@@ -412,7 +416,7 @@ public class QuartzSchedulerThread extends Thread {
                             //1.判断是否是本次执行
                             //2.修改下一次执行时间(next_file_time)
                             if( !tryAcquireLockAndUpdate(ce) && null!=ce.setFireTime(System.currentTimeMillis()) ){
-                                log.info("任务未能获取执行锁:{},{}-{}",ce.getId(),ce.getJobType(),ce.getJob().getJobClass());
+                                LOG.info("任务未能获取执行锁或任务已暂停:{},{}-{}",ce.getId(),ce.getJobType(),ce.getJob().getJobClass());
                                 continue;
                             }
 //                            log.error("=>已执行:{}->{},{}<=",ce.getId(),ce.getJobType(),ce.getJob().getJobClass()+"#"+ce.getExecuteIdx());
@@ -441,6 +445,7 @@ public class QuartzSchedulerThread extends Thread {
 
                     }
                 } else {
+                    LOG.error("未能获取到足够的可执行线程!");
                     // 走到这里说明没有可用的执行线程
                     // if(availThreadCount > 0)
                     // should never happen, if threadPool.blockForAvailableThreads() follows contract 如果threadPool.blockForAvailableThreads（）遵循约定，则永远不会发生
@@ -471,7 +476,7 @@ public class QuartzSchedulerThread extends Thread {
 //                }
 
             } catch(RuntimeException re) {
-                log.error("Runtime error occurred in main trigger firing loop.", re);
+                LOG.error("Runtime error occurred in main trigger firing loop.", re);
             }
 //            catch (InterruptedException e) {
 //                log.error("Runtime error occurred in main trigger firing loop.",e);
@@ -533,6 +538,7 @@ public class QuartzSchedulerThread extends Thread {
                 nextFireTime = cronTrigger.getFireTimeAfter(nextFireTime);
 //                System.out.println("CRON=>"+ (_ds.getTime()>now)+" | "+(nextFireTime.getTime()>now));
                 if (nextFireTime == null) {
+                    LOG.info("01任务已执行完成:{}",newCe.getId());
 //                old_state = ce.getState();
                     newCe.setEndTime(now);
                     newCe.setState("COMPLETE");
@@ -556,6 +562,7 @@ public class QuartzSchedulerThread extends Thread {
                 if (nextFireTime == null || (endTime > 0 && endTime < now) || (newCe.getRepeatCount()>0 && newCe.getTimeTriggered() > newCe.getRepeatCount())) {
 //                old_state = ce.getState();
                     newCe.setEndTime(now);
+                    LOG.info("02任务已执行完成:{}",newCe.getId());
                     newCe.setState("COMPLETE");
                 } else {
                     newCe.setPrevFireTime(newCe.getNextFireTime());
