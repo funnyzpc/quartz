@@ -472,7 +472,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             // 删除qrtz_node数据(by qrtz_job:applicaiton=qrtz_app:application)
             // 删除qrtz_app数据(by qrtz_app:applicaiton=qrtz_app:application)
 
-            long limitTime = System.currentTimeMillis()-timeLimit;
+            long limitTime = System.currentTimeMillis()/1000*1000-timeLimit;
             List<String> appList = new ArrayList<String>();
             ps = conn.prepareStatement(rtp("SELECT APPLICATION,STATE FROM {0}APP WHERE TIME_NEXT < ? "));
             ps.setBigDecimal(1,new BigDecimal(limitTime));
@@ -561,7 +561,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     }
 
     @Override
-    public int updateQrtzAppByApp(Connection conn, QrtzApp app/*,long wNow,String wState2*/){
+    public int updateQrtzAppByApp(Connection conn, QrtzApp app){
         PreparedStatement ps = null;
         try {
 //            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
@@ -607,7 +607,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                 String hostName = rs.getString("HOST_NAME");
                 String state = rs.getString("STATE");
                 Long timeCheck = rs.getLong("TIME_CHECK");
-                rs.close();
+//                rs.close();
                 return new QrtzNode(_application,_hostIP,hostName,state,timeCheck);
             }
             return null;
@@ -616,6 +616,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
 //            throw new SQLException("No misfired trigger count returned.");
             return null;
         }finally {
+            closeResultSet(rs);
             // 由于实在同一个connection下，所以不可关闭Connection
             closeStatement(ps);
         }
@@ -667,7 +668,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     public int clearAllExecuteData(Connection conn, long timeLimit){
         PreparedStatement ps = null;
         try {
-            long t = System.currentTimeMillis()-timeLimit;
+            long t = System.currentTimeMillis()/1000*1000-timeLimit;
             // 2. 清理 state=COMPLETE && next_fire_time >1年的清理(删除),按频度执行逻辑
             ps = conn.prepareStatement(rtp("DELETE FROM {0}EXECUTE WHERE STATE=? AND NEXT_FIRE_TIME IS NOT NULL AND NEXT_FIRE_TIME<? "));
             ps.setString(1,"COMPLETE");
@@ -730,12 +731,13 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             try {
                 //0.获取节点下异常执行项 (start_time>now and end_time>0 end_time is not null and next_fire_time<now and state!=(COMPLETE,INIT,PAUSED) )
                 //0.获取节点下异常执行项 ( DELETE FROM {0}JOB WHERE START_TIME>? AND NEXT_FIRE_TIME>0 AND NEXT_FIRE_TIME<? AND STATE!=COMPLETE AND STATE!=INIT AND STATE!=PAUSED )
-                ps = conn.prepareStatement(rtp("SELECT * FROM {0}EXECUTE WHERE PID=? AND NEXT_FIRE_TIME<? AND STATE!=? AND STATE!=? AND STATE!=? "));
+                ps = conn.prepareStatement(rtp("SELECT * FROM {0}EXECUTE WHERE PID=? AND NEXT_FIRE_TIME<? AND START_TIME<=? AND STATE!=? AND STATE!=? AND STATE!=? "));
                 ps.setBigDecimal(1, new BigDecimal(job.getId()));
                 ps.setBigDecimal(2,new BigDecimal(now));
-                ps.setString(3, "COMPLETE");
-                ps.setString(4, "INIT");
-                ps.setString(5, "PAUSED");
+                ps.setBigDecimal(3,new BigDecimal(now));
+                ps.setString(4, "COMPLETE");
+                ps.setString(5, "INIT");
+                ps.setString(6, "PAUSED");
                 rs = ps.executeQuery();
                 while (rs.next()) {
                     String id = rs.getString("ID");
@@ -915,7 +917,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
                     "E.*\n" +
                     "FROM {0}JOB J INNER JOIN {0}EXECUTE E ON J.ID = E.PID  " +
                     "WHERE J.APPLICATION =? AND J.STATE!=? AND J.STATE!=? AND J.STATE!=? " +
-                    "AND E.STATE = ? AND E.NEXT_FIRE_TIME>=? AND E.NEXT_FIRE_TIME<=? ";
+                    "AND E.STATE = ? AND E.NEXT_FIRE_TIME>=? AND E.NEXT_FIRE_TIME<=? AND E.START_TIME<=?";
             ps = conn.prepareStatement(rtp(sql));
             ps.setString(1,application);
 
@@ -927,6 +929,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             ps.setString(5, state);
             ps.setBigDecimal(6, new BigDecimal(_tsw));
             ps.setBigDecimal(7, new BigDecimal(_tew));
+            ps.setBigDecimal(8, new BigDecimal(_tew));
             rs = ps.executeQuery();
             while (rs.next()) {
                 // JOB

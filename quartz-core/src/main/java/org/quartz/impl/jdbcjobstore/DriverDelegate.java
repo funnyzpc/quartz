@@ -634,7 +634,7 @@ public interface DriverDelegate {
     // 清理历史数据
     void clearHistoryData(Connection conn,Long timeLimit);
 
-    int updateQrtzAppByApp(Connection conn, QrtzApp app/*,long now,String wState*/);
+    int updateQrtzAppByApp(Connection conn, QrtzApp app);
 
     QrtzNode findQrtzNodeByAppHost(Connection conn,final String app, final String hostIP);
 

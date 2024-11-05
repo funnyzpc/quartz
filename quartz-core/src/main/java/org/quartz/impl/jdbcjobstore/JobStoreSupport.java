@@ -1621,8 +1621,14 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
     final class ClusterMisfireHandler extends Thread{
 
         private long TIME_CHECK_INTERVAL = 15000L;
+        private final long ONE_DAY = 86400_000L;
         // 上一次清理时间
-        private long PRE_CLEAR_TIME = System.currentTimeMillis()-86400_000L;
+        private long PRE_CLEAR_TIME = System.currentTimeMillis()/1000*1000-ONE_DAY;
+        // 主机IP
+        private final String hostIP = SystemPropGenerator.hostIP();
+        // 主机名称
+        private final String hostName = SystemPropGenerator.hostName();
+
         ClusterMisfireHandler(){
             this.setPriority(Thread.NORM_PRIORITY + 2);
 //            this.setName("QuartzScheduler_" + instanceName + "-" + instanceId + "_ClusterMisfireHandler");
@@ -1637,8 +1643,8 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
         @Override
         public void run(){
             synchronized (lockCheck){
-            final String hostIP = SystemPropGenerator.hostIP();
 //            long _t = System.currentTimeMillis();
+             final String application = getInstanceName();
              long _start  = System.currentTimeMillis()/1000*1000;
               while (!shutdown){
 //                  System.out.println("support耗时:"+(System.currentTimeMillis()-_t));
@@ -1652,56 +1658,57 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                       // ## 加锁
                       //1.获取qrtz_app记录
                       conn = getNonManagedTXConnection();
-//                      conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-//                      conn.setAutoCommit(true);
-//                      QrtzApp app = getDelegate().findQrtzAppByApp(conn, getInstanceName());
-                      QrtzApp app = getDelegate().getAppByApplication(conn, getInstanceName());
-                      // 由于状态可能存在不一致 app:state ~ node:state
-//                      if( null==app || (app.getTimeNext()-4)>_start /*|| "N".equals(app.getState())*/){
-                      if( null==app /*|| "N".equals(app.getState())*/){
-                          getLog().info("APPLICATION is empty:{},{} ",getInstanceName(),hostIP);
+
+                      //1.获取节点并判断是否被清理，若无则continue
+                      QrtzNode node = getDelegate().findQrtzNodeByAppHost(conn,application,hostIP);
+                      // 节点有可能被清理掉，故此需要判断；同时需要注意 state=N的节点也许要写出处理 recover
+                      if( null==node ){
+                          getLog().info("node is empty or state is N : {},{}",application,hostIP);
+                          // 只有节点 state=Y 的节点才可以参与后续recover的操作，同时也减少后续的读写
                           continue;
                       }
-                      //2.更新qrtz_app以获取锁
+
+                      // 2.获取并判断app是否被清理，若无测continue
+                      QrtzApp app = getDelegate().getAppByApplication(conn,application );
+                      if( null==app ){
+                          getLog().info("APPLICATION is empty:{},{} ",application,hostIP);
+                          continue;
+                      }
+                      long tw = TIME_CHECK_INTERVAL/10*3;  // 70% 减少并发
+                      if( (app.getTimeNext()-_start)>tw ){
+                          continue;
+                      }
+                      // 2.更新qrtz_app以获取锁
                       app.setTimePre(app.getTimeNext());
                       app.setTimeNext(_start+TIME_CHECK_INTERVAL);
                       app.setTimeInterval(TIME_CHECK_INTERVAL);
-//                      if( getDelegate().updateQrtzAppByApp(conn,app,_start,"Y") < 1){
-//                          getLog().info("ClusterMisfireHandler lock by other node ... ");
-//                          continue;
-//                      }
-                      getDelegate().updateQrtzAppByApp(conn,app/*,_start,"Y"*/);// 更新app,不论成功与否必须要这样做，否则当前support在state=N的节点执行时无法更新job及execute
-//                      getLog().info(">>> In process Cluster! <<<");
-                      // ## 更新节点信息
-                      //1.获取qrtz_node记录
-                      QrtzNode node = getDelegate().findQrtzNodeByAppHost(conn, getInstanceName(),hostIP);
-                      if( null==node || "N".equals(node.getState() )){ // 这个state判断十分重要，决定了当前节点是否参与 job及execute的 更新，如果是N就无需执行之后的逻辑
-                          getLog().info("node is empty or state=N : {},{}",getInstanceName(),hostIP);
-                          continue;
-                      }
-                      getLog().info(">>> In process Cluster "+getInstanceId()+" ! <<<");
-                      //2.更新状态不一致的记录 (app:state=N且node:state=Y时:应用关闭时节点一定要关闭 )
+
+                      // 3.尝试获取锁
+                      int ct = getDelegate().updateQrtzAppByApp(conn,app);
+                      // 4.同步app状态至node(仅对 app_state=Y && node_state=Y 的) || 更新检查时间
                       if( "N".equals(app.getState()) &&  "Y".equals(node.getState()) ){
                           node.setState("N");
                           node.setTimeCheck(_start);
                           getDelegate().updateQrtzNodeOfState(conn,node);
-                          continue;
-                      }
-                      //3.更新time_check (根据频度)
-                      else if( (_start - node.getTimeCheck()) >= 86400_000L ){
+                      }else if( (_start - node.getTimeCheck()) >= ONE_DAY ){
                           node.setTimeCheck(_start);
                           getDelegate().updateQrtzNodeOfTimeCheck(conn,node);
                       }
-                      if(FIRST_CHECK==false) {
-                          // ## 清理历史记录(每间隔七天&&上午十点)
-                          if ((_start - PRE_CLEAR_TIME) >= 86400_000L * 7 && LocalDateTime.now().getHour() - 10 == 0) {
-                              getDelegate().clearHistoryData(conn, 366 * 86400_000L);// 1年=1天*366
-                              PRE_CLEAR_TIME = _start;// update time
+                      // 5.获取app锁的才可执行 clear 清理以及 recover 恢复，以减少读写
+                      if( ct>0 ){
+                          getLog().info(">>> In process Cluster "+getInstanceId()+" ! <<<");
+                          //3.更新time_check (根据频度) 86400_000L=24小时(一天)
+                          if(FIRST_CHECK==false) {
+                              // 5.1 每隔7天清理一次所有quartz记录,从 app 到 execute (每间隔七天&&上午零点或十点)
+                              if ((_start - PRE_CLEAR_TIME) >= ONE_DAY * 7 && LocalDateTime.now().getHour() - 10 == 0) {
+                                  getDelegate().clearHistoryData(conn, 366 * ONE_DAY);// 1年=1天*366
+                                  PRE_CLEAR_TIME = _start;// update time
+                              }
+                              // 5.2 recover(恢复)执行项信息
+                              recoverExecute(_start/*conn,app,node*/);
+                              // 5.3 recover(恢复)修正job配置信息
+                              recoverJob(/*conn,app,node*/);
                           }
-                          // 修正执行信息
-                          recoverExecute(_start/*conn,app,node*/);
-                          // 修正配置信息
-                          recoverJob(/*conn,app,node*/);
                       }
                   }catch (Exception e){
                       e.printStackTrace();
@@ -1758,9 +1765,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
             // 2.查找job记录( state=COMPLETE update_time>1年的 ) 并删除,按频度执行逻辑
             Connection conn = null;
             final String applicaton = getInstanceName();
-            final String hostIP = SystemPropGenerator.hostIP();
-            final String hostName = SystemPropGenerator.hostName();
-            final Long now = System.currentTimeMillis();
+            final Long now = System.currentTimeMillis()/1000*1000;
             /***** try start... *****/
             try {
                 //0.获取节点下异常执行项 (start_time>now and end_time>0 end_time is not null and next_fire_time<now and state!=(COMPLETE,INIT,PAUSED) )
@@ -1807,8 +1812,8 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                     }
                 }
                 //2. 清理 state=COMPLETE && update_time >1年的清理(删除),按频度执行逻辑
-                if( (now - PRE_CLEAR_TIME) >= 86400_000L*7 && LocalDateTime.now().getHour()-10==0 ){
-                    int ct = getDelegate().clearAllJobData(conn,366*86400_000L);
+                if( (now - PRE_CLEAR_TIME) >= ONE_DAY*7 && LocalDateTime.now().getHour()-10==0 ){
+                    int ct = getDelegate().clearAllJobData(conn,366*ONE_DAY);
                     log.error(".....已清理execute数据 {}条.....",ct);
                 }
             }catch (Exception e){
@@ -1834,19 +1839,17 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
             // + 对于CRON任务 先计算 next_fire_time (参照时间: (now+24S)>start_time?(now+24S):start_time 且end_time>now )
             //  - 若无 则修正 end_time=next_fire_time state=COMPLETE
             //  - 若有 则修正 next_fire_time=next_fire_time(new) state=EXECUTING
-            // + todo : 对于调整好的且仍为EXECUTING状态的任务是否应该唤醒QuartzSchedulerThread进行执行(如果不唤醒对于短时任务可能错过执行时间 )
             //2. 清理 state=COMPLETE && next_fire_time >1年的清理(删除),按频度执行逻辑
 
             Connection conn = null;
             final String applicaton = getInstanceName();
-            final String hostIP = SystemPropGenerator.hostIP();
-            final String hostName = SystemPropGenerator.hostName();
 //            final Long now = System.currentTimeMillis();
             /***** try start... *****/
             try {
                 //0.获取节点下异常执行项 (start_time>now and end_time>0 end_time is not null and next_fire_time<now and state!=(COMPLETE,INIT,PAUSED) )
 //                conn = getNonManagedTXConnection();
                 conn = getConnection();
+                // only : EXECUTING,ERROR
                 // SELECT * FROM {0}JOB WHERE APPLICATION="QUARTZ-SPRINGBOOT" AND STATE!="COMPLETE" AND STATE!="INIT" AND STATE!=PAUSED
                 List<QrtzJob> jobs = getDelegate().findQrtzJobByAppForRecover(conn,applicaton);
 //                for(int i=0;i<jobs.size();i++ ){
@@ -1857,35 +1860,40 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
 //                    }
 //                }
                 // SELECT * FROM QRTZ_EXECUTE WHERE PID=? AND NEXT_FIRE_TIME<=? AND STATE!=COMPLETE AND STATE!=INIT AND STATE!=PAUSED
-                List<QrtzExecute> executes = getDelegate().findQrtzExecuteForRecover(conn,jobs,now-5000L-8); // 这个5S很重要，一旦与QuartzSchedulerThread的执行时间无法错开则导致任务无法执行
+                List<QrtzExecute> executes = getDelegate().findQrtzExecuteForRecover(conn,jobs,now-5000L-80L); // 这个5S很重要，一旦与QuartzSchedulerThread的执行时间无法错开则导致任务无法执行
                 for(QrtzExecute execute:executes){
                     final String jobType = execute.getJobType();
                     final Long endTime = execute.getEndTime();
                     if( "CRON".equals(jobType) ){
                         execute.setHostIp(hostIP);
                         execute.setHostName(hostName);
-                        // + 对于CRON任务 先计算 next_fire_time (参照时间: (now+24S)>start_time?(now+24S):start_time 且end_time>now )
-                        //  - 若无 则修正 end_time=next_fire_time state=COMPLETE
-                        //  - 若有 则修正 next_fire_time=next_fire_time(new) state=EXECUTING
-                        // + todo : 对于调整好的且仍为EXECUTING状态的任务是否应该唤醒QuartzSchedulerThread进行执行(如果不唤醒对于短时任务可能错过执行时间 )
-                        CronTriggerImpl cronTrigger = new CronTriggerImpl()
-                                .setCronExpression(execute.getCron())
-                                .setStartTime(new Date(execute.getStartTime()))
-                                .setEndTime(null==endTime?null:new Date(endTime))
-                                .setTimeZone(TimeZone.getTimeZone(execute.getZoneId()));
-                        // loop时间 => QuartzSchedulerThread:run一次的时间,默认5S
-                        // check时间 => JobStoreSupport:run一次的时间,默认15S
-                        // 这个afterTime时间非常重要，它一定要大于check时间 ( loop时间<=afterTime<check时间 )以保证loop时被扫到
-                        Date nextFireTime =cronTrigger.getFireTimeAfter(new Date(now+TIME_CHECK_INTERVAL/2));
-                        // 对 SIMPLE 任务的保存
-                        if(null==nextFireTime){
-                            // 没有下一次执行时间就是执行完成
-//                                execute.setNextFireTime(null);
-                            log.info("03任务已执行完成:{}",execute.getId());
+                        if( null!=execute.getEndTime() && (execute.getEndTime()>0 && now>execute.getEndTime()) ) {
+                            log.info("04任务已执行完成:{}",execute.getId());
                             execute.setState("COMPLETE");
-                        }else{
-                            execute.setNextFireTime(nextFireTime.getTime());
-                            execute.setState("EXECUTING");
+                        }else {
+                            // + 对于CRON任务 先计算 next_fire_time (参照时间: (now+24S)>start_time?(now+24S):start_time 且end_time>now )
+                            //  - 若无 则修正 end_time=next_fire_time state=COMPLETE
+                            //  - 若有 则修正 next_fire_time=next_fire_time(new) state=EXECUTING
+                            CronTriggerImpl cronTrigger = new CronTriggerImpl()
+                                    .setCronExpression(execute.getCron())
+                                    .setStartTime(new Date(execute.getStartTime()))
+                                    .setEndTime(null == endTime ? null : new Date(endTime))
+                                    .setTimeZone(TimeZone.getTimeZone(execute.getZoneId()));
+                            // loop时间 => QuartzSchedulerThread:run一次的时间,默认5S
+                            // check时间 => JobStoreSupport:run一次的时间,默认15S
+                            // 这个afterTime时间非常重要，它一定要大于check时间 ( loop时间<=afterTime<check时间 )以保证loop时被扫到
+//                        Date nextFireTime =cronTrigger.getFireTimeAfter(new Date(now+TIME_CHECK_INTERVAL/2+80L));
+                            Date nextFireTime = cronTrigger.getFireTimeAfter(new Date(now + 5000L + 80L));
+                            // 对 SIMPLE 任务的保存
+                            if (null == nextFireTime) {
+                                // 没有下一次执行时间就是执行完成
+//                                execute.setNextFireTime(null);
+                                log.info("03任务已执行完成:{}", execute.getId());
+                                execute.setState("COMPLETE");
+                            } else {
+                                execute.setNextFireTime(nextFireTime.getTime());
+                                execute.setState("EXECUTING");
+                            }
                         }
 //                        getDelegate().updateRecoverExecute(conn,execute);
                     }else if("SIMPLE".equals(jobType)){
@@ -1901,7 +1909,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                         }else if( execute.getRepeatCount()>0 && execute.getTimeTriggered()>=execute.getRepeatCount() ){
                             log.info("05任务已执行完成:{}",execute.getId());
                             execute.setState("COMPLETE");
-                        }else if( (now+TIME_CHECK_INTERVAL*2)>execute.getStartTime() ){
+                        }else {
                             SimpleTriggerImpl simpleTrigger = new SimpleTriggerImpl()
                                     .setStartTime(new Date(execute.getStartTime()))
 //                                    .setEndTime(new Date(execute.getEndTime()))
@@ -1909,7 +1917,8 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                                     .setRepeatCount(execute.getRepeatCount())
                                     .setRepeatInterval(execute.getRepeatInterval())
                                     .setTimesTriggered(execute.getTimeTriggered());
-                            Date nextFireTime = simpleTrigger.getFireTimeAfter(new Date(now+TIME_CHECK_INTERVAL));
+//                            Date nextFireTime = simpleTrigger.getFireTimeAfter(new Date(now+TIME_CHECK_INTERVAL));
+                            Date nextFireTime = simpleTrigger.getFireTimeAfter(new Date(now+5000L+80L));
                             if(null==nextFireTime){
                                 // 没有下一次执行时间就是执行完成
 //                                execute.setNextFireTime(null);
@@ -1919,8 +1928,6 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                                 execute.setNextFireTime(nextFireTime.getTime());
                                 execute.setState("EXECUTING");
                             }
-                        }else {
-                            continue;
                         }
 
                     }else{
@@ -1930,9 +1937,9 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                     // 对 CRON/SIMPLE 任务的保存
                     getDelegate().updateRecoverExecute(conn,execute);
                 }
-                //2. 清理 state=COMPLETE && next_fire_time >1年的清理(删除),按频度执行逻辑
-                if( (now - PRE_CLEAR_TIME) >= 86400_000L*7 && LocalDateTime.now().getHour()-10==0 ){
-                    int ct = getDelegate().clearAllExecuteData(conn,366*86400_000L);
+                //2. 清理 state=COMPLETE && next_fire_time >1年 && 当前小时 in (0,10) 的清理(删除),按频度执行逻辑
+                if( (now - PRE_CLEAR_TIME) >= ONE_DAY*7 && LocalDateTime.now().getHour()-10==0 ){
+                    int ct = getDelegate().clearAllExecuteData(conn,366*ONE_DAY);
                     log.error(".....已清理execute数据 {}条.....",ct);
                 }
             }catch (Exception e){
@@ -1958,14 +1965,12 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
             try{
                 conn = getNonManagedTXConnection();
                 // 构造对象
-                String application = getInstanceName();
-                String state = "Y";
-                Long timePre = 0L;
-                Long now = System.currentTimeMillis();
+                final String application = getInstanceName();
+                final String state = "Y";
+                final Long timePre = 0L;
+                final Long now = System.currentTimeMillis()/1000*1000;
                 Long timeNext = now+TIME_CHECK_INTERVAL;
                 Long timeInterval = TIME_CHECK_INTERVAL;
-                final String hostIP = SystemPropGenerator.hostIP();
-                final String hostName = SystemPropGenerator.hostName();
                 QrtzApp app = new QrtzApp(application,state,timePre,timeNext,timeInterval);
                 QrtzNode node = new QrtzNode(application,hostIP,hostName,state,now); // 1天 86400_000L
                 // 写入 qrtz_app、 qrtz_node、清理

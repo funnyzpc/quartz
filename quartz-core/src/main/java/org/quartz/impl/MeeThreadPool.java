@@ -242,7 +242,8 @@ public class MeeThreadPool implements ThreadPool {
 //        final String threadPrefix = schedulerInstanceName + "_QRTZ_";
 //        final String threadPrefix = "MEE_QRTZ_";
         final MyThreadFactory myThreadFactory = new MyThreadFactory(this.getThreadNamePrefix(), this);
-        this.poolExecutor = new ThreadPoolExecutor(cct<4?1:cct/8+1,cct,8L, TimeUnit.SECONDS, new LinkedBlockingDeque(cct*2),myThreadFactory);
+//        this.poolExecutor = new ThreadPoolExecutor(cct<4?1:cct/8+1,cct,8L, TimeUnit.SECONDS, new LinkedBlockingDeque(cct*2),myThreadFactory);
+        this.poolExecutor = new ThreadPoolExecutor(cct<=4?2:cct-2,cct+2,6L, TimeUnit.SECONDS, new LinkedBlockingDeque(cct+2),myThreadFactory);
     }
 
     private final class MyThreadFactory implements ThreadFactory {
