@@ -723,10 +723,10 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
             clusterMisfireHandler.setContextClassLoader(initializersLoader);
         }
         // 前置处理(仅启动时一次)
-        clusterMisfireHandler.preProcess(); // 清理
+        clusterMisfireHandler.preProcess(); // 写入app,写入node 清理历史数据
         clusterMisfireHandler.recoverJob(); // 恢复job
         clusterMisfireHandler.recoverExecute(System.currentTimeMillis()/1000*1000); // 恢复execute
-        FIRST_CHECK=false;
+        FIRST_CHECK=false; // 标志位，表示前置处理已经完成
         clusterMisfireHandler.start();
         schedulerRunning = true;
         getLog().debug("JobStore background threads started (as scheduler was started).");
@@ -1980,7 +1980,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
 //                    getDelegate().clearHistoryData(conn,366*86400_000L);// 1年=1天*366
 //                    PRE_CLEAR_TIME=now;// update time
 //                }
-                getDelegate().clearHistoryData(conn,366*86400_000L);// 1年=1天*366
+                getDelegate().clearHistoryData(conn,366*ONE_DAY);// 1年=1天*366
                 // conn.commit();
             }catch (Exception e){
                 e.printStackTrace();

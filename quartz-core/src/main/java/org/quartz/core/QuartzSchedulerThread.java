@@ -258,14 +258,14 @@ public class QuartzSchedulerThread extends Thread {
 //            return signaled;
 //        }
 //    }
-
-    // 获取下一次点火信号的时间
-    public long getSignaledNextFireTime() {
-        synchronized(sigLock) {
-            // synchronized 内读取保证了signaledNextFireTime的可见性
-            return signaledNextFireTime;
-        }
-    }
+//
+//    // 获取下一次点火信号的时间
+//    public long getSignaledNextFireTime() {
+//        synchronized(sigLock) {
+//            // synchronized 内读取保证了signaledNextFireTime的可见性
+//            return signaledNextFireTime;
+//        }
+//    }
 
     private static long LOOP_INTERVAL = 5000L;
     private static long LOOP_WINDOW = 8L;
@@ -284,7 +284,7 @@ public class QuartzSchedulerThread extends Thread {
         int acquiresFailed = 0;
         final String application = qsRsrcs.getJobStore().getInstanceName();
         final String hostIP = SystemPropGenerator.hostIP();
-        long now = System.currentTimeMillis(); // 这个时间不调整
+        long now = System.currentTimeMillis()/1000*1000; // 这个时间不调整
 //        long _t = System.currentTimeMillis();
         while (!halted.get()) {
 //            System.out.println("##scheduler耗时:"+(System.currentTimeMillis()-_t));
@@ -304,7 +304,8 @@ public class QuartzSchedulerThread extends Thread {
                         _stop=_stop>10?1:1+_stop;
                         try {
                             // 适当延长等待时间，减少空转
-                            sigLock.wait(LOOP_INTERVAL*(_stop/3==0?1:2)-LOOP_WINDOW);
+//                            sigLock.wait(LOOP_INTERVAL*(_stop/3==0?1:2)-LOOP_WINDOW);
+                            sigLock.wait(LOOP_INTERVAL*(_stop/3==0?1:2));
                             _ts = System.currentTimeMillis(); // 必须要重置，否则获取执行信息会出现时间误差
                         } catch (InterruptedException ignore) {
                         }
@@ -503,7 +504,13 @@ public class QuartzSchedulerThread extends Thread {
                     }
                     acquiresFailed=acquiresFailed>9?0:acquiresFailed;
                 }
-                now = System.currentTimeMillis();
+                if( st<-10 && st%5==0 ){
+                    LOG.error("当前次任务轮询超时:"+st);
+                }
+                // 防止因轮询超时的必要手段
+                now = st<-1000?
+                        System.currentTimeMillis()/1000*1000 :
+                        System.currentTimeMillis()+(st<-10?st+12:0);
             }
         } // while (!halted)
 
@@ -573,7 +580,10 @@ public class QuartzSchedulerThread extends Thread {
             e.printStackTrace();
             newCe.setState("ERROR");
         }
-        return qsRsrcs.getJobStore().toLockAndUpdate(newCe,old_state,old_prev_time,old_next_time)>0;
+        // 如果是异常则不需要执行任务
+        return qsRsrcs.getJobStore().toLockAndUpdate(newCe,old_state,old_prev_time,old_next_time)>0
+//                && !"COMPLETE".equals(newCe.getState())
+                && !"ERROR".equals(newCe.getState());
     }
 //    private boolean tryAcquireLockAndUpdate(QrtzExecute ce)  {
 //        // 1.计算更新 prev_fire_time、next_fire_time .... etc
