@@ -31,7 +31,6 @@ import org.quartz.impl.QrtzExecute;
 import org.quartz.impl.triggers.CronTriggerImpl;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.quartz.simpl.SystemPropGenerator;
-import org.quartz.spi.OperableTrigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -510,7 +509,7 @@ public class QuartzSchedulerThread extends Thread {
                 // 防止因轮询超时的必要手段
                 now = st<-1000?
                         System.currentTimeMillis()/1000*1000 :
-                        System.currentTimeMillis()+(st<-10?st+12:0);
+                        System.currentTimeMillis()+(st<-10?st:0);
             }
         } // while (!halted)
 
@@ -549,6 +548,8 @@ public class QuartzSchedulerThread extends Thread {
 //                old_state = ce.getState();
                     newCe.setEndTime(now);
                     newCe.setState("COMPLETE");
+                    qsRsrcs.getJobStore().toLockAndUpdate(newCe,old_state,old_prev_time,old_next_time);
+                    return Boolean.FALSE;
                 } else {
                     newCe.setPrevFireTime(newCe.getNextFireTime());
                     newCe.setNextFireTime(nextFireTime.getTime());
@@ -566,11 +567,15 @@ public class QuartzSchedulerThread extends Thread {
 //                Date _ds = nextFireTime;
                 nextFireTime = simpleTrigger.getFireTimeAfter(nextFireTime);
 //                System.out.println("CRON=>"+ (_ds.getTime()>now)+" | "+(nextFireTime.getTime()>now));
-                if (nextFireTime == null || (endTime > 0 && endTime < now) || (newCe.getRepeatCount()>0 && newCe.getTimeTriggered() > newCe.getRepeatCount())) {
+                Integer tt = newCe.getTimeTriggered();
+                if (nextFireTime == null || (endTime > 0 && endTime < now) || (newCe.getRepeatCount()>0 && tt > newCe.getRepeatCount())) {
 //                old_state = ce.getState();
+                    newCe.setTimeTriggered(tt>0?tt-1:tt);
                     newCe.setEndTime(now);
                     LOG.info("02任务已执行完成:{}",newCe.getId());
                     newCe.setState("COMPLETE");
+                    qsRsrcs.getJobStore().toLockAndUpdate(newCe,old_state,old_prev_time,old_next_time);
+                    return Boolean.FALSE;
                 } else {
                     newCe.setPrevFireTime(newCe.getNextFireTime());
                     newCe.setNextFireTime(nextFireTime.getTime());

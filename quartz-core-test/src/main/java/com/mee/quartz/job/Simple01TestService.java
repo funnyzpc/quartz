@@ -16,7 +16,6 @@ public class Simple01TestService implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         LOGGER.info("=>>{}-{}.{}-{}",context.getJobId(),context.getExecuteId(),context.getJobType(),context.getJobClassName());
-        System.out.println( new JSONArray(context.getJobDataList()));
         try {
             TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException e) {

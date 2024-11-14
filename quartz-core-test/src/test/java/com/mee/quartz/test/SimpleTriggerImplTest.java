@@ -39,20 +39,22 @@ public class SimpleTriggerImplTest {
     @Test
     public void test02(){
         Long  endTime = -1L;
-        long now = System.currentTimeMillis();
+        long now = System.currentTimeMillis()/1000*1000+10000+10000;
         SimpleTriggerImpl simpleTrigger = new SimpleTriggerImpl()
                 .setStartTime(new Date(now)) // 2024-09-09 17...
                 .setEndTime(new Date(endTime))
-                .setRepeatCount(-1)
+                .setRepeatCount(10)
                 .setRepeatInterval(10000)
                 .setTimesTriggered(0);
-        Date nextFireTime = simpleTrigger.getFireTimeAfter(new Date(now+TIME_CHECK_INTERVAL));
+//        Date nextFireTime = simpleTrigger.getFireTimeAfter(new Date(now+TIME_CHECK_INTERVAL));
+        Date nextFireTime =new Date(now);
 //        Date nextFireTime = simpleTrigger.getFireTimeAfter(new Date(now));
-        System.out.println(null!=nextFireTime?fmt.format(nextFireTime):null);
-        for(int i=0;i<5;i++ ){
+//        System.out.println(null!=nextFireTime?fmt.format(nextFireTime):null);
+        for(int i=0;i<20;i++ ){
             if(nextFireTime!=null){
+                simpleTrigger.setTimesTriggered(i+1);
                 nextFireTime = simpleTrigger.getFireTimeAfter(nextFireTime);
-                System.out.println(null!=nextFireTime?fmt.format(nextFireTime):null);
+                System.out.println(simpleTrigger.getTimesTriggered() +"->"+(null!=nextFireTime?fmt.format(nextFireTime):null));
                 continue;
             }
             break;

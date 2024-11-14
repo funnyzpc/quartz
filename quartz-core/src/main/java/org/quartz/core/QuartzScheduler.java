@@ -473,8 +473,9 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 //        notifySchedulerListenersStarting();
         if (initialStart == null) {
             initialStart = new Date();
-            this.resources.getJobStore().schedulerStarted();
             // 这里是保证 clusterMisfireHandler.preProcess() 优先执行
+            this.resources.getJobStore().schedulerStarted();
+            // 任务扫描
             this.schedThread.start();
             startPlugins();
         } else {

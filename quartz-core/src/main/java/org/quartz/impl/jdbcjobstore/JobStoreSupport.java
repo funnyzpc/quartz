@@ -883,7 +883,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                         }
                         item.setJobClazz(jobClazz);
                     }else{
-                        // 不是任务
+                        // 不是任务类
                         continue;
                     }
                     executeList.add(item);
@@ -1021,6 +1021,7 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
         }
         do {
             try {
+//                nextFireTime = simpleTrigger.getFireTimeAfter((timesTriggered>=0 && timesTriggered<=1)?new Date(startTime):nextFireTime);
                 nextFireTime = simpleTrigger.getFireTimeAfter(nextFireTime);
 //                // 存在时间回调，故此需要判断过滤
 //                if(execTime!=null && nextFireTime!=null && execTime.equals(nextFireTime.getTime())){
@@ -1622,8 +1623,8 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
 
         private long TIME_CHECK_INTERVAL = 15000L;
         private final long ONE_DAY = 86400_000L;
-        // 上一次清理时间
-        private long PRE_CLEAR_TIME = System.currentTimeMillis()/1000*1000-ONE_DAY;
+//        // 上一次清理时间
+//        private long PRE_CLEAR_TIME = System.currentTimeMillis()/1000*1000-ONE_DAY;
         // 主机IP
         private final String hostIP = SystemPropGenerator.hostIP();
         // 主机名称
@@ -1700,9 +1701,11 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                           //3.更新time_check (根据频度) 86400_000L=24小时(一天)
                           if(FIRST_CHECK==false) {
                               // 5.1 每隔7天清理一次所有quartz记录,从 app 到 execute (每间隔七天&&上午零点或十点)
-                              if ((_start - PRE_CLEAR_TIME) >= ONE_DAY * 7 && LocalDateTime.now().getHour() - 10 == 0) {
+//                              if ((_start - PRE_CLEAR_TIME) >= ONE_DAY * 7 && LocalDateTime.now().getHour() - 10 == 0) {
+                              final LocalDateTime ndt = LocalDateTime.now();
+                              if ( ndt.getDayOfMonth()/7==0 && ndt.getHour() - 10 == 0 && ndt.getMinute() - 20 == 0) {
                                   getDelegate().clearHistoryData(conn, 366 * ONE_DAY);// 1年=1天*366
-                                  PRE_CLEAR_TIME = _start;// update time
+//                                  PRE_CLEAR_TIME = _start;// update time
                               }
                               // 5.2 recover(恢复)执行项信息
                               recoverExecute(_start/*conn,app,node*/);
@@ -1729,7 +1732,11 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                           } catch (Exception e) {
                           }
                       }
-                      _start=System.currentTimeMillis();
+//                      _start=System.currentTimeMillis();
+                      // 防止因轮询超时的必要手段
+                      _start = sleep_time<-1000?
+                              System.currentTimeMillis()/1000*1000 :
+                              System.currentTimeMillis()+(sleep_time<-10?sleep_time:0);
                   }
                   /***** try end... *****/
 //                  long sleep_time = 0;
@@ -1812,7 +1819,9 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                     }
                 }
                 //2. 清理 state=COMPLETE && update_time >1年的清理(删除),按频度执行逻辑
-                if( (now - PRE_CLEAR_TIME) >= ONE_DAY*7 && LocalDateTime.now().getHour()-10==0 ){
+//                if( (now - PRE_CLEAR_TIME) >= ONE_DAY*7 && LocalDateTime.now().getHour()-10==0 ){
+                LocalDateTime ndt = LocalDateTime.now();
+                if( FIRST_CHECK || (ndt.getDayOfMonth()%7==0 && ndt.getHour()-10==0 && ndt.getMinute()-1==0) ){
                     int ct = getDelegate().clearAllJobData(conn,366*ONE_DAY);
                     log.error(".....已清理execute数据 {}条.....",ct);
                 }
@@ -1937,8 +1946,9 @@ public abstract class JobStoreSupport implements JobStore/*, Constants*/ {
                     // 对 CRON/SIMPLE 任务的保存
                     getDelegate().updateRecoverExecute(conn,execute);
                 }
-                //2. 清理 state=COMPLETE && next_fire_time >1年 && 当前小时 in (0,10) 的清理(删除),按频度执行逻辑
-                if( (now - PRE_CLEAR_TIME) >= ONE_DAY*7 && LocalDateTime.now().getHour()-10==0 ){
+                //2. 清理 state=COMPLETE && next_fire_time >1年 && 当前小时 in (10) 的清理(删除),按频度执行逻辑
+                LocalDateTime ndt = LocalDateTime.now();
+                if( FIRST_CHECK || ( ndt.getDayOfMonth()/7==0 && ndt.getHour()-10==0 && ndt.getMinute()-10==0 ) ){
                     int ct = getDelegate().clearAllExecuteData(conn,366*ONE_DAY);
                     log.error(".....已清理execute数据 {}条.....",ct);
                 }

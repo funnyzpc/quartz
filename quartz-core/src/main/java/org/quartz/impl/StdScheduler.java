@@ -924,9 +924,9 @@ public class StdScheduler implements Scheduler {
         }
         final String bState = qrtzJob.getState();
         int ct = 0;
-        if("EXECUTING".equals(state) && ("PAUSED".equals(bState) || "INIT".equals(bState)) ){
+        if("EXECUTING".equals(state) && ("PAUSED".equals(bState) || "INIT".equals(bState) || "COMPLETE".equals(bState)) ){
             // EXECUTING,PAUSED,COMPLETE,ERROR,INIT
-            // PAUSED,INIT -> EXECUTING
+            // PAUSED,INIT,COMPLETE -> EXECUTING 因为job存在重新添加执行项，所以也可以从 COMPLETE 调整为 EXECUTING
             if( (ct=sched.updateJobState(job_id,state))>0 ){
                 for( QrtzExecute item:qrtzJob.getExecutes() ){
                     final String execute_id = item.getId();
@@ -977,7 +977,9 @@ public class StdScheduler implements Scheduler {
             LOGGER.error("必要参数为空! [execute_id、state] {},{}",execute_id,state);
             return 0;
         }
-        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,";
+        // 限制已经执行完成的编辑
+//        final String states = ",EXECUTING,PAUSED,COMPLETE,ERROR,";
+        final String states = ",EXECUTING,PAUSED,ERROR,";
         if(!states.contains(","+state+",") ){
             LOGGER.error("异常的状态项:state=>{},{}",execute_id,state);
             return 0;
@@ -1007,7 +1009,7 @@ public class StdScheduler implements Scheduler {
         }
         Long startTime = qrtzExecute.getStartTime();
         if(null==startTime || startTime<1){
-            qrtzExecute.setStartTime(startTime=System.currentTimeMillis()/1000*1000);
+            qrtzExecute.setStartTime(startTime=(System.currentTimeMillis()/1000*1000+10000));
         }
         final Date aft = new Date(System.currentTimeMillis() + 5000L);
         // 如果是 SIMPLE任务
@@ -1057,7 +1059,8 @@ public class StdScheduler implements Scheduler {
                 return new Object[]{0,"CRON任务表达式为空!"};
             }
             if(null==zoneId || "".equals(zoneId.trim()) || null== ZoneId.of(zoneId)){
-                qrtzExecute.setZoneId(zoneId="Asia/Shanghai");
+                TimeZone zoneDefault = TimeZone.getDefault();
+                qrtzExecute.setZoneId(zoneId=(null!=zoneDefault?zoneDefault.getID():"Asia/Shanghai"));
             }
             try {
                 CronTriggerImpl cronTrigger = new CronTriggerImpl()
@@ -1135,7 +1138,7 @@ public class StdScheduler implements Scheduler {
         }
         Long startTime = qrtzExecute.getStartTime();
         if(null==startTime || startTime<1){
-            qrtzExecute.setStartTime(startTime=System.currentTimeMillis()/1000*1000);
+            qrtzExecute.setStartTime(startTime=(System.currentTimeMillis()/1000*1000+10000));
         }
         final Date aft = new Date(System.currentTimeMillis() + 5000L);
         // 如果是 SIMPLE任务
@@ -1185,7 +1188,8 @@ public class StdScheduler implements Scheduler {
                 return new Object[]{0,"CRON任务表达式为空"};
             }
             if(null==zoneId || "".equals(zoneId.trim()) || null==ZoneId.of(zoneId)){
-                qrtzExecute.setZoneId(zoneId="Asia/Shanghai");
+                TimeZone zoneDefault = TimeZone.getDefault();
+                qrtzExecute.setZoneId(zoneId=(null!=zoneDefault?zoneDefault.getID():"Asia/Shanghai"));
             }
             try {
                 CronTriggerImpl cronTrigger = new CronTriggerImpl()
