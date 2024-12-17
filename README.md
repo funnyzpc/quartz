@@ -78,3 +78,24 @@
 + ResultSet 关闭处理 ✔
 + dsName 成员变量相关逻辑梳理 ?
 + 
+
+
+## use in maven
+
++ core
+```
+<dependency>
+    <groupId>io.github.funnyzpc</groupId>
+    <artifactId>quartz-core</artifactId>
+    <version>2.3.2</version>
+</dependency>
+```
+
++ client sdk
+```
+<dependency>
+    <groupId>io.github.funnyzpc</groupId>
+    <artifactId>quartz-client</artifactId>
+    <version>2.3.2</version>
+</dependency>
+```

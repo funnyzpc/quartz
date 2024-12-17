@@ -9,10 +9,34 @@
         <version>2.3.2</version>
     </parent>
 
-    <groupId>org.quartz-scheduler.internal</groupId>
+<!--    <groupId>org.quartz-scheduler.internal</groupId>-->
+    <groupId>io.github.funnyzpc</groupId>
     <artifactId>quartz-client</artifactId>
     <name>quartz-client</name>
 
+    <description>quartz集群增强-sdk</description>
+    <url>https://github.com/funnyzpc/quartz</url>
+    <scm>
+        <connection>scm:git:git@github.com:funnyzpc/quartz.git</connection>
+        <developerConnection>scm:git:git@github.com:funnyzpc/quartz.git</developerConnection>
+        <tag/>
+        <url>https://github.com/funnyzpc/quartz</url>
+    </scm>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>funnyzpc</name>
+            <email>funnyzpc@gmail.com</email>
+            <timezone>+8</timezone>
+            <url>https://github.com/funnyzpc</url>
+        </developer>
+    </developers>
 
  <!--   <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -27,4 +51,43 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <additionalOptions>
+                        <additionalOption>-Xdoclint:none</additionalOption>
+                    </additionalOptions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <keyname>funnyzpc</keyname>
+                            <passphraseServerId>funnyzpc</passphraseServerId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
